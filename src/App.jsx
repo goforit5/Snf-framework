@@ -17,6 +17,7 @@ import MonthlyClose from './pages/MonthlyClose';
 import MAPipeline from './pages/MAPipeline';
 import AuditTrail from './pages/AuditTrail';
 import ClinicalCompliance from './pages/ClinicalCompliance';
+import AuditLibrary from './pages/AuditLibrary';
 
 export default function App() {
   return (
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/ma" element={<MAPipeline />} />
             <Route path="/audit" element={<AuditTrail />} />
             <Route path="/compliance" element={<ClinicalCompliance />} />
+            <Route path="/audits" element={<AuditLibrary />} />
           </Routes>
         </Layout>
       </ModalProvider>

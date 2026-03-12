@@ -29,7 +29,8 @@ const navSections = [
     items: [
       { path: '/clinical', label: 'Clinical Command', icon: Stethoscope },
       { path: '/survey', label: 'Survey Readiness', icon: ShieldCheck },
-      { path: '/compliance', label: 'Compliance & Audits', icon: ClipboardCheck },
+      { path: '/compliance', label: 'Compliance Command', icon: ClipboardCheck },
+      { path: '/audits', label: 'Audit Library', icon: Eye },
     ]
   },
   {
