@@ -1,239 +1,353 @@
-import { Shield, Activity, CheckCircle2, User, Bot, AlertTriangle, FileText, Play, Download, Users } from 'lucide-react';
-import { auditCategories, auditTypes } from '../data/complianceData';
-import { PageHeader, StatCard, SectionLabel, ActionButton, useModal } from '../components/Widgets';
-
-const complianceColor = (rate) => {
-  if (rate >= 90) return { text: 'text-green-600', bg: 'bg-green-50', border: 'border-green-200' };
-  if (rate >= 75) return { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' };
-  return { text: 'text-red-600', bg: 'bg-red-50', border: 'border-red-200' };
-};
-
-const riskColors = {
-  Critical: 'bg-red-100 text-red-700 border-red-200',
-  High: 'bg-amber-100 text-amber-700 border-amber-200',
-  Medium: 'bg-blue-50 text-blue-700 border-blue-200',
-  Low: 'bg-gray-50 text-gray-600 border-gray-200',
-};
+import { Shield, Activity, AlertTriangle, Users, Bot, User, Play, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
+import { auditCategories, auditTypes, complianceFindings } from '../data/complianceData';
+import { PageHeader, StatCard, ActionButton, useModal, ConfidenceBar } from '../components/Widgets';
 
 const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
-function TrendChart({ trend }) {
-  const max = 100;
-  return (
-    <div>
-      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${trend.length}, 1fr)`, height: 120 }}>
-        {trend.map((val, i) => {
-          const c = complianceColor(val);
-          return (
-            <div key={i} className="flex flex-col items-center justify-end">
-              <span className="text-xs font-semibold text-gray-600 mb-1">{val}%</span>
-              <div className="w-full flex justify-center" style={{ height: `${(val / max) * 100}%` }}>
-                <div className={`w-full max-w-10 rounded-t-lg ${c.bg} border ${c.border}`} style={{ height: '100%' }} />
+const statusDot = (rate) => {
+  if (rate >= 90) return 'bg-green-500';
+  if (rate >= 75) return 'bg-orange-500';
+  return 'bg-red-500';
+};
+
+const severityDot = {
+  Critical: 'bg-red-500',
+  High: 'bg-orange-500',
+  Medium: 'bg-yellow-500',
+  Low: 'bg-gray-400',
+};
+
+/* ─── Level 5: Success ─── */
+function SuccessView({ open, close }) {
+  return {
+    title: 'Fix Applied',
+    content: (
+      <div className="flex flex-col items-center py-10">
+        <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-5">
+          <CheckCircle2 size={28} className="text-green-600" />
+        </div>
+        <p className="text-lg font-semibold text-gray-900 mb-2">Fix Applied Successfully</p>
+        <p className="text-sm text-gray-500">Documentation synced to PCC</p>
+      </div>
+    ),
+    actions: <ActionButton label="Done" variant="primary" onClick={close} />,
+  };
+}
+
+/* ─── Level 4: Approval Confirmation ─── */
+function ConfirmView({ finding, open, close }) {
+  return {
+    title: 'Confirm Fix Application',
+    content: (
+      <div className="space-y-5">
+        <p className="text-sm text-gray-700">The following steps will be executed for <span className="font-semibold">{finding.title}</span>:</p>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-2">
+          {finding.fixSteps.map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="text-xs font-bold text-gray-400 mt-0.5 w-5 text-right flex-shrink-0">{i + 1}.</span>
+              <span className="text-sm text-gray-700">{step}</span>
+            </div>
+          ))}
+        </div>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+          <p className="text-xs font-medium text-gray-500 mb-1">PCC Sync</p>
+          <p className="text-sm text-gray-700">{finding.pccAction}</p>
+        </div>
+        <p className="text-xs text-gray-400">An audit trail entry will be created for this action.</p>
+      </div>
+    ),
+    actions: (
+      <>
+        <ActionButton label="Go Back" variant="outline" onClick={() => open(FindingDetailView({ finding, open, close }))} />
+        <ActionButton label="Confirm & Sync to PCC" variant="primary" onClick={() => open(SuccessView({ open, close }))} />
+      </>
+    ),
+  };
+}
+
+/* ─── Level 3: Finding Detail ─── */
+function FindingDetailView({ finding, open, close }) {
+  return {
+    title: finding.title,
+    content: (
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full ${severityDot[finding.severity] || 'bg-gray-400'}`} />
+          <span className="text-sm text-gray-700 font-medium">{finding.severity}</span>
+          <span className="text-sm text-gray-400 mx-1">&middot;</span>
+          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-lg">{finding.fTag}</span>
+          <span className="text-sm text-gray-400 mx-1">&middot;</span>
+          <span className="text-xs text-gray-500">{finding.facility}</span>
+        </div>
+        <p className="text-sm text-gray-700 leading-relaxed">{finding.details}</p>
+
+        {finding.residents && finding.residents.length > 0 && (
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <p className="text-xs font-medium text-gray-500 mb-2">Affected Residents</p>
+            {finding.residents.map((r, i) => (
+              <div key={i} className="flex items-center justify-between py-1.5">
+                <span className="text-sm text-gray-900 font-medium">{r.name} <span className="text-gray-400 font-normal">Room {r.room}</span></span>
+                <span className="text-xs text-gray-500">{r.issue}</span>
               </div>
-            </div>
-          );
-        })}
-      </div>
-      <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: `repeat(${trend.length}, 1fr)` }}>
-        {months.map(m => <div key={m} className="text-center text-[11px] text-gray-400">{m}</div>)}
-      </div>
-    </div>
-  );
-}
+            ))}
+          </div>
+        )}
 
-function AuditDetailModal({ audit }) {
-  const c = complianceColor(audit.complianceRate);
-
-  return (
-    <div className="space-y-6">
-      {/* Header badges */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold">#{audit.rank}</span>
-        <span className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold border border-blue-100">{audit.fTag}</span>
-        <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border ${riskColors[audit.citationRisk]}`}>
-          {audit.citationRisk} Risk
-        </span>
-        <span className={`ml-auto text-3xl font-bold ${c.text}`}>{audit.complianceRate}%</span>
-      </div>
-
-      {/* Stat boxes */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-          <p className="text-2xl font-bold text-gray-900">{audit.totalAudited}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">Residents Audited</p>
-        </div>
-        <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-          <p className="text-2xl font-bold text-gray-900">{audit.findingsCount}</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">Active Findings</p>
-        </div>
-        <div className={`${c.bg} rounded-xl p-4 text-center border ${c.border}`}>
-          <p className={`text-2xl font-bold ${c.text}`}>{audit.complianceRate}%</p>
-          <p className="text-[11px] text-gray-500 mt-0.5">Compliance Rate</p>
-        </div>
-      </div>
-
-      {/* 6-Month Trend */}
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">6-Month Trend</p>
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
-          <TrendChart trend={audit.trend} />
-        </div>
-      </div>
-
-      {/* Description */}
-      <div>
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Regulatory Description</p>
-        <p className="text-sm text-gray-700 leading-relaxed">{audit.description}</p>
-      </div>
-
-      {/* Agent Checks */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <CheckCircle2 size={15} className="text-blue-600" />
-          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">What the Agent Checks</p>
-        </div>
-        <div className="space-y-2">
-          {audit.agentChecks.map((check, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <CheckCircle2 size={14} className="text-blue-400 mt-0.5 flex-shrink-0" />
-              <span className="text-sm text-gray-700">{check}</span>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-2">
+          <p className="text-xs font-medium text-gray-500 mb-2">Fix Steps</p>
+          {finding.fixSteps.map((step, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <span className="text-xs font-bold text-gray-400 mt-0.5 w-5 text-right flex-shrink-0">{i + 1}.</span>
+              <span className="text-sm text-gray-700">{step}</span>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Human Approvals */}
-      <div className="bg-green-50 border border-green-100 rounded-xl p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <User size={15} className="text-green-600" />
-          <p className="text-xs font-semibold text-green-700 uppercase tracking-wide">What Humans Approve</p>
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+          <p className="text-xs font-medium text-gray-500 mb-1">PCC Write-Back</p>
+          <p className="text-sm text-gray-700">{finding.pccAction}</p>
         </div>
-        <div className="space-y-2">
-          {audit.humanApprovals.map((item, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <User size={14} className="text-green-400 mt-0.5 flex-shrink-0" />
-              <span className="text-sm text-gray-700">{item}</span>
+
+        <div>
+          <p className="text-xs font-medium text-gray-500 mb-1.5">Agent Confidence</p>
+          <ConfidenceBar value={finding.agentConfidence} />
+        </div>
+      </div>
+    ),
+    actions: (
+      <>
+        <ActionButton label="Dismiss" variant="ghost" onClick={close} />
+        <ActionButton label="Modify" variant="outline" onClick={close} />
+        <ActionButton label="Approve Fix" variant="primary" onClick={() => open(ConfirmView({ finding, open, close }))} />
+      </>
+    ),
+  };
+}
+
+/* ─── Level 2: Findings List ─── */
+function FindingsListView({ audit, open, close }) {
+  const findings = complianceFindings.filter(f => f.auditType === audit.name);
+  return {
+    title: `${audit.name} — Active Findings`,
+    content: (
+      <div className="space-y-2">
+        {findings.length === 0 && <p className="text-sm text-gray-400 py-8 text-center">No active findings for this audit type.</p>}
+        {findings.map((f) => (
+          <div
+            key={f.id}
+            className="rounded-xl p-4 bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer"
+            onClick={() => open(FindingDetailView({ finding: f, open, close }))}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${severityDot[f.severity] || 'bg-gray-400'}`} />
+              <span className="text-sm font-medium text-gray-900 flex-1 min-w-0 truncate">{f.title}</span>
+              <ChevronRight size={14} className="text-gray-300 flex-shrink-0" />
+            </div>
+            <p className="text-xs text-gray-500 mt-1 ml-4">{f.facility} &middot; {f.detectedAt}</p>
+          </div>
+        ))}
+      </div>
+    ),
+    actions: <ActionButton label="Close" variant="outline" onClick={close} />,
+  };
+}
+
+/* ─── Level 1: Audit Detail ─── */
+function AuditDetailView({ audit, open, close }) {
+  const max = 100;
+  return {
+    title: audit.name,
+    content: (
+      <div className="space-y-6">
+        {/* Badges + big compliance number */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="bg-gray-100 text-gray-500 text-xs font-bold px-2.5 py-1 rounded-lg">#{audit.rank}</span>
+          <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-lg">{audit.fTag}</span>
+          <span className="flex items-center gap-1.5 text-xs text-gray-600">
+            <span className={`w-1.5 h-1.5 rounded-full ${severityDot[audit.citationRisk] || 'bg-gray-400'}`} />
+            {audit.citationRisk} Risk
+          </span>
+          <span className="ml-auto flex items-center gap-2">
+            <span className={`w-1.5 h-1.5 rounded-full ${statusDot(audit.complianceRate)}`} />
+            <span className="text-3xl font-bold text-gray-900">{audit.complianceRate}%</span>
+          </span>
+        </div>
+
+        {/* 3 stat boxes */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { val: audit.totalAudited, label: 'Residents Audited' },
+            { val: audit.findingsCount, label: 'Active Findings' },
+            { val: `${audit.complianceRate}%`, label: 'Compliance Rate' },
+          ].map((s, i) => (
+            <div key={i} className="bg-gray-50 border border-gray-100 rounded-xl p-4 text-center">
+              <p className="text-2xl font-bold text-gray-900">{s.val}</p>
+              <p className="text-[11px] text-gray-500 mt-0.5">{s.label}</p>
             </div>
           ))}
         </div>
-      </div>
 
-      {/* How the Agent Works */}
-      <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-5 text-white">
-        <div className="flex items-center gap-2 mb-3">
-          <Bot size={15} className="text-blue-200" />
-          <p className="text-xs font-semibold text-blue-200 uppercase tracking-wide">How the Agent Works</p>
-        </div>
-        <p className="text-sm leading-relaxed text-blue-50">{audit.whatAgentDoes}</p>
-      </div>
-
-      {/* Risk Context */}
-      <div className={`rounded-xl p-4 border ${riskColors[audit.citationRisk]}`}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Citation Risk</p>
-            <p className="text-sm font-semibold text-gray-900">{audit.citationRisk}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Average Fine</p>
-            <p className="text-sm font-semibold text-gray-900">{audit.avgFineAmount}</p>
+        {/* 6-Month Trend */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">6-Month Trend</p>
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${audit.trend.length}, 1fr)`, height: 120 }}>
+              {audit.trend.map((val, i) => (
+                <div key={i} className="flex flex-col items-center justify-end">
+                  <span className="text-xs font-semibold text-gray-600 mb-1">{val}%</span>
+                  <div className="w-full flex justify-center" style={{ height: `${(val / max) * 100}%` }}>
+                    <div className="w-full max-w-10 rounded-t-lg bg-blue-500" style={{ height: '100%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: `repeat(${audit.trend.length}, 1fr)` }}>
+              {months.map(m => <div key={m} className="text-center text-[11px] text-gray-400">{m}</div>)}
+            </div>
           </div>
         </div>
+
+        {/* Regulatory Description */}
+        <div>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Regulatory Description</p>
+          <p className="text-sm text-gray-700 leading-relaxed">{audit.description}</p>
+        </div>
+
+        {/* What the Agent Checks */}
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What the Agent Checks</p>
+          <div className="space-y-2">
+            {audit.agentChecks.map((check, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="text-gray-400 mt-0.5 flex-shrink-0">&middot;</span>
+                <span className="text-sm text-gray-700">{check}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* What Humans Approve */}
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">What Humans Approve</p>
+          <div className="space-y-2">
+            {audit.humanApprovals.map((item, i) => (
+              <div key={i} className="flex items-start gap-2.5">
+                <span className="text-gray-400 mt-0.5 flex-shrink-0">&middot;</span>
+                <span className="text-sm text-gray-700">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* How the Agent Works — blue gradient hero */}
+        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl p-5 text-white">
+          <div className="flex items-center gap-2 mb-3">
+            <Bot size={15} className="text-blue-200" />
+            <p className="text-xs font-semibold text-blue-200 uppercase tracking-wide">How the Agent Works</p>
+          </div>
+          <p className="text-sm leading-relaxed text-blue-50">{audit.whatAgentDoes}</p>
+        </div>
+
+        {/* Risk Context */}
+        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+          <div className="flex items-center gap-3 text-sm text-gray-700">
+            <span className="flex items-center gap-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${severityDot[audit.citationRisk] || 'bg-gray-400'}`} />
+              Citation Risk: <span className="font-semibold">{audit.citationRisk}</span>
+            </span>
+            <span className="text-gray-300">&middot;</span>
+            <span>Average Fine: <span className="font-semibold">{audit.avgFineAmount}</span></span>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    ),
+    actions: (
+      <>
+        <ActionButton label="View Findings" variant="outline" icon={FileText} onClick={() => open(FindingsListView({ audit, open, close }))} />
+        <ActionButton label="Run Audit Now" variant="primary" icon={Play} />
+      </>
+    ),
+  };
 }
 
+/* ─── Page ─── */
 export default function AuditLibrary() {
-  const { open } = useModal();
+  const { open, close } = useModal();
 
   const avgCompliance = Math.round(auditTypes.reduce((s, a) => s + a.complianceRate, 0) / auditTypes.length);
   const totalFindings = auditTypes.reduce((s, a) => s + a.findingsCount, 0);
   const belowTarget = auditTypes.filter(a => a.complianceRate < 80).length;
 
-  const openAuditModal = (audit) => {
-    open({
-      title: audit.name,
-      content: <AuditDetailModal audit={audit} />,
-      actions: (
-        <>
-          <ActionButton label="Run Audit Now" variant="primary" icon={Play} />
-          <ActionButton label="View Findings" variant="outline" icon={FileText} />
-          <ActionButton label="Export Report" variant="ghost" icon={Download} />
-        </>
-      ),
-    });
-  };
+  const openAudit = (audit) => open(AuditDetailView({ audit, open, close }));
 
   return (
     <div className="p-6">
       <PageHeader
         title="Audit Library"
         subtitle="20 CMS audit types monitored continuously by AI agents"
-        aiSummary={`All 20 audit types running \u2014 ${belowTarget} below 80% compliance target need attention. Average compliance is ${avgCompliance}% with ${totalFindings} active findings this week.`}
+        aiSummary={`All 20 audit types running — ${belowTarget} below 80% compliance target. Average compliance ${avgCompliance}% with ${totalFindings} active findings.`}
       />
 
-      {/* Summary Stats */}
+      {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
         <StatCard label="Total Audit Types" value="20" icon={Shield} color="blue" />
-        <StatCard label="Average Compliance" value={`${avgCompliance}%`} icon={Activity} color="emerald" />
-        <StatCard label="Findings This Week" value={totalFindings} icon={AlertTriangle} color="amber" />
-        <StatCard label="Residents Monitored" value="658" icon={Users} color="purple" />
+        <StatCard label="Average Compliance" value={`${avgCompliance}%`} icon={Activity} color="blue" />
+        <StatCard label="Findings This Week" value={totalFindings} icon={AlertTriangle} color="blue" />
+        <StatCard label="Residents Monitored" value="658" icon={Users} color="blue" />
       </div>
 
       {/* Audit Types by Category */}
       {auditCategories.map((category) => {
-        const categoryAudits = auditTypes.filter(a => a.category === category.id);
-        if (categoryAudits.length === 0) return null;
+        const items = auditTypes.filter(a => a.category === category.id);
+        if (items.length === 0) return null;
 
         return (
           <div key={category.id} className="mb-10">
             <div className="mb-5">
-              <SectionLabel>{category.name}</SectionLabel>
-              <p className="text-xs text-gray-400 -mt-2 ml-0.5">{category.description}</p>
+              <p className="text-lg font-semibold text-gray-900">{category.name}</p>
+              <p className="text-sm text-gray-500 mt-0.5">{category.description}</p>
+              <div className="h-px bg-gray-200 mt-3" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {categoryAudits.map((audit) => {
-                const c = complianceColor(audit.complianceRate);
-                return (
-                  <div
-                    key={audit.id}
-                    className="bg-white rounded-2xl border border-gray-100 p-5 cursor-pointer hover:shadow-md hover:border-gray-200 transition-all active:scale-[0.99]"
-                    onClick={() => openAuditModal(audit)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-gray-500">
-                          {audit.rank}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 leading-tight">{audit.name}</p>
-                          <p className="text-[11px] text-gray-400 mt-0.5">{audit.fTag}</p>
-                        </div>
+              {items.map((audit) => (
+                <div
+                  key={audit.id}
+                  className="bg-white border border-gray-200 rounded-2xl p-5 cursor-pointer hover:shadow-md transition-all active:scale-[0.99]"
+                  onClick={() => openAudit(audit)}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0 text-[11px] font-bold text-gray-500">
+                        {audit.rank}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-gray-900 leading-tight">{audit.name}</p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">{audit.fTag}</p>
                       </div>
-                      <span className={`text-2xl font-bold ${c.text} flex-shrink-0 ml-3`}>
-                        {audit.complianceRate}%
-                      </span>
                     </div>
-
-                    <p className="text-xs text-gray-500 mb-2.5">
-                      {audit.totalAudited} residents audited &middot; {audit.findingsCount} findings &middot; Last run: {audit.lastRun}
-                    </p>
-
-                    <div className="flex items-center gap-3 text-[11px] text-gray-400">
-                      <span className="flex items-center gap-1">
-                        <Bot size={12} className="text-blue-500" />
-                        Agent handles {audit.agentChecks.length} checks
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <User size={12} className="text-green-500" />
-                        Humans approve {audit.humanApprovals.length} decisions
-                      </span>
+                    <div className="flex items-center gap-1.5 flex-shrink-0 ml-3">
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusDot(audit.complianceRate)}`} />
+                      <span className="text-2xl font-bold text-gray-900">{audit.complianceRate}%</span>
                     </div>
                   </div>
-                );
-              })}
+
+                  <p className="text-xs text-gray-500 mb-2.5">
+                    {audit.totalAudited} audited &middot; {audit.findingsCount} findings &middot; Last: {audit.lastRun}
+                  </p>
+
+                  <div className="flex items-center gap-3 text-[11px] text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Bot size={12} className="text-gray-400" />
+                      Agent: {audit.agentChecks.length} checks
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <User size={12} className="text-gray-400" />
+                      Human: {audit.humanApprovals.length} approvals
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         );
