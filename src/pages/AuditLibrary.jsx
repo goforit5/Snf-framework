@@ -1,4 +1,4 @@
-import { Shield, Activity, AlertTriangle, Users, Bot, User, Play, FileText, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Shield, Activity, AlertTriangle, Users, Bot, User, Play, FileText, CheckCircle2, ChevronRight, Database, Pencil, Plus, Eye } from 'lucide-react';
 import { auditCategories, auditTypes, complianceFindings } from '../data/complianceData';
 import { PageHeader, StatCard, ActionButton, useModal, ConfidenceBar } from '../components/Widgets';
 
@@ -18,16 +18,35 @@ const severityDot = {
 };
 
 /* ─── Level 5: Success ─── */
-function SuccessView({ open, close }) {
+function SuccessView({ finding, open, close }) {
+  const writebacks = finding?.pccWritebacks || [];
+  const coSignCount = writebacks.filter(w => w.requiresCoSign).length;
   return {
     title: 'Fix Applied',
     content: (
-      <div className="flex flex-col items-center py-10">
+      <div className="flex flex-col items-center py-8">
         <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mb-5">
           <CheckCircle2 size={28} className="text-green-600" />
         </div>
-        <p className="text-lg font-semibold text-gray-900 mb-2">Fix Applied Successfully</p>
-        <p className="text-sm text-gray-500">Documentation synced to PCC</p>
+        <p className="text-lg font-semibold text-gray-900 mb-2">Documentation Synced to PCC</p>
+        <p className="text-sm text-gray-500 mb-6">{writebacks.length} {writebacks.length === 1 ? 'entry' : 'entries'} written successfully</p>
+        <div className="w-full space-y-2">
+          {writebacks.map((wb, i) => (
+            <div key={i} className="flex items-center gap-3 bg-green-50 border border-green-100 rounded-lg px-4 py-2.5">
+              <CheckCircle2 size={14} className="text-green-600 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-green-900 truncate">{wb.module} → {wb.field}</p>
+                <p className="text-[11px] text-green-700">{wb.resident} · Room {wb.room}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        {coSignCount > 0 && (
+          <div className="mt-4 bg-amber-50 border border-amber-100 rounded-lg px-4 py-2.5 w-full">
+            <p className="text-xs text-amber-800 font-medium">{coSignCount} {coSignCount === 1 ? 'entry requires' : 'entries require'} co-signature — notifications sent to co-signers.</p>
+          </div>
+        )}
+        <p className="text-xs text-gray-400 mt-4">Audit trail entry #AT-2026-{String(Math.floor(Math.random() * 9000) + 1000).padStart(4, '0')} created</p>
       </div>
     ),
     actions: <ActionButton label="Done" variant="primary" onClick={close} />,
@@ -36,30 +55,78 @@ function SuccessView({ open, close }) {
 
 /* ─── Level 4: Approval Confirmation ─── */
 function ConfirmView({ finding, open, close }) {
+  const actionIcon = { Add: Plus, Update: Pencil, Remove: AlertTriangle };
+  const actionColor = { Add: 'text-green-600 bg-green-50', Update: 'text-blue-600 bg-blue-50', Remove: 'text-red-600 bg-red-50' };
+  const writebacks = finding.pccWritebacks || [];
+
   return {
-    title: 'Confirm Fix Application',
+    title: 'Review PCC Documentation Changes',
     content: (
       <div className="space-y-5">
-        <p className="text-sm text-gray-700">The following steps will be executed for <span className="font-semibold">{finding.title}</span>:</p>
-        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4 space-y-2">
-          {finding.fixSteps.map((step, i) => (
-            <div key={i} className="flex items-start gap-3">
-              <span className="text-xs font-bold text-gray-400 mt-0.5 w-5 text-right flex-shrink-0">{i + 1}.</span>
-              <span className="text-sm text-gray-700">{step}</span>
+        <p className="text-sm text-gray-700">The following documentation will be written to PointClickCare for <span className="font-semibold">{finding.title}</span>:</p>
+
+        <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+          <Database size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-blue-900">{writebacks.length} documentation {writebacks.length === 1 ? 'change' : 'changes'} to PCC</p>
+            <p className="text-xs text-blue-700 mt-0.5">Review each entry below before approving. You can go back to modify.</p>
+          </div>
+        </div>
+
+        {writebacks.map((wb, i) => {
+          const Icon = actionIcon[wb.action] || Pencil;
+          const color = actionColor[wb.action] || 'text-gray-600 bg-gray-50';
+          return (
+            <div key={i} className="border border-gray-200 rounded-xl overflow-hidden">
+              {/* Header */}
+              <div className="bg-gray-50 px-4 py-3 flex items-center gap-3 border-b border-gray-200">
+                <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+                  <Icon size={12} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-900">{wb.module} → {wb.section}</p>
+                  <p className="text-[11px] text-gray-500">{wb.resident} · Room {wb.room}</p>
+                </div>
+                <span className="text-[10px] font-bold text-gray-400 uppercase">{wb.action}</span>
+              </div>
+              {/* Field + Content */}
+              <div className="px-4 py-3 space-y-3">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Field</p>
+                  <p className="text-sm font-medium text-gray-900">{wb.field}</p>
+                </div>
+                {wb.currentValue && (
+                  <div>
+                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-1">Current Value</p>
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-3">
+                      <p className="text-xs text-red-800 whitespace-pre-wrap font-mono leading-relaxed">{wb.currentValue}</p>
+                    </div>
+                  </div>
+                )}
+                <div>
+                  <p className="text-[10px] font-bold text-green-600 uppercase tracking-wider mb-1">New Value (Will Be Written)</p>
+                  <div className="bg-green-50 border border-green-100 rounded-lg p-3">
+                    <p className="text-xs text-green-900 whitespace-pre-wrap font-mono leading-relaxed">{wb.newValue}</p>
+                  </div>
+                </div>
+                {wb.requiresCoSign && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <User size={12} className="text-amber-500" />
+                    <span className="text-[11px] text-amber-700 font-medium">Requires co-sign: {wb.coSignRole}</span>
+                  </div>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
-        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">PCC Sync</p>
-          <p className="text-sm text-gray-700">{finding.pccAction}</p>
-        </div>
-        <p className="text-xs text-gray-400">An audit trail entry will be created for this action.</p>
+          );
+        })}
+
+        <p className="text-xs text-gray-400">An audit trail entry will be created for each PCC write-back.</p>
       </div>
     ),
     actions: (
       <>
         <ActionButton label="Go Back" variant="outline" onClick={() => open(FindingDetailView({ finding, open, close }))} />
-        <ActionButton label="Confirm & Sync to PCC" variant="primary" onClick={() => open(SuccessView({ open, close }))} />
+        <ActionButton label={`Approve & Write ${writebacks.length} Changes to PCC`} variant="primary" onClick={() => open(SuccessView({ finding, open, close }))} />
       </>
     ),
   };
@@ -103,10 +170,22 @@ function FindingDetailView({ finding, open, close }) {
           ))}
         </div>
 
-        <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 mb-1">PCC Write-Back</p>
-          <p className="text-sm text-gray-700">{finding.pccAction}</p>
-        </div>
+        {finding.pccWritebacks && finding.pccWritebacks.length > 0 && (
+          <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+            <p className="text-xs font-medium text-gray-500 mb-2">PCC Write-Back Preview ({finding.pccWritebacks.length} changes)</p>
+            <div className="space-y-2">
+              {finding.pccWritebacks.map((wb, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                  <span className="font-medium text-gray-900">{wb.module}</span>
+                  <span className="text-gray-400">→</span>
+                  <span className="truncate">{wb.field}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-gray-400 mt-2">Full details shown on approval screen</p>
+          </div>
+        )}
 
         <div>
           <p className="text-xs font-medium text-gray-500 mb-1.5">Agent Confidence</p>
