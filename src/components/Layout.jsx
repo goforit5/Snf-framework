@@ -4,7 +4,7 @@ import {
   LayoutDashboard, AlertTriangle, Activity, Building2, Search,
   Stethoscope, ClipboardCheck, ShieldCheck, DollarSign, FileText,
   Receipt, Users, TrendingUp, Building, Landmark, Scale, Eye,
-  Menu, X, ChevronDown, ChevronRight, Bot
+  Menu, X, ChevronDown, ChevronRight, Bot, BarChart3
 } from 'lucide-react';
 
 const navSections = [
@@ -12,6 +12,7 @@ const navSections = [
     title: 'Platform',
     items: [
       { path: '/', label: 'Command Center', icon: LayoutDashboard },
+      { path: '/dashboard', label: 'Executive Dashboard', icon: BarChart3 },
       { path: '/exceptions', label: 'Exception Queue', icon: AlertTriangle },
       { path: '/agents', label: 'Agent Work Ledger', icon: Activity },
     ]
@@ -66,27 +67,30 @@ export default function Layout({ children }) {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-200 bg-gray-900 border-r border-gray-800 flex-shrink-0 overflow-hidden`}>
+      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`}>
         <div className="w-64 h-full flex flex-col">
-          <div className="p-4 border-b border-gray-800">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center">
+          {/* Logo */}
+          <div className="p-5 border-b border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm">
                 <Bot size={18} className="text-white" />
               </div>
               <div>
-                <h1 className="text-sm font-bold text-white tracking-wide">AEOS</h1>
-                <p className="text-[10px] text-gray-400 leading-tight">SNF Operating System</p>
+                <h1 className="text-sm font-bold text-gray-900 tracking-tight">Ensign</h1>
+                <p className="text-[10px] text-gray-400 leading-tight font-medium">Agentic Framework</p>
               </div>
             </div>
           </div>
-          <nav className="flex-1 overflow-y-auto py-2 px-2">
+
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto py-3 px-3 scrollbar-thin">
             {navSections.map((section) => (
               <div key={section.title} className="mb-1">
                 <button
                   onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-2 py-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider hover:text-gray-400"
+                  className="w-full flex items-center justify-between px-2 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
                 >
                   {section.title}
                   {expandedSections[section.title] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
@@ -100,13 +104,13 @@ export default function Layout({ children }) {
                         <Link
                           key={item.path}
                           to={item.path}
-                          className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
+                          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all ${
                             isActive
-                              ? 'bg-blue-600/20 text-blue-400 font-medium'
-                              : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
+                              ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                           }`}
                         >
-                          <Icon size={16} />
+                          <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
                           {item.label}
                         </Link>
                       );
@@ -116,12 +120,14 @@ export default function Layout({ children }) {
               </div>
             ))}
           </nav>
-          <div className="p-3 border-t border-gray-800">
-            <div className="flex items-center gap-2 px-2">
-              <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-[10px] font-bold text-white">A</div>
+
+          {/* User */}
+          <div className="p-4 border-t border-gray-100">
+            <div className="flex items-center gap-3 px-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">B</div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-300 truncate">Andrew</p>
-                <p className="text-[10px] text-gray-500">Owner / CEO</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">Barry</p>
+                <p className="text-[10px] text-gray-400 font-medium">CEO, Ensign Group</p>
               </div>
             </div>
           </div>
@@ -130,26 +136,31 @@ export default function Layout({ children }) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-12 border-b border-gray-800 bg-gray-900/50 backdrop-blur flex items-center justify-between px-4 flex-shrink-0">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-white">
-            {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
-          <div className="flex items-center gap-3">
+        {/* Top bar */}
+        <header className="h-14 border-b border-gray-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 flex-shrink-0">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-gray-600 transition-colors">
+              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
+          <div className="flex items-center gap-4">
             <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Ask the system anything..."
-                className="bg-gray-800 border border-gray-700 rounded-lg pl-9 pr-4 py-1.5 text-sm text-gray-300 placeholder-gray-500 w-80 focus:outline-none focus:border-blue-500"
+                className="bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 w-80 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
               />
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="text-xs text-gray-400">7 agents active</span>
+            <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+              <span className="text-xs text-green-700 font-medium">7 agents active</span>
             </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto bg-gray-950 p-6">
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin">
           {children}
         </main>
       </div>
