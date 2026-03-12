@@ -16,6 +16,7 @@ import FinanceCommand from './pages/FinanceCommand';
 import MonthlyClose from './pages/MonthlyClose';
 import MAPipeline from './pages/MAPipeline';
 import AuditTrail from './pages/AuditTrail';
+import ClinicalCompliance from './pages/ClinicalCompliance';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/close" element={<MonthlyClose />} />
             <Route path="/ma" element={<MAPipeline />} />
             <Route path="/audit" element={<AuditTrail />} />
+            <Route path="/compliance" element={<ClinicalCompliance />} />
           </Routes>
         </Layout>
       </ModalProvider>
