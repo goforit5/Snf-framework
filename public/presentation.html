@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ensign Agentic Intelligence Platform</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue: #2563eb;
+    --blue-dark: #1e40af;
+    --blue-light: #dbeafe;
+    --indigo: #4f46e5;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --green: #059669;
+    --amber: #d97706;
+    --red: #dc2626;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #000;
+    color: var(--gray-900);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ─── Slide System ─── */
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .slide.active { display: flex; flex-direction: column; }
+  .slide.white { background: #fff; }
+  .slide.light { background: var(--gray-50); }
+  .slide.dark { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; }
+  .slide.blue { background: linear-gradient(135deg, var(--blue-dark) 0%, var(--indigo) 100%); color: #fff; }
+  .slide.gradient { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #1e40af 100%); color: #fff; }
+
+  /* ─── Typography ─── */
+  .slide-number {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.4;
+  }
+  .logo-bar {
+    position: absolute;
+    bottom: 30px;
+    left: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    opacity: 0.35;
+    text-transform: uppercase;
+  }
+
+  h1 { font-size: 52px; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em; }
+  h2 { font-size: 40px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; }
+  h3 { font-size: 28px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; }
+  h4 { font-size: 20px; font-weight: 600; line-height: 1.3; }
+  .subtitle { font-size: 22px; font-weight: 400; line-height: 1.5; opacity: 0.8; margin-top: 16px; }
+  .body-text { font-size: 18px; line-height: 1.6; font-weight: 400; }
+  .small { font-size: 15px; line-height: 1.6; }
+  .label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.5; margin-bottom: 12px; }
+  .accent { color: var(--blue); }
+  .dark .accent, .blue .accent, .gradient .accent { color: #93c5fd; }
+
+  /* ─── Layout Helpers ─── */
+  .flex { display: flex; }
+  .flex-1 { flex: 1; }
+  .gap-40 { gap: 40px; }
+  .gap-30 { gap: 30px; }
+  .gap-24 { gap: 24px; }
+  .gap-16 { gap: 16px; }
+  .gap-12 { gap: 12px; }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+  .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 20px; }
+  .mt-auto { margin-top: auto; }
+  .mt-20 { margin-top: 20px; }
+  .mt-30 { margin-top: 30px; }
+  .mt-40 { margin-top: 40px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-16 { margin-bottom: 16px; }
+  .mb-24 { margin-bottom: 24px; }
+  .mb-30 { margin-bottom: 30px; }
+  .center { text-align: center; }
+  .full-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+
+  /* ─── Cards ─── */
+  .card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .card.solid {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    color: var(--gray-900);
+  }
+  .card.highlight {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--indigo) 100%);
+    border: none;
+    color: #fff;
+  }
+
+  /* ─── Stat Block ─── */
+  .stat { text-align: center; }
+  .stat-number { font-size: 48px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .stat-label { font-size: 14px; font-weight: 500; opacity: 0.6; margin-top: 8px; }
+  .stat-number.blue { color: var(--blue); }
+
+  /* ─── Bullet Lists ─── */
+  .bullet-list { list-style: none; }
+  .bullet-list li {
+    position: relative;
+    padding-left: 28px;
+    margin-bottom: 14px;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+  .bullet-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+  .dark .bullet-list li::before,
+  .gradient .bullet-list li::before { background: #93c5fd; }
+  .bullet-list li strong { font-weight: 700; }
+
+  /* ─── Comparison Table ─── */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 16px 0;
+    font-size: 16px;
+  }
+  .compare-row.header {
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+    border-bottom: 2px solid rgba(255,255,255,0.15);
+    padding-bottom: 12px;
+  }
+  .compare-row .check { color: #34d399; font-weight: 700; }
+  .compare-row .cross { color: #f87171; opacity: 0.6; }
+  .compare-row .partial { color: #fbbf24; }
+
+  /* ─── Timeline ─── */
+  .timeline-item {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+  .timeline-dot {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  /* ─── Architecture Diagram ─── */
+  .arch-box {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .arch-box.blue-glow {
+    background: rgba(37,99,235,0.15);
+    border-color: rgba(37,99,235,0.3);
+    color: #93c5fd;
+  }
+  .arch-arrow {
+    text-align: center;
+    font-size: 24px;
+    opacity: 0.3;
+    padding: 8px 0;
+  }
+
+  /* ─── Navigation ─── */
+  .nav-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: rgba(255,255,255,0.3);
+    z-index: 100;
+    pointer-events: none;
+  }
+  .white .nav-hint, .light .nav-hint { color: rgba(0,0,0,0.2); }
+
+  /* ─── Pill Tags ─── */
+  .pill {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    background: rgba(37,99,235,0.12);
+    color: var(--blue);
+  }
+  .dark .pill, .gradient .pill, .blue .pill {
+    background: rgba(147,197,253,0.15);
+    color: #93c5fd;
+  }
+  .pill.green { background: rgba(5,150,105,0.12); color: var(--green); }
+  .pill.amber { background: rgba(217,119,6,0.12); color: var(--amber); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 1 — Title
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide gradient active" id="slide-1">
+  <div class="full-center">
+    <p class="label" style="opacity:0.4; margin-bottom: 32px; letter-spacing: 0.15em;">CONFIDENTIAL &mdash; PREPARED FOR BARRY PORT, CEO, THE ENSIGN GROUP</p>
+    <h1 style="font-size: 60px; max-width: 900px; text-align: center;">
+      Agentic Intelligence<br>for Skilled Nursing
+    </h1>
+    <p class="subtitle" style="max-width: 700px; text-align: center; margin-top: 24px;">
+      How AI agents can monitor compliance, eliminate audit burden, and protect 260+ facilities &mdash; starting now.
+    </p>
+    <div style="margin-top: 48px; display: flex; gap: 16px; align-items: center;">
+      <span class="pill">Live Demo Available</span>
+      <span class="pill">HIPAA-Ready Architecture</span>
+      <span class="pill">AWS Bedrock / Azure</span>
+    </div>
+  </div>
+  <p class="logo-bar">Taskvisory &mdash; Andrew Lark</p>
+  <p class="slide-number">1 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 2 — The Problem
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide dark" id="slide-2">
+  <p class="label">The Problem</p>
+  <h2 style="max-width: 750px;" class="mb-30">Compliance auditing doesn't scale with 260+ facilities.</h2>
+
+  <div class="grid-3 mt-30">
+    <div class="card">
+      <div class="stat-number" style="color: #f87171;">20</div>
+      <p class="stat-label" style="margin-top: 12px;">CMS F-tags that drive 80% of all SNF citations</p>
+    </div>
+    <div class="card">
+      <div class="stat-number" style="color: #fbbf24;">22+ FTEs</div>
+      <p class="stat-label" style="margin-top: 12px;">of manual audit labor across a system this size</p>
+    </div>
+    <div class="card">
+      <div class="stat-number" style="color: #f87171;">$150K+</div>
+      <p class="stat-label" style="margin-top: 12px;">average fine per Immediate Jeopardy citation</p>
+    </div>
+  </div>
+
+  <div class="mt-40">
+    <ul class="bullet-list">
+      <li>Auditors review charts <strong>days or weeks</strong> after the compliance gap occurs</li>
+      <li>Every facility runs the same 20 checks manually &mdash; <strong>13,200 checks/day across the system</strong></li>
+      <li>Documentation fixes require touching <strong>multiple PCC modules</strong> &mdash; care plans, MAR, progress notes, physician orders</li>
+      <li>Nurses spend <strong>40% of their time on documentation</strong>, not patient care</li>
+    </ul>
+  </div>
+
+  <p class="logo-bar">Taskvisory</p>
+  <p class="slide-number">2 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 3 — The Vision: Agentic Compliance
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide white" id="slide-3">
+  <p class="label" style="color: var(--blue);">The Solution</p>
+  <h2 class="mb-16" style="color: var(--gray-900);">AI agents do 95% of the work.<br>Nurses approve in <span class="accent">8 minutes</span>.</h2>
+  <p class="body-text mb-30" style="color: var(--gray-600); max-width: 700px;">
+    Instead of humans auditing charts, AI agents continuously monitor every resident record, detect compliance gaps in real-time, draft the exact documentation fix, and present it for one-tap nurse approval.
+  </p>
+
+  <div class="grid-4">
+    <div class="card solid">
+      <h4 style="color: var(--gray-900); margin-bottom: 12px;">Continuous Monitoring</h4>
+      <p class="small" style="color: var(--gray-600);">Agents scan every resident record every 6 hours across all 20 CMS audit types. No gaps, no missed deadlines.</p>
+    </div>
+    <div class="card solid">
+      <h4 style="color: var(--gray-900); margin-bottom: 12px;">Instant Detection</h4>
+      <p class="small" style="color: var(--gray-600);">Compliance gaps flagged within 15 minutes of occurrence &mdash; not days or weeks later during manual chart review.</p>
+    </div>
+    <div class="card solid">
+      <h4 style="color: var(--gray-900); margin-bottom: 12px;">Pre-Written Fixes</h4>
+      <p class="small" style="color: var(--gray-600);">Agent drafts the exact clinical documentation &mdash; the nurse sees exactly what will be written to PCC, which module, which field.</p>
+    </div>
+    <div class="card highlight">
+      <h4 style="margin-bottom: 12px;">One-Tap Approval</h4>
+      <p class="small" style="opacity: 0.9;">Nurse reviews the diff, taps approve. Documentation syncs to PCC in under 2 minutes. Average approval takes 8 minutes.</p>
+    </div>
+  </div>
+
+  <div class="grid-3 mt-40">
+    <div class="stat">
+      <div class="stat-number blue">4,284</div>
+      <div class="stat-label" style="color: var(--gray-500);">audits per week, automated</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number blue">95.3%</div>
+      <div class="stat-label" style="color: var(--gray-500);">fully autonomous (no human needed)</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number blue">99.2%</div>
+      <div class="stat-label" style="color: var(--gray-500);">accuracy rate</div>
+    </div>
+  </div>
+
+  <p class="logo-bar" style="color: var(--gray-400);">Taskvisory</p>
+  <p class="slide-number" style="color: var(--gray-400);">3 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 4 — Live Demo Screenshot
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide dark" id="slide-4">
+  <p class="label">Live Demo</p>
+  <h2 class="mb-16">This isn't a mockup. It's running now.</h2>
+  <p class="body-text mb-30" style="opacity: 0.7; max-width: 700px;">
+    The platform you're about to see is a working prototype with all 20 CMS F-tags, real approval workflows, and PCC write-back simulation. Let me show you the Compliance Command Center and Audit Library.
+  </p>
+
+  <div class="grid-2" style="flex: 1;">
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+      <h3 class="mb-16">Compliance Command</h3>
+      <ul class="bullet-list">
+        <li>84% overall compliance score with 6-month trending</li>
+        <li>Facility health grid &mdash; every site at a glance</li>
+        <li>Findings queue with severity-based prioritization</li>
+        <li>One-tap approve with full PCC documentation preview</li>
+        <li>Agent vs. Human split: 95% autonomous</li>
+      </ul>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+      <h3 class="mb-16">Audit Library</h3>
+      <ul class="bullet-list">
+        <li>All 20 CMS F-tags organized by category</li>
+        <li>Each audit: trend chart, agent checks, human approvals</li>
+        <li>27 live findings with detailed PCC write-backs</li>
+        <li>5-level progressive disclosure (Apple HIG design)</li>
+        <li>Full approval workflow: Review &rarr; Confirm &rarr; Sync</li>
+      </ul>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; text-align: center;">
+    <span class="pill green" style="background: rgba(52,211,153,0.12); color: #34d399; font-size: 15px; padding: 8px 24px;">
+      &rarr; Switch to live demo now &mdash; goforit5.github.io/Snf-framework
+    </span>
+  </div>
+
+  <p class="logo-bar">Taskvisory</p>
+  <p class="slide-number">4 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 5 — The PCC Approval Flow (Differentiator)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide light" id="slide-5">
+  <p class="label" style="color: var(--blue);">The Differentiator</p>
+  <h2 class="mb-16" style="color: var(--gray-900);">Nurses see exactly what gets written.<br>Full control. Zero guesswork.</h2>
+
+  <div class="grid-2 mt-20" style="flex: 1;">
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      <div class="card solid">
+        <span class="pill" style="margin-bottom: 12px; display: inline-block;">Step 1</span>
+        <h4 style="color: var(--gray-900); margin-bottom: 8px;">Agent Detects Gap</h4>
+        <p class="small" style="color: var(--gray-600);">"Resident Margaret Chen has fallen 3 times in 30 days. Care plan was last updated after Fall #1 only."</p>
+      </div>
+      <div class="card solid">
+        <span class="pill" style="margin-bottom: 12px; display: inline-block;">Step 2</span>
+        <h4 style="color: var(--gray-900); margin-bottom: 8px;">Agent Drafts the Fix</h4>
+        <p class="small" style="color: var(--gray-600);">Writes specific clinical text for each PCC module: Care Plan interventions, Incident Report post-fall huddle, Physician Order to discontinue Ambien.</p>
+      </div>
+      <div class="card solid">
+        <span class="pill" style="margin-bottom: 12px; display: inline-block;">Step 3</span>
+        <h4 style="color: var(--gray-900); margin-bottom: 8px;">Nurse Reviews Exact Changes</h4>
+        <p class="small" style="color: var(--gray-600);">Diff view: current value (red) vs. new value (green). Module, section, field, co-signature requirements &mdash; all visible before approval.</p>
+      </div>
+      <div class="card highlight">
+        <span style="opacity: 0.7; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; display: inline-block;">Step 4</span>
+        <h4 style="margin-bottom: 8px;">One Tap &rarr; Synced to PCC</h4>
+        <p class="small" style="opacity: 0.9;">Documentation writes to PCC. Co-sign notifications sent. Audit trail created. 8 minutes average, start to finish.</p>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: center;">
+      <div class="card solid" style="border: 2px solid var(--blue);">
+        <p class="label" style="color: var(--blue); opacity: 1;">Example PCC Write-Back</p>
+        <div style="background: var(--gray-50); border-radius: 8px; padding: 16px; margin-bottom: 12px;">
+          <p style="font-size: 12px; font-weight: 700; color: var(--gray-400); text-transform: uppercase; margin-bottom: 4px;">Care Plans &rarr; Fall Prevention</p>
+          <p style="font-size: 13px; color: var(--gray-500);">Margaret Chen &middot; Room 214B</p>
+        </div>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+          <p style="font-size: 11px; font-weight: 700; color: #dc2626; text-transform: uppercase; margin-bottom: 4px;">Current</p>
+          <p style="font-size: 13px; color: #991b1b; font-family: monospace;">Fall risk: Moderate. Non-skid footwear, bed in low position.</p>
+        </div>
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px;">
+          <p style="font-size: 11px; font-weight: 700; color: #059669; text-transform: uppercase; margin-bottom: 4px;">New (Agent-Generated)</p>
+          <p style="font-size: 13px; color: #14532d; font-family: monospace; line-height: 1.5;">Fall risk: HIGH (3 falls/30d)<br>1. Bed alarm activated at all times<br>2. 1:1 aide 2200-0600<br>3. D/C Ambien &mdash; physician review<br>4. PT re-eval for balance training<br>5. IDT conference 03/13 at 1400</p>
+        </div>
+        <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--amber);"></div>
+          <p style="font-size: 12px; color: var(--amber); font-weight: 600;">Requires co-sign: DON or ADON</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="logo-bar" style="color: var(--gray-400);">Taskvisory</p>
+  <p class="slide-number" style="color: var(--gray-400);">5 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 6 — HIPAA Architecture (AWS Bedrock / Azure)
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide dark" id="slide-6">
+  <p class="label">Security & Compliance Architecture</p>
+  <h2 class="mb-30">HIPAA-ready. PHI never leaves your cloud.</h2>
+
+  <div class="grid-2" style="flex: 1;">
+    <div>
+      <ul class="bullet-list">
+        <li><strong>AWS Bedrock</strong> processes all PHI within Ensign's own VPC &mdash; same security posture as current HIPAA datasets</li>
+        <li><strong>Zero data exfiltration</strong> &mdash; AI models run inside your cloud boundary, not on external servers</li>
+        <li><strong>BAA-covered</strong> &mdash; Amazon and Microsoft both sign Business Associate Agreements for Bedrock and Azure OpenAI</li>
+        <li><strong>PCC integration</strong> via SQL Server views (read) and controlled write-back APIs &mdash; same access pattern your IT team already manages</li>
+        <li><strong>Audit trail</strong> on every AI action &mdash; who approved, when, what was written, full provenance chain</li>
+      </ul>
+
+      <div class="mt-30">
+        <p class="label" style="opacity: 0.4;">Key Security Controls</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span class="pill">VPC-Isolated</span>
+          <span class="pill">BAA Signed</span>
+          <span class="pill">SOC 2 Type II</span>
+          <span class="pill">Encryption at Rest</span>
+          <span class="pill">TLS 1.3 in Transit</span>
+          <span class="pill">RBAC + MFA</span>
+          <span class="pill">Audit Logging</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="arch-box blue-glow">PCC (PointClickCare EHR)</div>
+      <div class="arch-arrow">&darr; SQL Server Views &darr;</div>
+      <div class="arch-box blue-glow">Ensign AWS VPC / Azure Tenant</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 20px;">
+        <div class="arch-box">AWS Bedrock<br><span style="font-size: 12px; opacity: 0.5;">Claude / Anthropic</span></div>
+        <div class="arch-box">Azure OpenAI<br><span style="font-size: 12px; opacity: 0.5;">GPT-4 (backup)</span></div>
+      </div>
+      <div class="arch-arrow">&darr; Agent Processing &darr;</div>
+      <div class="arch-box blue-glow">Compliance Agent Engine</div>
+      <div class="arch-arrow">&darr; Nurse Approval Queue &darr;</div>
+      <div class="arch-box">PCC Write-Back API</div>
+      <div style="margin-top: 12px; text-align: center; font-size: 13px; opacity: 0.4;">
+        PHI boundary = your cloud. AI models = your VPC. No data leaves.
+      </div>
+    </div>
+  </div>
+
+  <p class="logo-bar">Taskvisory</p>
+  <p class="slide-number">6 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 7 — Beyond What's Been Announced
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide white" id="slide-7">
+  <p class="label" style="color: var(--blue);">Competitive Context</p>
+  <h2 class="mb-16" style="color: var(--gray-900);">This goes far beyond what's been announced.</h2>
+  <p class="body-text mb-30" style="color: var(--gray-600); max-width: 750px;">
+    Ensign's recent press releases discuss data analytics and operational dashboards. That's table stakes. Agentic intelligence is a fundamentally different capability.
+  </p>
+
+  <div style="max-width: 900px;">
+    <div class="compare-row header" style="color: var(--gray-400); border-color: var(--gray-200);">
+      <div>Capability</div>
+      <div style="text-align: center;">Traditional Analytics</div>
+      <div style="text-align: center;">Agentic Intelligence</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Compliance monitoring</div>
+      <div style="text-align: center;" class="partial">Retrospective reports</div>
+      <div style="text-align: center;" class="check">Real-time, continuous</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Detection speed</div>
+      <div style="text-align: center;" class="cross">Days to weeks</div>
+      <div style="text-align: center;" class="check">&lt; 15 minutes</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Suggested fixes</div>
+      <div style="text-align: center;" class="cross">Manual by auditor</div>
+      <div style="text-align: center;" class="check">AI-drafted, nurse-approved</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>EHR integration</div>
+      <div style="text-align: center;" class="partial">Read dashboards</div>
+      <div style="text-align: center;" class="check">Read + controlled write-back</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Documentation generation</div>
+      <div style="text-align: center;" class="cross">None</div>
+      <div style="text-align: center;" class="check">Exact clinical text, right module</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Nurse workflow</div>
+      <div style="text-align: center;" class="cross">Hours of chart review</div>
+      <div style="text-align: center;" class="check">8-minute approval flow</div>
+    </div>
+    <div class="compare-row" style="color: var(--gray-700); border-color: var(--gray-100);">
+      <div>Scalability</div>
+      <div style="text-align: center;" class="partial">Linear (more staff)</div>
+      <div style="text-align: center;" class="check">260+ facilities, same engine</div>
+    </div>
+  </div>
+
+  <p class="logo-bar" style="color: var(--gray-400);">Taskvisory</p>
+  <p class="slide-number" style="color: var(--gray-400);">7 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 8 — Why Andrew / Insider Advantage
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide gradient" id="slide-8">
+  <p class="label">The Insider Advantage</p>
+  <h2 class="mb-30" style="max-width: 800px;">No outside vendor can build this.<br>Here's why.</h2>
+
+  <div class="grid-2" style="flex: 1;">
+    <div>
+      <ul class="bullet-list" style="font-size: 17px;">
+        <li><strong>SNF operations expertise</strong> &mdash; I know which F-tags actually get cited, how nurses actually work, what PCC modules matter. No consulting firm's discovery phase replaces lived experience.</li>
+        <li><strong>Full-stack AI engineering</strong> &mdash; Claude, AWS Bedrock, Azure OpenAI, MCP servers, agentic frameworks. I build the infrastructure, not just slide decks about it.</li>
+        <li><strong>HIPAA architecture</strong> &mdash; I've designed PHI-safe pipelines that process sensitive data within your existing cloud boundary. No new compliance surface area.</li>
+        <li><strong>Speed to value</strong> &mdash; This demo was built in days, not months. An outside vendor's SOW would still be in legal review.</li>
+        <li><strong>PCC integration knowledge</strong> &mdash; SQL Server views, write-back APIs, clinical documentation standards. The hardest part of any healthcare AI project is the last mile to the EHR.</li>
+      </ul>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; justify-content: center;">
+      <div class="card">
+        <p class="label" style="opacity: 0.4;">Outside Vendor Timeline</p>
+        <div style="font-size: 36px; font-weight: 800;">6-12 months</div>
+        <p style="font-size: 14px; opacity: 0.6; margin-top: 8px;">Discovery, SOW, procurement, HIPAA review, pilot, iterate</p>
+      </div>
+      <div class="card" style="background: rgba(37,99,235,0.2); border-color: rgba(37,99,235,0.3);">
+        <p class="label" style="opacity: 0.6; color: #93c5fd;">Insider Timeline</p>
+        <div style="font-size: 36px; font-weight: 800; color: #93c5fd;">30-60 days</div>
+        <p style="font-size: 14px; opacity: 0.6; margin-top: 8px;">Connect PCC, deploy agents, nurse training, live monitoring</p>
+      </div>
+      <div class="card">
+        <p class="label" style="opacity: 0.4;">Outside Vendor Knows About You</p>
+        <div style="font-size: 18px; font-weight: 600;">What they read in press releases</div>
+        <p style="font-size: 14px; opacity: 0.6; margin-top: 8px;">Generic healthcare AI pitched to 50 other health systems</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="logo-bar">Taskvisory</p>
+  <p class="slide-number">8 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 9 — Implementation Roadmap
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide white" id="slide-9">
+  <p class="label" style="color: var(--blue);">Implementation</p>
+  <h2 class="mb-30" style="color: var(--gray-900);">What it takes to go live.</h2>
+
+  <div style="max-width: 800px;">
+    <div class="timeline-item">
+      <div class="timeline-dot">1</div>
+      <div>
+        <h4 style="color: var(--gray-900); margin-bottom: 4px;">Connect PCC Data (Week 1-2)</h4>
+        <p class="small" style="color: var(--gray-600);">SQL Server read access to PCC views: ADT, assessments, MAR, care plans, orders. Same credentials pattern your IT team already manages. Start with 2-3 pilot facilities.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">2</div>
+      <div>
+        <h4 style="color: var(--gray-900); margin-bottom: 4px;">Deploy Agent Engine in Your Cloud (Week 2-3)</h4>
+        <p class="small" style="color: var(--gray-600);">AWS Bedrock or Azure OpenAI within Ensign's VPC. All 20 compliance agents running against real data. HIPAA controls, encryption, audit logging from day one.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">3</div>
+      <div>
+        <h4 style="color: var(--gray-900); margin-bottom: 4px;">Nurse Training & Approval Workflow (Week 3-4)</h4>
+        <p class="small" style="color: var(--gray-600);">Train DONs and charge nurses on the approval interface. The interface is intentionally simple &mdash; Apple-level design, no training manuals needed. Average learning curve: 15 minutes.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot">4</div>
+      <div>
+        <h4 style="color: var(--gray-900); margin-bottom: 4px;">PCC Write-Back (Week 4-6)</h4>
+        <p class="small" style="color: var(--gray-600);">Enable controlled write-back to PCC for approved fixes. Staged rollout: read-only verification first, then supervised writes, then autonomous with approval queue.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot" style="background: var(--green);">5</div>
+      <div>
+        <h4 style="color: var(--gray-900); margin-bottom: 4px;">Scale to 260+ Facilities (Month 2-3)</h4>
+        <p class="small" style="color: var(--gray-600);">Same engine, same agents, same approval flow. Just add PCC connections. The architecture scales horizontally &mdash; no per-facility customization needed.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3 mt-30">
+    <div class="card solid" style="text-align: center;">
+      <div class="stat-number blue">30 days</div>
+      <div class="stat-label" style="color: var(--gray-500);">to first pilot facility live</div>
+    </div>
+    <div class="card solid" style="text-align: center;">
+      <div class="stat-number blue">60 days</div>
+      <div class="stat-label" style="color: var(--gray-500);">to PCC write-back enabled</div>
+    </div>
+    <div class="card solid" style="text-align: center;">
+      <div class="stat-number blue">90 days</div>
+      <div class="stat-label" style="color: var(--gray-500);">to full system deployment</div>
+    </div>
+  </div>
+
+  <p class="logo-bar" style="color: var(--gray-400);">Taskvisory</p>
+  <p class="slide-number" style="color: var(--gray-400);">9 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SLIDE 10 — The Ask
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="slide gradient" id="slide-10">
+  <div class="full-center" style="max-width: 800px; margin: 0 auto;">
+    <h1 style="font-size: 52px; text-align: center; margin-bottom: 32px;">
+      The technology exists.<br>The architecture is proven.<br>The demo is live.
+    </h1>
+    <p class="subtitle" style="text-align: center; max-width: 650px; margin-bottom: 48px;">
+      What's needed: PCC access to 2-3 pilot facilities, a cloud environment, and a clinical champion. Everything else is built.
+    </p>
+
+    <div class="grid-3" style="width: 100%; margin-bottom: 48px;">
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 32px; font-weight: 800; color: #93c5fd;">$178K/mo</div>
+        <p style="font-size: 14px; opacity: 0.5; margin-top: 8px;">projected savings at scale<br>(22 FTEs of audit labor)</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 32px; font-weight: 800; color: #93c5fd;">89%</div>
+        <p style="font-size: 14px; opacity: 0.5; margin-top: 8px;">faster detection<br>(minutes vs. days)</p>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div style="font-size: 32px; font-weight: 800; color: #93c5fd;">260+</div>
+        <p style="font-size: 14px; opacity: 0.5; margin-top: 8px;">facilities covered<br>by the same engine</p>
+      </div>
+    </div>
+
+    <div style="text-align: center;">
+      <p style="font-size: 18px; opacity: 0.7; margin-bottom: 8px;">Andrew Lark &middot; Taskvisory</p>
+      <p style="font-size: 15px; opacity: 0.4;">andrew@taskvisory.com</p>
+    </div>
+  </div>
+
+  <p class="logo-bar">Taskvisory</p>
+  <p class="slide-number">10 / 10</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="nav-hint">Arrow keys or click to navigate</div>
+
+<script>
+  let current = 1;
+  const total = 10;
+
+  function goTo(n) {
+    if (n < 1 || n > total) return;
+    document.getElementById(`slide-${current}`).classList.remove('active');
+    current = n;
+    document.getElementById(`slide-${current}`).classList.add('active');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      goTo(current + 1);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      goTo(current - 1);
+    }
+    if (e.key === 'Home') goTo(1);
+    if (e.key === 'End') goTo(total);
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.clientX > window.innerWidth / 2) {
+      goTo(current + 1);
+    } else {
+      goTo(current - 1);
+    }
+  });
+</script>
+</body>
+</html>
