@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Shield, Activity, Wifi, WifiOff, ChevronRight, AlertTriangle, CheckCircle2, Clock, FileText, Link2, Bot } from 'lucide-react';
 import {
   PageHeader, Card, ActionButton, ClickableRow, useModal,
@@ -294,51 +295,44 @@ export default function ClinicalCompliance() {
       </div>
 
       {/* ── Section 3: 6-Month Compliance Trend ── */}
-      <div>
-        <SectionLabel>6-Month Compliance Trend</SectionLabel>
-        <Card>
-          <div className="relative" style={{ minHeight: 240 }}>
-            {/* Target line */}
-            <div
-              className="absolute left-0 right-0 border-t-2 border-dashed border-gray-300 z-10"
-              style={{ bottom: `${(targetLine / chartMax) * 200 + 16}px` }}
-            >
-              <span className="absolute -top-4 right-0 text-[11px] text-gray-400 font-medium">
-                CMS Target 90%
-              </span>
-            </div>
-
-            {/* Bars */}
-            <div className="flex items-end justify-between gap-4 px-4" style={{ height: 200 }}>
-              {months.map((month, i) => {
-                const val = overall[i];
-                const t = tier(val);
-                const barHeight = (val / chartMax) * 200;
-                return (
-                  <div key={month} className="flex-1 flex flex-col items-center gap-2">
-                    <span className="text-sm font-bold text-gray-700">{val}%</span>
-                    <div
-                      className={`w-full rounded-t-lg ${scoreBgColor[t]} transition-all`}
-                      style={{ height: barHeight, minWidth: 40 }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Month labels */}
-            <div className="flex justify-between gap-4 px-4 mt-3">
-              {months.map(month => (
-                <div key={month} className="flex-1 text-center text-xs text-gray-500 font-medium">{month}</div>
-              ))}
-            </div>
+      <Card title="6-Month Compliance Trend" action={<span className="text-xs text-gray-400 font-medium">Target: 90%</span>}>
+        {/* Chart area */}
+        <div className="relative px-2">
+          {/* Target line — positioned at 90% of chart height */}
+          <div className="absolute left-0 right-0 z-10" style={{ bottom: `${(90 / 100) * 220 + 32}px` }}>
+            <div className="border-t-2 border-dashed border-emerald-300 mx-2" />
+            <span className="absolute -top-5 right-2 text-[11px] text-emerald-500 font-semibold">90%</span>
           </div>
 
-          <p className="text-sm text-gray-500 mt-6 text-center">
-            Trending up <span className="font-semibold text-emerald-600">+8 points</span> since October
-          </p>
-        </Card>
-      </div>
+          {/* Bar chart using grid for reliable sizing */}
+          <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)`, height: 220 }}>
+            {months.map((month, i) => {
+              const val = overall[i];
+              const t = tier(val);
+              const pct = (val / 100) * 100;
+              return (
+                <div key={month} className="flex flex-col items-center justify-end">
+                  <span className="text-sm font-bold text-gray-700 mb-2">{val}%</span>
+                  <div className="w-full flex justify-center" style={{ height: `${pct}%` }}>
+                    <div className={`w-full max-w-16 rounded-t-xl ${scoreBgColor[t]}`} style={{ height: '100%' }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Month labels */}
+          <div className="grid gap-3 mt-3" style={{ gridTemplateColumns: `repeat(${months.length}, 1fr)` }}>
+            {months.map(month => (
+              <div key={month} className="text-center text-xs text-gray-500 font-medium">{month}</div>
+            ))}
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-500 mt-6 text-center">
+          Trending up <span className="font-semibold text-emerald-600">+8 points</span> since October — on track to reach 90% CMS target by Q3
+        </p>
+      </Card>
 
       {/* ── Section 4: Facility Health Grid ── */}
       <div>
@@ -449,7 +443,7 @@ export default function ClinicalCompliance() {
       <div>
         <SectionLabel>Quick Links</SectionLabel>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <a href="/audits" className="block">
+          <Link to="/audits" className="block">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all cursor-pointer">
               <div className="flex items-center justify-between">
                 <div>
@@ -459,7 +453,7 @@ export default function ClinicalCompliance() {
                 <ChevronRight size={18} className="text-gray-400" />
               </div>
             </div>
-          </a>
+          </Link>
           <div
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all cursor-pointer"
             onClick={openPccModal}

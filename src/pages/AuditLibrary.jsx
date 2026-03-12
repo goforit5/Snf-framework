@@ -18,29 +18,24 @@ const riskColors = {
 const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
 function TrendChart({ trend }) {
-  const max = Math.max(...trend);
-  const min = Math.min(...trend, 0);
-  const range = max - min || 1;
-
+  const max = 100;
   return (
-    <div className="mt-1">
-      <div className="flex items-end gap-1.5" style={{ height: 120 }}>
+    <div>
+      <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${trend.length}, 1fr)`, height: 120 }}>
         {trend.map((val, i) => {
-          const height = ((val - min) / range) * 100;
           const c = complianceColor(val);
           return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1">
-              <span className="text-[10px] font-mono text-gray-500">{val}%</span>
-              <div className="w-full flex-1 flex items-end">
-                <div
-                  className={`w-full rounded-t-lg ${c.bg} border ${c.border}`}
-                  style={{ height: `${Math.max(height, 8)}%` }}
-                />
+            <div key={i} className="flex flex-col items-center justify-end">
+              <span className="text-xs font-semibold text-gray-600 mb-1">{val}%</span>
+              <div className="w-full flex justify-center" style={{ height: `${(val / max) * 100}%` }}>
+                <div className={`w-full max-w-10 rounded-t-lg ${c.bg} border ${c.border}`} style={{ height: '100%' }} />
               </div>
-              <span className="text-[10px] text-gray-400">{months[i]}</span>
             </div>
           );
         })}
+      </div>
+      <div className="grid gap-2 mt-2" style={{ gridTemplateColumns: `repeat(${trend.length}, 1fr)` }}>
+        {months.map(m => <div key={m} className="text-center text-[11px] text-gray-400">{m}</div>)}
       </div>
     </div>
   );
