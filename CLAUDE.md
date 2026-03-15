@@ -94,9 +94,39 @@ npm run preview  # preview built output
 10. The Insider Advantage — Andrew's unique qualifications
 11. The Ask — 30-day engagement, immediate ROI
 
+## Jira Project
+
+- **Key**: SNF
+- **URL**: https://jirasite5.atlassian.net/browse/SNF
+- **Style**: Team-managed Kanban
+- **Assignee**: andrew@taskvisory.com
+
+## Planning & Technical Documentation
+
+**IMPORTANT**: Read these docs before starting any implementation work. They define the target architecture, design system, agent framework, and build sequence.
+
+| Document | Path | Purpose |
+|---|---|---|
+| **PRD** | `docs/planning/PRD_Agentic_Enterprise_Platform.md` | Full product spec — 55 pages, 26 agents, RBAC, governance levels, phased rollout |
+| **Design System** | `docs/planning/Design_System_Specification.md` | Apple HIG design rules, color system, component library, page templates, <10s decision flow, typography |
+| **Technical Architecture** | `docs/planning/Technical_Architecture.md` | DRY component composition, context providers, hooks, lazy loading, file structure, refactoring strategy |
+| **Agent Framework** | `docs/planning/Agent_Framework_Design.md` | Universal agent loop, 6 governance levels, immutable audit schema, event cascades, decision replay |
+| **Implementation Playbook** | `docs/planning/Implementation_Playbook.md` | Build sequence (4 waves), agent deployment prompts, per-page quality checklist |
+
+### Key Architecture Decisions
+- **55 total pages**: 17 existing (enhanced) + 38 new, organized into 8 nav sections
+- **DRY components**: Pages target 150-250 lines using shared component library
+- **No new dependencies**: Built entirely with existing React + Tailwind + Recharts + Lucide
+- **Modular data**: `src/data/` organized by domain with cross-referenced entity IDs
+- **RBAC + Scoping**: Context providers for role-based nav filtering and facility/region/enterprise scope
+
 ## Conventions
 
 - Mock data only — no live API connections in this demo. Real integrations happen in the AEOS platform (separate repo).
 - All monetary values displayed in dollars (demo), stored in cents in production.
 - Apple HIG design language — dark mode, clean typography, minimal chrome.
 - Each page is a self-contained module demonstrating one agentic capability.
+- **DRY**: Never duplicate UI patterns — use shared components from `src/components/`.
+- **Standard Command Page template**: Every page has PageHeader, AgentSummaryBar, StatGrid, DecisionQueue, AgentActivityFeed (see Design System doc §4.1).
+- **Semantic colors only**: Red = critical, Amber = high, Green = agent-handled, Blue = informational, Violet = processing.
+- **<10 second rule**: Every human action (approve, reject, escalate) must be completable in under 10 seconds.
