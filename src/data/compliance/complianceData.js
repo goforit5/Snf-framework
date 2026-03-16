@@ -26,6 +26,12 @@ export const complianceAlerts = [
   { id: 'ca-006', facilityId: 'f8', fTag: 'F-921', severity: 'medium', description: 'Generator auto-start failed test — backup power reliability concern', detectedDate: '2026-03-12', status: 'in-progress', agentId: 'life-safety-agent' },
   { id: 'ca-007', facilityId: 'f2', fTag: 'F-692', severity: 'high', description: '3 residents with unaddressed weight loss >5% in 30 days', detectedDate: '2026-03-10', status: 'open', agentId: 'clinical-monitoring-agent' },
   { id: 'ca-008', facilityId: 'f4', fTag: 'F-600', severity: 'medium', description: 'Abuse prevention training overdue for 2 staff members', detectedDate: '2026-03-14', status: 'open', agentId: 'hr-compliance-agent' },
+  { id: 'ca-009', facilityId: 'f4', fTag: 'F-758', severity: 'critical', description: 'Antipsychotic use at 22.4% — above CMS focused survey trigger threshold (90th percentile)', detectedDate: '2026-03-15', status: 'open', agentId: 'pharmacy-agent' },
+  { id: 'ca-010', facilityId: 'f4', fTag: 'F-656', severity: 'high', description: '12 care plans overdue for quarterly review — survey expected within 2 weeks', detectedDate: '2026-03-15', status: 'open', agentId: 'clinical-compliance-agent' },
+  { id: 'ca-011', facilityId: 'f2', fTag: 'F-641', severity: 'high', description: '5 MDS assessments submitted late — PDPM reimbursement at risk ($18,200)', detectedDate: '2026-03-14', status: 'open', agentId: 'mds-audit-agent' },
+  { id: 'ca-012', facilityId: 'f5', fTag: 'F-921', severity: 'critical', description: 'Emergency generator auto-start failure — 3 ventilator-dependent residents at risk', detectedDate: '2026-03-14', status: 'open', agentId: 'life-safety-agent' },
+  { id: 'ca-013', facilityId: 'f1', fTag: 'F-725', severity: 'high', description: 'Night shift staffing below posted levels on 4 of 14 reviewed days — state complaint investigation', detectedDate: '2026-03-12', status: 'open', agentId: 'hr-compliance-agent' },
+  { id: 'ca-014', facilityId: 'f3', fTag: 'F-760', severity: 'medium', description: 'Insulin administered to wrong resident — near miss, no harm. Medication pass process review needed.', detectedDate: '2026-03-13', status: 'in-progress', agentId: 'clinical-compliance-agent' },
 ];
 
 export const complianceSummary = {

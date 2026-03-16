@@ -11,6 +11,11 @@ export const regulatoryFilings = [
   { id: 'reg-008', facilityId: 'f6', type: 'licensure-renewal', agency: 'Oregon DHS', filedDate: '2026-01-15', dueDate: '2026-03-31', status: 'submitted', description: 'Biennial licensure renewal' },
   { id: 'reg-009', facilityId: 'f7', type: 'survey-response', agency: 'Utah DHHS', filedDate: '2025-07-15', dueDate: '2025-08-01', status: 'accepted', description: 'Plan of correction for June 2025 survey — 1 deficiency' },
   { id: 'reg-010', facilityId: 'f5', type: 'licensure-renewal', agency: 'California CDPH', filedDate: '2025-12-01', dueDate: '2026-02-28', status: 'approved', description: 'Licensure renewed through February 2028' },
+  { id: 'reg-011', facilityId: 'f4', type: 'CMP', agency: 'CMS', filedDate: '2026-03-05', dueDate: '2026-04-05', status: 'pending', description: 'Civil Monetary Penalty — $12,500/day for IJ finding (F-689). CMP accruing from date of finding. Abatement required.' },
+  { id: 'reg-012', facilityId: 'f2', type: 'survey-response', agency: 'Georgia DHHS', filedDate: '2026-02-20', dueDate: '2026-03-20', status: 'under-review', description: 'Plan of correction for February 2026 complaint investigation — infection control deficiency (F-880)' },
+  { id: 'reg-013', facilityId: 'f4', type: 'DPNA', agency: 'CMS', filedDate: '2026-03-01', dueDate: '2026-04-15', status: 'pending', description: 'Denial of Payment for New Admissions — triggered by IJ finding. Must demonstrate substantial compliance for removal.' },
+  { id: 'reg-014', facilityId: 'f3', type: 'change-of-ownership', agency: 'California CDPH', filedDate: null, dueDate: null, status: 'planned', description: 'CHOW application preparation for potential Pacific Gardens facility restructuring — legal team reviewing entity structure' },
+  { id: 'reg-015', facilityId: 'f1', type: 'complaint-investigation', agency: 'Connecticut DPH', filedDate: '2026-03-08', dueDate: '2026-03-22', status: 'under-review', description: 'Anonymous complaint alleging understaffing on night shift. Investigation conducted March 12 — awaiting findings.' },
 ];
 
 export const regulatorySummary = {

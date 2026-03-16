@@ -11,6 +11,10 @@ export const grievances = [
   { id: 'gr-008', facilityId: 'f4', complainant: 'Mark Thompson (CNA)', complainantType: 'staff', category: 'Safety', description: 'Lift equipment in B-wing not functioning properly. Had to manually transfer patient.', receivedDate: '2026-03-07', investigator: 'Brian Caldwell', status: 'escalated', resolvedDate: null, resolution: null, satisfactionFollowUp: null },
   { id: 'gr-009', facilityId: 'f7', complainant: 'Robert Williams\' wife', complainantType: 'family', category: 'Billing', description: 'Received bill for services covered by Medicare. Wants explanation.', receivedDate: '2026-03-05', investigator: 'Nathan Briggs', status: 'resolved', resolvedDate: '2026-03-08', resolution: 'Billing error identified and corrected. Adjusted statement sent.', satisfactionFollowUp: 'satisfied' },
   { id: 'gr-010', facilityId: 'f5', complainant: 'Anonymous', complainantType: 'anonymous', category: 'Cleanliness', description: 'Bathroom not cleaned for 2 days in Room 302', receivedDate: '2026-03-11', investigator: 'Diane Collins', status: 'resolved', resolvedDate: '2026-03-12', resolution: 'Housekeeping schedule audit revealed missed room. Corrective log implemented.', satisfactionFollowUp: null },
+  { id: 'gr-011', facilityId: 'f4', complainant: 'OSHA regional office', complainantType: 'regulatory', category: 'Worker Safety', description: 'Inquiry regarding 4 workers comp claims in 90 days — requesting incident reports and equipment maintenance records', receivedDate: '2026-03-14', investigator: 'Brian Caldwell', status: 'investigating', resolvedDate: null, resolution: null, satisfactionFollowUp: null },
+  { id: 'gr-012', facilityId: 'f2', complainant: 'Maria Santos (CNA)', complainantType: 'staff', category: 'Staffing', description: 'Formal complaint about mandatory overtime — states she has worked 6 consecutive 12-hour shifts due to night shift shortage', receivedDate: '2026-03-13', investigator: 'David Kowalski', status: 'investigating', resolvedDate: null, resolution: null, satisfactionFollowUp: null },
+  { id: 'gr-013', facilityId: 'f3', complainant: 'Dr. Patel (attending physician)', complainantType: 'staff', category: 'Medication Safety', description: 'Insulin administered to wrong resident. Requests immediate medication pass process review and additional safety checks.', receivedDate: '2026-03-14', investigator: 'Angela Foster', status: 'investigating', resolvedDate: null, resolution: null, satisfactionFollowUp: null },
+  { id: 'gr-014', facilityId: 'f1', complainant: 'Helen Garcia\'s daughter', complainantType: 'family', category: 'Quality of Care', description: 'Mother has lost 5% body weight in 30 days. States dietary supplements not being administered as ordered.', receivedDate: '2026-03-12', investigator: 'Sarah Martinez', status: 'investigating', resolvedDate: null, resolution: null, satisfactionFollowUp: null },
 ];
 
 export const grievanceSummary = {
@@ -19,9 +23,11 @@ export const grievanceSummary = {
   avgResolutionDays: 3.2,
   satisfactionRate: Math.round((grievances.filter(g => g.satisfactionFollowUp === 'satisfied').length / grievances.filter(g => g.satisfactionFollowUp).length) * 100),
   topCategories: [
-    { category: 'Quality of Care', count: 2 },
+    { category: 'Quality of Care', count: 3 },
     { category: 'Communication', count: 2 },
+    { category: 'Staffing', count: 2 },
     { category: 'Safety', count: 1 },
-    { category: 'Staffing', count: 1 },
+    { category: 'Worker Safety', count: 1 },
+    { category: 'Medication Safety', count: 1 },
   ],
 };
