@@ -20,7 +20,9 @@
   }
 }
 
-/* Apple-style modal animations */
+/* ─── Animation Keyframes ─── */
+
+/* Modal scale + opacity entrance */
 @keyframes modalIn {
   from { opacity: 0; transform: scale(0.95) translateY(10px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
@@ -33,10 +35,139 @@
   from { opacity: 0; }
   to { opacity: 1; }
 }
+@keyframes backdropOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Toast slide in from right */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(100%); }
+}
+
+/* Slide-out panel from right */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* Decision card dismiss */
+@keyframes cardDismiss {
+  from { opacity: 1; transform: translateX(0); max-height: 200px; }
+  to { opacity: 0; transform: translateX(40px); max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; }
+}
+
+/* Skeleton loading pulse */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Approval flash confirmation */
+@keyframes approvalFlash {
+  0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); border-color: rgb(22, 163, 74); background-color: rgba(22, 163, 74, 0.05); }
+  50% { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); border-color: rgb(22, 163, 74); background-color: rgba(22, 163, 74, 0.08); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); border-color: transparent; background-color: transparent; }
+}
+
+/* Card expand/collapse */
+@keyframes cardExpand {
+  from { opacity: 0; max-height: 0; }
+  to { opacity: 1; max-height: 600px; }
+}
+@keyframes cardCollapse {
+  from { opacity: 1; max-height: 600px; }
+  to { opacity: 0; max-height: 0; }
+}
+
+/* ─── Animation Utility Classes ─── */
 
 .modal-enter {
   animation: modalIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+.modal-exit {
+  animation: modalOut 0.2s ease-in forwards;
+}
 .backdrop-enter {
   animation: backdropIn 0.2s ease-out forwards;
+}
+.backdrop-exit {
+  animation: backdropOut 0.15s ease-in forwards;
+}
+
+.toast-enter {
+  animation: toastIn 0.2s ease-out forwards;
+}
+.toast-exit {
+  animation: toastOut 0.2s ease-in forwards;
+}
+
+.slide-in-right {
+  animation: slideInRight 0.25s ease-out forwards;
+}
+.slide-out-right {
+  animation: slideOutRight 0.2s ease-in forwards;
+}
+
+.card-dismiss {
+  animation: cardDismiss 0.3s ease-in forwards;
+  overflow: hidden;
+}
+
+.skeleton-pulse {
+  animation: skeletonPulse 1.5s ease-in-out infinite;
+}
+
+.approval-flash {
+  animation: approvalFlash 0.6s ease-out forwards;
+}
+
+.card-expand {
+  animation: cardExpand 0.2s ease-out forwards;
+  overflow: hidden;
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .modal-enter,
+  .modal-exit,
+  .backdrop-enter,
+  .backdrop-exit,
+  .toast-enter,
+  .toast-exit,
+  .slide-in-right,
+  .slide-out-right,
+  .card-dismiss,
+  .approval-flash,
+  .card-expand {
+    animation: none !important;
+  }
+
+  .skeleton-pulse {
+    animation: none !important;
+    opacity: 0.6;
+  }
+
+  /* Disable Tailwind's animate-pulse as well */
+  .animate-pulse {
+    animation: none !important;
+    opacity: 0.6;
+  }
+
+  /* Disable all transitions */
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

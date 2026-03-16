@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { CheckCircle2, XCircle, ArrowUp, Clock, ChevronDown, ChevronRight, Bot, FileText, Shield, Zap, AlertTriangle } from 'lucide-react';
 
 /* ─── Governance Badge ─── */
@@ -105,10 +105,32 @@ export function DecisionCard({
 }) {
   const borderColor = priorityBorders[priority?.toLowerCase()] || priorityBorders.medium;
   const badgeColor = priorityBadges[priority?.toLowerCase()] || priorityBadges.medium;
+  const cardRef = useRef(null);
+  const [flashClass, setFlashClass] = useState('');
+  const [dismissing, setDismissing] = useState(false);
+
+  const handleApprove = useCallback((e) => {
+    if (e) e.stopPropagation();
+    // Trigger approval flash, then fire callback
+    setFlashClass('approval-flash');
+    setTimeout(() => {
+      setFlashClass('');
+      onApprove?.();
+    }, 600);
+  }, [onApprove]);
+
+  const handleDismissAction = useCallback((action) => {
+    return (e) => {
+      if (e) e.stopPropagation();
+      setDismissing(true);
+      setTimeout(() => action?.(), 300);
+    };
+  }, []);
 
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${borderColor} transition-all duration-200 hover:shadow-md`}
+      ref={cardRef}
+      className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${borderColor} transition-all duration-200 hover:shadow-md ${flashClass} ${dismissing ? 'card-dismiss' : ''}`}
     >
       {/* Collapsed view — always visible */}
       <div className="px-4 py-3 flex items-center gap-3">
@@ -139,7 +161,7 @@ export function DecisionCard({
           <div className="flex items-center gap-1 ml-1">
             {onApprove && (
               <button
-                onClick={(e) => { e.stopPropagation(); onApprove(); }}
+                onClick={handleApprove}
                 className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97]"
                 title="Approve"
               >
@@ -148,7 +170,7 @@ export function DecisionCard({
             )}
             {onOverride && (
               <button
-                onClick={(e) => { e.stopPropagation(); onOverride(); }}
+                onClick={handleDismissAction(onOverride)}
                 className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97]"
                 title="Override"
               >
@@ -169,14 +191,14 @@ export function DecisionCard({
             onClick={onToggle}
             className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {isExpanded ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
+            {isExpanded ? <ChevronDown size={14} className="text-gray-400 transition-transform duration-200" /> : <ChevronRight size={14} className="text-gray-400 transition-transform duration-200" />}
           </button>
         </div>
       </div>
 
-      {/* Expanded view */}
+      {/* Expanded view — animated */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100">
+        <div className="px-4 pb-4 border-t border-gray-100 card-expand">
           <div className="pt-3 space-y-3">
             {description && (
               <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
@@ -215,7 +237,7 @@ export function DecisionCard({
             <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
               {onApprove && (
                 <button
-                  onClick={onApprove}
+                  onClick={handleApprove}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <CheckCircle2 size={13} />
@@ -224,7 +246,7 @@ export function DecisionCard({
               )}
               {onOverride && (
                 <button
-                  onClick={onOverride}
+                  onClick={handleDismissAction(onOverride)}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <XCircle size={13} />
