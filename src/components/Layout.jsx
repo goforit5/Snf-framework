@@ -1,72 +1,362 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, AlertTriangle, Activity, Building2, Search,
-  Stethoscope, ClipboardCheck, ShieldCheck, DollarSign, FileText,
-  Receipt, Users, TrendingUp, Building, Landmark, Scale, Eye,
-  Menu, X, ChevronDown, ChevronRight, Bot, BarChart3
+  LayoutDashboard, BarChart3, AlertTriangle, Activity, Coffee, Shield, Settings,
+  Stethoscope, Pill, Dumbbell, Bug, Apple, Heart, FileText, ClipboardCheck, ShieldCheck, Eye,
+  DollarSign, CreditCard, Handshake, Calculator, Receipt, FileWarning, Calendar, Banknote, Vault, PieChart,
+  Users, UserPlus, ClipboardList, CalendarClock, BadgeCheck, GraduationCap, UserCog, Gift, HardHat, TrendingDown,
+  Building2, Package, Wrench, Sparkles, Flame, Truck, Monitor,
+  BedDouble, Phone, Percent, Megaphone,
+  Award, ShieldAlert, HeartPulse, MessageSquare, Target,
+  Scale, FileSignature, Gavel, FileCheck, Home,
+  Building, Globe, Landmark, LineChart, Flag,
+  Menu, X, ChevronDown, ChevronRight, Bot, Search, Bell
 } from 'lucide-react';
+import { useAuth } from '../providers/AuthProvider';
+import { useScopeContext } from '../providers/ScopeProvider';
+import { useAgentContext } from '../providers/AgentProvider';
+import { useNotificationContext } from '../providers/NotificationProvider';
+import { demoUsers, demoUserList } from '../data/platform/users';
+import { facilities } from '../data/entities/facilities';
+import { regions } from '../data/entities/regions';
+import { ScopeSelector } from './FilterComponents';
+import GlobalSearch, { useGlobalSearchShortcut } from './GlobalSearch';
 
-const navSections = [
+/* ─── Navigation Definition ─── */
+const NAV_SECTIONS = [
   {
+    key: 'platform',
     title: 'Platform',
+    icon: LayoutDashboard,
     items: [
       { path: '/', label: 'Command Center', icon: LayoutDashboard },
       { path: '/dashboard', label: 'Executive Dashboard', icon: BarChart3 },
       { path: '/exceptions', label: 'Exception Queue', icon: AlertTriangle },
-      { path: '/agents', label: 'Agent Work Ledger', icon: Activity },
-    ]
+      { path: '/agents', label: 'Agent Operations', icon: Activity },
+      { path: '/briefing', label: 'Morning Briefing', icon: Coffee },
+      { path: '/audit', label: 'Audit Trail', icon: Shield },
+      { path: '/settings', label: 'Settings', icon: Settings },
+    ],
   },
   {
-    title: 'Facility Ops',
-    items: [
-      { path: '/facility', label: 'Admin Dashboard', icon: Building2 },
-      { path: '/standup', label: 'Morning Stand-Up', icon: Users },
-    ]
-  },
-  {
+    key: 'clinical',
     title: 'Clinical',
+    icon: Stethoscope,
     items: [
       { path: '/clinical', label: 'Clinical Command', icon: Stethoscope },
-      { path: '/survey', label: 'Survey Readiness', icon: ShieldCheck },
-      { path: '/compliance', label: 'Compliance Command', icon: ClipboardCheck },
+      { path: '/clinical/pharmacy', label: 'Pharmacy', icon: Pill },
+      { path: '/clinical/therapy', label: 'Therapy & Rehab', icon: Dumbbell },
+      { path: '/clinical/infection-control', label: 'Infection Control', icon: Bug },
+      { path: '/clinical/dietary', label: 'Dietary & Nutrition', icon: Apple },
+      { path: '/clinical/social-services', label: 'Social Services', icon: Heart },
+      { path: '/clinical/medical-records', label: 'Medical Records', icon: FileText },
+      { path: '/survey', label: 'Survey Readiness', icon: ClipboardCheck },
+      { path: '/compliance', label: 'Compliance', icon: ShieldCheck },
       { path: '/audits', label: 'Audit Library', icon: Eye },
-    ]
+    ],
   },
   {
-    title: 'Back Office',
+    key: 'revenue',
+    title: 'Revenue Cycle',
+    icon: DollarSign,
     items: [
+      { path: '/revenue', label: 'Revenue Command', icon: DollarSign },
+      { path: '/revenue/billing', label: 'Billing & Claims', icon: FileText },
+      { path: '/revenue/ar', label: 'AR Management', icon: CreditCard },
+      { path: '/revenue/managed-care', label: 'Managed Care', icon: Handshake },
+      { path: '/revenue/pdpm', label: 'PDPM Optimization', icon: Calculator },
       { path: '/ap', label: 'AP Operations', icon: Receipt },
-      { path: '/invoice-exceptions', label: 'Invoice Exceptions', icon: FileText },
-      { path: '/payroll', label: 'Payroll Command', icon: DollarSign },
-    ]
+      { path: '/invoice-exceptions', label: 'Invoice Exceptions', icon: FileWarning },
+      { path: '/close', label: 'Monthly Close', icon: Calendar },
+      { path: '/payroll', label: 'Payroll', icon: Banknote },
+      { path: '/revenue/treasury', label: 'Treasury & Cash', icon: Vault },
+      { path: '/revenue/budget', label: 'Budget & Forecast', icon: PieChart },
+    ],
   },
   {
-    title: 'Finance',
+    key: 'workforce',
+    title: 'Workforce',
+    icon: Users,
     items: [
-      { path: '/finance', label: 'Finance Command', icon: Landmark },
-      { path: '/close', label: 'Monthly Close', icon: ClipboardCheck },
-    ]
+      { path: '/workforce', label: 'Workforce Command', icon: Users },
+      { path: '/workforce/recruiting', label: 'Recruiting', icon: UserPlus },
+      { path: '/workforce/onboarding', label: 'Onboarding', icon: ClipboardList },
+      { path: '/workforce/scheduling', label: 'Scheduling', icon: CalendarClock },
+      { path: '/workforce/credentialing', label: 'Credentialing', icon: BadgeCheck },
+      { path: '/workforce/training', label: 'Training', icon: GraduationCap },
+      { path: '/workforce/employee-relations', label: 'Employee Relations', icon: UserCog },
+      { path: '/workforce/benefits', label: 'Benefits', icon: Gift },
+      { path: '/workforce/workers-comp', label: 'Workers Comp', icon: HardHat },
+      { path: '/workforce/retention', label: 'Retention', icon: TrendingDown },
+    ],
   },
   {
+    key: 'operations',
+    title: 'Operations',
+    icon: Building2,
+    items: [
+      { path: '/facility', label: 'Facility Command', icon: Building2 },
+      { path: '/operations/supply-chain', label: 'Supply Chain', icon: Package },
+      { path: '/operations/maintenance', label: 'Maintenance', icon: Wrench },
+      { path: '/operations/environmental', label: 'Environmental', icon: Sparkles },
+      { path: '/operations/life-safety', label: 'Life Safety', icon: Flame },
+      { path: '/operations/transportation', label: 'Transportation', icon: Truck },
+      { path: '/operations/it', label: 'IT Service Desk', icon: Monitor },
+    ],
+  },
+  {
+    key: 'admissions',
+    title: 'Admissions',
+    icon: BedDouble,
+    items: [
+      { path: '/admissions', label: 'Census Command', icon: BedDouble },
+      { path: '/admissions/referrals', label: 'Referrals', icon: Phone },
+      { path: '/admissions/pre-admission', label: 'Pre-Admission', icon: ClipboardCheck },
+      { path: '/admissions/payer-mix', label: 'Payer Mix', icon: Percent },
+      { path: '/admissions/marketing', label: 'Marketing & BD', icon: Megaphone },
+    ],
+  },
+  {
+    key: 'quality',
+    title: 'Quality',
+    icon: Award,
+    items: [
+      { path: '/quality', label: 'Quality Command', icon: Award },
+      { path: '/quality/risk', label: 'Risk Management', icon: ShieldAlert },
+      { path: '/quality/patient-safety', label: 'Patient Safety', icon: HeartPulse },
+      { path: '/quality/grievances', label: 'Grievances', icon: MessageSquare },
+      { path: '/quality/outcomes', label: 'Outcomes', icon: Target },
+    ],
+  },
+  {
+    key: 'legal',
+    title: 'Legal',
+    icon: Scale,
+    items: [
+      { path: '/legal', label: 'Legal Command', icon: Scale },
+      { path: '/legal/contracts', label: 'Contracts', icon: FileSignature },
+      { path: '/legal/litigation', label: 'Litigation', icon: Gavel },
+      { path: '/legal/regulatory', label: 'Regulatory', icon: FileCheck },
+      { path: '/legal/real-estate', label: 'Real Estate', icon: Home },
+      { path: '/legal/corporate-compliance', label: 'Corporate Compliance', icon: ShieldCheck },
+    ],
+  },
+  {
+    key: 'strategic',
     title: 'Strategic',
+    icon: Building,
     items: [
       { path: '/ma', label: 'M&A Pipeline', icon: Building },
-      { path: '/audit', label: 'Audit Trail', icon: Eye },
-    ]
+      { path: '/strategic/market-intel', label: 'Market Intel', icon: Globe },
+      { path: '/strategic/board', label: 'Board Governance', icon: Landmark },
+      { path: '/strategic/investor-relations', label: 'Investor Relations', icon: LineChart },
+      { path: '/strategic/government-affairs', label: 'Government Affairs', icon: Flag },
+    ],
   },
 ];
 
+/* ─── Helpers ─── */
+const STORAGE_KEY = 'snf-nav-collapsed';
+
+function loadCollapsedState() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCollapsedState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+function findCurrentSection(pathname) {
+  for (const section of NAV_SECTIONS) {
+    for (const item of section.items) {
+      if (item.path === pathname) return section.key;
+    }
+  }
+  return 'platform';
+}
+
+function buildBreadcrumb(pathname) {
+  for (const section of NAV_SECTIONS) {
+    for (const item of section.items) {
+      if (item.path === pathname) {
+        return { section: section.title, page: item.label };
+      }
+    }
+  }
+  return { section: 'Platform', page: 'Command Center' };
+}
+
+/* ─── Scope Selector Adapter ─── */
+function ScopeSelectorBar() {
+  const { scope, setScope } = useScopeContext();
+
+  const facilityOptions = useMemo(
+    () => facilities.map(f => ({ id: f.id, label: f.name })),
+    []
+  );
+  const regionOptions = useMemo(
+    () => regions.map(r => ({ id: r.id, label: r.name })),
+    []
+  );
+
+  return (
+    <ScopeSelector
+      currentScope={scope}
+      facilities={facilityOptions}
+      regions={regionOptions}
+      onChange={({ type, id }) => setScope(type, id)}
+    />
+  );
+}
+
+/* ─── Role Switcher ─── */
+function RoleSwitcher() {
+  const { user, switchRole } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
+    }
+    if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+      >
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+          {user.avatarInitials}
+        </div>
+        <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+          {/* Current user header */}
+          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+            <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+            <p className="text-[11px] text-gray-500">{user.title}</p>
+          </div>
+          <div className="py-1">
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 pt-2 pb-1">Switch Role</p>
+            {demoUserList.map((u) => (
+              <button
+                key={u.id}
+                onClick={() => { switchRole(u.role); setIsOpen(false); }}
+                className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
+                  user.id === u.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                }`}
+              >
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
+                  user.id === u.id
+                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600'
+                    : 'bg-gray-400'
+                }`}>
+                  {u.avatarInitials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm truncate ${user.id === u.id ? 'font-semibold text-blue-700' : 'text-gray-700'}`}>{u.name}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{u.title}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Notification Bell ─── */
+function NotificationBell() {
+  const { unreadCount, criticalCount } = useNotificationContext();
+
+  return (
+    <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
+      <Bell size={18} className="text-gray-500" />
+      {unreadCount > 0 && (
+        <span className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
+          criticalCount > 0 ? 'bg-red-500' : 'bg-blue-500'
+        }`}>
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
+/* ─── Agent Pulse ─── */
+function AgentPulse() {
+  const { agentCount } = useAgentContext();
+
+  return (
+    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
+      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+      <span className="text-xs text-green-700 font-medium">{agentCount.active} agents active</span>
+    </div>
+  );
+}
+
+/* ─── Main Layout ─── */
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedSections, setExpandedSections] = useState(
-    navSections.reduce((acc, s) => ({ ...acc, [s.title]: true }), {})
-  );
+  const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
+  const { user, canViewSection } = useAuth();
 
-  const toggleSection = (title) => {
-    setExpandedSections(prev => ({ ...prev, [title]: !prev[title] }));
+  useGlobalSearchShortcut(setSearchOpen);
+
+  const currentSectionKey = findCurrentSection(location.pathname);
+  const breadcrumb = buildBreadcrumb(location.pathname);
+
+  // Initialize collapsed state: current section + platform expanded, rest collapsed
+  const [expandedSections, setExpandedSections] = useState(() => {
+    const stored = loadCollapsedState();
+    if (stored) return stored;
+    const initial = {};
+    NAV_SECTIONS.forEach(s => {
+      initial[s.key] = s.key === 'platform' || s.key === currentSectionKey;
+    });
+    return initial;
+  });
+
+  // Auto-expand current section when route changes
+  useEffect(() => {
+    setExpandedSections(prev => {
+      if (prev[currentSectionKey]) return prev;
+      const next = { ...prev, [currentSectionKey]: true };
+      saveCollapsedState(next);
+      return next;
+    });
+  }, [currentSectionKey]);
+
+  const toggleSection = (key) => {
+    setExpandedSections(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      saveCollapsedState(next);
+      return next;
+    });
   };
+
+  // Filter sections by role visibility
+  const visibleSections = useMemo(
+    () => NAV_SECTIONS.filter(s => canViewSection(s.key)),
+    [canViewSection]
+  );
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
@@ -88,48 +378,63 @@ export default function Layout({ children }) {
 
           {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-3 px-3 scrollbar-thin">
-            {navSections.map((section) => (
-              <div key={section.title} className="mb-1">
-                <button
-                  onClick={() => toggleSection(section.title)}
-                  className="w-full flex items-center justify-between px-2 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
-                >
-                  {section.title}
-                  {expandedSections[section.title] ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                </button>
-                {expandedSections[section.title] && (
-                  <div className="space-y-0.5">
-                    {section.items.map((item) => {
-                      const isActive = location.pathname === item.path;
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.path}
-                          to={item.path}
-                          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all ${
-                            isActive
-                              ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
-                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
-                        >
-                          <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            ))}
+            {visibleSections.map((section) => {
+              const SectionIcon = section.icon;
+              const isCurrentSection = section.key === currentSectionKey;
+              const isExpanded = expandedSections[section.key];
+
+              return (
+                <div key={section.key} className="mb-1">
+                  <button
+                    onClick={() => toggleSection(section.key)}
+                    className={`w-full flex items-center justify-between px-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
+                      isCurrentSection
+                        ? 'text-blue-600 bg-blue-50/50'
+                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <SectionIcon size={12} />
+                      {section.title}
+                    </div>
+                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  </button>
+                  {isExpanded && (
+                    <div className="space-y-0.5">
+                      {section.items.map((item) => {
+                        const isActive = location.pathname === item.path;
+                        const Icon = item.icon;
+                        return (
+                          <Link
+                            key={item.path}
+                            to={item.path}
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all ${
+                              isActive
+                                ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                          >
+                            <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </nav>
 
           {/* User */}
           <div className="p-4 border-t border-gray-100">
             <div className="flex items-center gap-3 px-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">B</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
+                {user.avatarInitials}
+              </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">Barry</p>
-                <p className="text-[10px] text-gray-400 font-medium">CEO, Ensign Group</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                <p className="text-[10px] text-gray-400 font-medium truncate">{user.title}</p>
               </div>
             </div>
           </div>
@@ -139,25 +444,42 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 border-b border-gray-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-6 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-gray-400 hover:text-gray-600 transition-colors">
+        <header className="h-14 border-b border-gray-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-4 flex-shrink-0">
+          {/* Left: hamburger + breadcrumb */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
+            >
               {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
+            <div className="hidden sm:flex items-center gap-1.5 text-sm">
+              <span className="text-gray-400 font-medium">{breadcrumb.section}</span>
+              <ChevronRight size={12} className="text-gray-300" />
+              <span className="text-gray-700 font-semibold">{breadcrumb.page}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Ask the system anything..."
-                className="bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2 text-sm text-gray-700 placeholder-gray-400 w-80 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition-all"
-              />
-            </div>
-            <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-xs text-green-700 font-medium">7 agents active</span>
-            </div>
+
+          {/* Center: search trigger */}
+          <div className="flex-1 flex justify-center px-4">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="w-full max-w-md flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-400 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
+            >
+              <Search size={14} className="text-gray-400 flex-shrink-0" />
+              <span className="flex-1 text-left">Search anything...</span>
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-gray-200 text-[10px] font-semibold text-gray-500">
+                &#8984;K
+              </kbd>
+            </button>
+          </div>
+
+          {/* Right: scope, pulse, notifications, role */}
+          <div className="flex items-center gap-2">
+            <ScopeSelectorBar />
+            <AgentPulse />
+            <NotificationBell />
+            <RoleSwitcher />
           </div>
         </header>
 
@@ -166,6 +488,9 @@ export default function Layout({ children }) {
           {children}
         </main>
       </div>
+
+      {/* Global Search Overlay */}
+      <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }

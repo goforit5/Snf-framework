@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic Platform Guide — Ensign Group Operations</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #1a1a2e;
+    --bg-card: #16213e;
+    --bg-card-alt: #1a1a3e;
+    --border: #2a2a4e;
+    --text: #f0f0f5;
+    --text-secondary: #a0a0b8;
+    --text-dim: #6a6a85;
+    --blue: #3b82f6;
+    --blue-dark: #1e40af;
+    --violet: #8b5cf6;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --red: #ef4444;
+    --amber: #f59e0b;
+    --cyan: #06b6d4;
+    --rose: #f43f5e;
+    --teal: #14b8a6;
+    --orange: #f97316;
+    --indigo: #6366f1;
+    --pink: #ec4899;
+    --lime: #84cc16;
+    --sky: #0ea5e9;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Sections ─── */
+section {
+    min-height: 100vh;
+    padding: 80px 40px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+section.intro-section {
+    justify-content: center;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ─── Typography ─── */
+h1 {
+    font-size: 3.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    margin-bottom: 24px;
+}
+
+h2 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 12px;
+}
+
+h3 {
+    font-size: 1.35rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    margin-top: 32px;
+    margin-bottom: 10px;
+}
+
+h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 6px;
+    color: var(--text);
+}
+
+p {
+    color: var(--text-secondary);
+    margin-bottom: 14px;
+    font-size: 1.05rem;
+}
+
+.lead {
+    font-size: 1.3rem;
+    color: var(--text-secondary);
+    line-height: 1.55;
+    margin-bottom: 20px;
+}
+
+.section-number {
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ─── Section accent line ─── */
+.section-accent {
+    width: 60px;
+    height: 4px;
+    border-radius: 2px;
+    margin-bottom: 28px;
+}
+
+/* ─── Content Cards ─── */
+.content-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-bottom: 16px;
+}
+
+.content-card h4 {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.content-card p {
+    margin-bottom: 8px;
+    font-size: 0.98rem;
+}
+
+.content-card p:last-child {
+    margin-bottom: 0;
+}
+
+/* ─── Bullet lists ─── */
+ul.ops-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 16px 0;
+}
+
+ul.ops-list > li {
+    position: relative;
+    padding: 10px 0 10px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    line-height: 1.55;
+}
+
+ul.ops-list > li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 18px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-color, var(--blue));
+}
+
+ul.ops-list > li:last-child {
+    border-bottom: none;
+}
+
+ul.ops-list > li strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* ─── Replaces Box ─── */
+.replaces-box {
+    background: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 24px;
+}
+
+.replaces-box .replaces-title {
+    color: var(--red);
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+}
+
+.replaces-box p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+/* ─── Stats Grid ─── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+/* ─── Nav Dots ─── */
+.nav-dots {
+    position: fixed;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
+}
+
+.nav-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    padding: 0;
+    position: relative;
+}
+
+.nav-dot:hover {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.3);
+}
+
+.nav-dot.active {
+    background: var(--blue);
+    transform: scale(1.3);
+}
+
+.nav-dot .tooltip {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.nav-dot:hover .tooltip {
+    opacity: 1;
+}
+
+/* ─── Progress Bar ─── */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--blue), var(--violet));
+    z-index: 200;
+    transition: width 0.3s ease;
+}
+
+/* ─── Top nav bar ─── */
+.top-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(26, 26, 46, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    z-index: 150;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    justify-content: space-between;
+}
+
+.top-bar .title-text {
+    color: var(--text-secondary);
+}
+
+.top-bar .reading-time {
+    font-weight: 400;
+}
+
+/* ─── Closing CTA ─── */
+.cta-box {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.12));
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    border-radius: 14px;
+    padding: 36px 40px;
+    margin-top: 32px;
+}
+
+.cta-box h3 {
+    margin-top: 0;
+    color: var(--text);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+    section { padding: 70px 24px; }
+    h1 { font-size: 2.4rem; }
+    h2 { font-size: 1.8rem; }
+    .lead { font-size: 1.1rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .nav-dots { right: 12px; gap: 8px; }
+    .nav-dot .tooltip { display: none; }
+}
+
+/* ─── Print ─── */
+@media print {
+    html { scroll-snap-type: none; }
+    section {
+        min-height: auto;
+        page-break-after: always;
+        padding: 40px 20px;
+    }
+    .nav-dots, .progress-bar, .top-bar { display: none; }
+    body { background: white; color: #111; }
+    .content-card { border: 1px solid #ddd; }
+    .replaces-box { border: 1px solid #ecc; }
+    p, ul.ops-list > li { color: #333; }
+    h3 { color: #111; }
+    .stat-card { border: 1px solid #ddd; }
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<div class="top-bar">
+    <span class="title-text">Agentic Platform Guide &mdash; Ensign Group Operations</span>
+    <span class="reading-time">~18 min read</span>
+</div>
+
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- INTRO -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="intro-section" id="section-intro">
+<div class="container">
+    <span class="section-number" style="color: var(--blue);">The Agentic Enterprise</span>
+    <h1>30 AI Agents.<br>330+ Facilities.<br>24/7.</h1>
+    <p class="lead">This document describes exactly what changes when AI agents run across every business function at Ensign. Not theory. Not a roadmap. The operational reality of what 30 purpose-built agents do when connected to PCC, Workday, Microsoft 365, SharePoint, and every other system your organization depends on.</p>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--blue);">30</div>
+            <div class="stat-label">AI Agents</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--green);">330+</div>
+            <div class="stat-label">Facilities Covered</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--violet);">24/7</div>
+            <div class="stat-label">Continuous Monitoring</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--amber);">99%</div>
+            <div class="stat-label">Automated Actions</div>
+        </div>
+    </div>
+
+    <p>They don't replace your people. They handle the 99% that's routine &mdash; the chart reviews, the invoice matching, the timecard auditing, the license tracking, the compliance scoring &mdash; so your people focus on the 1% that requires judgment. Every action logged. Every decision auditable. Every automation reversible.</p>
+    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 20px;">Prepared for Barry Port, CEO &mdash; The Ensign Group&ensp;|&ensp;Confidential</p>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 1. PLATFORM INTELLIGENCE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-1" style="--accent-color: var(--blue);">
+<div class="container">
+    <span class="section-number" style="color: var(--blue);">Section 01</span>
+    <div class="section-accent" style="background: var(--blue);"></div>
+    <h2>Platform Intelligence</h2>
+    <p class="lead">The command center that replaces weekly reports, "management by walking around," and the 47 spreadsheets your regional directors maintain.</p>
+
+    <h3>Enterprise-Wide Real-Time Dashboard</h3>
+    <ul class="ops-list">
+        <li><strong>330+ facility status</strong> &mdash; every facility's operational health rendered in a single view. Census, staffing ratios, clinical alerts, financial performance, compliance scores. Updated continuously, not weekly.</li>
+        <li><strong>Exception-based management</strong> &mdash; agents surface only what needs human judgment. If 328 facilities are operating normally, you see the 2 that aren't. No noise. Your administrators get the same view scoped to their facility. Your regional directors see their region. You see everything.</li>
+        <li><strong>Cross-facility pattern detection</strong> &mdash; what's happening at Heritage Oaks today happened at Meadowbrook 6 months ago. Same staffing pattern. Same census trajectory. Same supplier issues. The platform sees it because it has memory across 330+ facilities. No human can hold that context.</li>
+        <li><strong>Morning briefing generation</strong> &mdash; replaces the DON's 6 AM email chain. By the time your operators open their laptops, a prioritized briefing is waiting: overnight incidents, staffing gaps for the day, admissions pipeline, items requiring immediate attention, items agents already handled.</li>
+    </ul>
+
+    <h3>Decision Queue & Governance</h3>
+    <ul class="ops-list">
+        <li><strong>Decision queue</strong> &mdash; a prioritized list of items needing human approval. Each item includes the agent's recommendation, confidence score, supporting evidence, and policy references. Approve, reject, or escalate in under 10 seconds. No digging through records to understand context.</li>
+        <li><strong>Governance levels</strong> &mdash; six levels, from fully autonomous to human-required. Invoice processing under $500? Autonomous. Vendor contract renewal? Human approval. Employee termination? Multiple sign-offs. Large capital purchases? CFO + CEO. Every organization defines its own thresholds.</li>
+        <li><strong>Kill switches</strong> &mdash; any agent can be paused instantly at the facility, region, or enterprise level. If a new CMS rule changes the compliance landscape overnight, pause the compliance agents, update the rules, resume. No code deployments. No downtime for other agents.</li>
+        <li><strong>Role-based views</strong> &mdash; CEO sees enterprise. CFO sees financial. DON sees clinical. Administrator sees their facility. Same platform, same data, different lens. No one sees data they shouldn't. RBAC enforced at every layer.</li>
+    </ul>
+
+    <h3>Audit Trail</h3>
+    <ul class="ops-list">
+        <li><strong>Every agent action logged</strong> &mdash; full evidence chain. What was detected, what data was analyzed, what decision was made, what policy was referenced, what action was taken. Immutable. Timestamped. Attributable.</li>
+        <li><strong>Agent activity monitoring</strong> &mdash; which agents ran, what they processed, what they found, how long it took. Performance dashboards for your AI workforce, just like you monitor your human workforce.</li>
+        <li><strong>Decision replay</strong> &mdash; go back to any decision any agent made and understand exactly why. Not "the AI decided" &mdash; but "the agent identified a 12% variance in dietary supply costs at Facility #247, compared it against the contracted rate in the GPO agreement dated March 2025, and flagged it as a potential overbilling event with 94% confidence."</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Weekly reports that are already stale by Tuesday. Phone calls between facilities and corporate asking "what's the census today?" Regional directors maintaining 47 spreadsheets. Management by walking around. The monthly board report that took 3 people 2 weeks to compile. The DON's 6 AM email chain that no one reads past the third paragraph.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 2. CLINICAL OPERATIONS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-2" style="--accent-color: var(--green);">
+<div class="container">
+    <span class="section-number" style="color: var(--green);">Section 02</span>
+    <div class="section-accent" style="background: var(--green);"></div>
+    <h2>Clinical Operations</h2>
+    <p class="lead">Clinical is your core business. This is the largest section because it covers the most ground. Every resident. Every facility. Every shift. Continuously.</p>
+
+    <h3>Continuous Resident Monitoring</h3>
+    <ul class="ops-list" style="--accent-color: var(--green);">
+        <li><strong>24/7 clinical status monitoring</strong> &mdash; every resident's vitals, ADL status, medications, incidents, and care plan adherence tracked across all facilities. Not sampled. Not audited quarterly. Continuous. The agent reads PCC data as it's entered and acts on it.</li>
+        <li><strong>Fall risk detection</strong> &mdash; pattern analysis across medications (sedatives, antihypertensives, psychotropics), cognition scores, mobility status, time of day, staffing levels, and facility layout. High-risk residents flagged with specific intervention recommendations before the fall happens.</li>
+        <li><strong>Fall cascade protocol</strong> &mdash; 3rd fall in 30 days triggers automatic care conference scheduling, family notification draft, physician review request, care plan update initiation, F-tag risk assessment, and incident trending report. The DON doesn't chase this &mdash; the agent orchestrates it and puts approvals in the decision queue.</li>
+        <li><strong>Weight loss surveillance</strong> &mdash; greater than 5% in 30 days or 10% in 180 days triggers dietary consult, lab panel order, physician notification, and nutritional supplement review. CMS requirement. Most facilities catch this late. The agent catches it the day it crosses the threshold.</li>
+    </ul>
+
+    <h3>Wound, Infection & Medication Management</h3>
+    <ul class="ops-list" style="--accent-color: var(--green);">
+        <li><strong>Wound management</strong> &mdash; staging accuracy verification, measurement tracking against healing trajectory, treatment protocol compliance, turning/repositioning schedule adherence, and Braden Scale reassessment triggers. A stage 3 pressure ulcer that isn't healing on expected trajectory gets flagged to the wound care nurse and physician within hours, not weeks.</li>
+        <li><strong>Infection surveillance</strong> &mdash; UTI tracking (the #1 infection in SNFs), wound infections, respiratory infections, antibiotic stewardship metrics, culture/sensitivity results, and outbreak detection. When 3 residents on the same unit develop UTIs in the same week, the agent triggers an infection control investigation before it becomes an outbreak.</li>
+        <li><strong>Medication reconciliation</strong> &mdash; cross-checking orders against diagnoses, Beers Criteria for elderly patients, drug interaction screening, duplicate therapy detection, therapeutic appropriateness, and dose adjustments for renal/hepatic function. Every admission, every transfer, every physician visit.</li>
+        <li><strong>Psychotropic medication monitoring</strong> &mdash; PRN usage frequency tracking, gradual dose reduction (GDR) compliance, behavioral documentation to support continued use, non-pharmacological intervention documentation, and CMS F-758 compliance. This is survey gold. Most facilities get tagged here. Yours won't.</li>
+        <li><strong>Pain management</strong> &mdash; pain assessment compliance (frequency, tool consistency), intervention effectiveness tracking, non-pharmacological alternative documentation, PRN pain medication utilization patterns, and reassessment after intervention.</li>
+        <li><strong>Lab result monitoring</strong> &mdash; critical value alerts routed to nursing and physician simultaneously, trending for chronic conditions (A1c for diabetics, INR for anticoagulation, renal function panels, thyroid levels), and automatic lab reorder scheduling based on physician-defined intervals.</li>
+    </ul>
+
+    <h3>Assessments & Documentation</h3>
+    <ul class="ops-list" style="--accent-color: var(--green);">
+        <li><strong>MDS assessment tracking</strong> &mdash; quarterly assessments, annual assessments, OBRA triggers, significant change assessments, significant correction assessments, and Medicare-required assessments. Due dates tracked automatically. MDS coordinators get a daily queue, not a spreadsheet to maintain. ARD windows optimized for maximum reimbursement.</li>
+        <li><strong>Care plan timeliness</strong> &mdash; updates within 48 hours of any significant change (CMS requirement). The agent monitors for triggers: new diagnosis, change in functional status, new medication, fall, hospitalization, weight change, behavior change. Generates care plan update drafts with relevant clinical data pre-populated.</li>
+        <li><strong>Physician order management</strong> &mdash; verbal order co-signature tracking (must be signed within state-specific timeframes), telephone order verification, order reconciliation at admission/transfer/discharge, and PRN effectiveness documentation.</li>
+        <li><strong>Documentation exceptions</strong> &mdash; unsigned orders, late entries, missing assessments, incomplete care plans, unsigned progress notes, missing physician certifications/recertifications. Flagged before they become survey findings. The agent doesn't nag &mdash; it routes to the right person with the right context at the right time.</li>
+    </ul>
+
+    <h3>Therapy, Nutrition & Support Services</h3>
+    <ul class="ops-list" style="--accent-color: var(--green);">
+        <li><strong>Therapy services</strong> &mdash; PT/OT/ST session tracking, functional gains documentation, Medicare minute thresholds, authorization tracking, concurrent/group therapy documentation, discharge planning, and carryover program documentation. Section GG scoring accuracy directly impacts PDPM reimbursement &mdash; the agent ensures documentation supports the clinical picture.</li>
+        <li><strong>Dietary/nutrition</strong> &mdash; meal intake monitoring (less than 75% intake triggers intervention), supplement compliance, therapeutic diet adherence, food allergy management, dining assistance needs, hydration tracking, and weight monitoring integration.</li>
+        <li><strong>Social services</strong> &mdash; advance directive completion tracking, discharge planning initiation at admission, family meeting coordination and documentation, behavioral health screening, mood assessment (PHQ-9) tracking, and resident rights compliance.</li>
+        <li><strong>Readmission risk</strong> &mdash; hospital readmission prediction using clinical indicators (polypharmacy, recent ED visits, unstable conditions, functional decline), transition of care protocol compliance, 30-day readmission tracking by facility, and root cause analysis for readmissions. Readmissions cost money and tank your quality measures.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Manual chart reviews that take the DON 4 hours daily. Nurses doing paper audits on nights and weekends. MDS coordinators manually tracking assessment due dates in spreadsheets. Wound care nurses keeping paper measurement logs. Infection preventionists doing monthly chart pulls. The clinical team spending their time auditing instead of caring for residents.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 3. REVENUE CYCLE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-3" style="--accent-color: var(--amber);">
+<div class="container">
+    <span class="section-number" style="color: var(--amber);">Section 03</span>
+    <div class="section-accent" style="background: var(--amber);"></div>
+    <h2>Revenue Cycle</h2>
+    <p class="lead">Your AP team processes 200 invoices a day. Our agents process 2,000 &mdash; with higher accuracy, better GL coding, and zero duplicate payments.</p>
+
+    <h3>Billing & Claims</h3>
+    <ul class="ops-list" style="--accent-color: var(--amber);">
+        <li><strong>Claims submission</strong> &mdash; automated coding from clinical documentation, clean claim rate optimization, real-time eligibility verification, and pre-submission validation against payer-specific rules. The agent reads the clinical record, maps diagnoses to billing codes, verifies coverage, and submits. Your billers review exceptions, not every claim.</li>
+        <li><strong>Denial management</strong> &mdash; automatic appeal generation for common denial reasons (medical necessity, timely filing, authorization), pattern analysis on denials by payer/facility/denial reason, root cause identification, and appeal success rate tracking. When Humana starts denying a specific code at a higher rate, the agent detects the pattern and adjusts pre-submission validation.</li>
+        <li><strong>AR aging management</strong> &mdash; automated follow-up sequences at 30/60/90/120 days, escalation routing, payer-specific follow-up protocols, write-off recommendations with supporting documentation, and bad debt analysis. The agent doesn't let claims age &mdash; it follows up before you would.</li>
+        <li><strong>PDPM optimization</strong> &mdash; MDS-driven reimbursement maximization. Section GG scoring accuracy audit, therapy minute threshold monitoring, nursing component classification verification, NTA component validation, and SLP component documentation. The difference between accurate and inaccurate PDPM classification across 330 facilities is tens of millions annually.</li>
+        <li><strong>Managed care contract management</strong> &mdash; rate comparison across contracts, utilization tracking against contracted volumes, authorization management (initial and concurrent), timely filing deadline monitoring, and contract renewal analysis with rate benchmarking.</li>
+        <li><strong>Medicare Part A/B billing</strong> &mdash; benefit period tracking, SNF-level billing, therapy billing compliance (Part B), ESRD billing, and ancillary services billing. Medicaid billing: state-specific requirements across all 17 states, level of care documentation, rate updates, and spend-down tracking.</li>
+    </ul>
+
+    <h3>Accounts Payable</h3>
+    <ul class="ops-list" style="--accent-color: var(--amber);">
+        <li><strong>Invoice ingestion</strong> &mdash; invoices arrive via email, fax, vendor portals, and mail. The agent ingests from all sources, extracts line items using document intelligence, and creates payable records. No manual data entry. No keying errors.</li>
+        <li><strong>3-way matching</strong> &mdash; automatic matching of purchase order, goods receipt, and invoice. Price variance detection, quantity variance detection, and GL coding based on PO category and historical patterns. Match rate targets: 85%+ straight-through processing.</li>
+        <li><strong>Invoice exception handling</strong> &mdash; price variances beyond tolerance, unknown vendors, closed project codes, budget threshold violations, missing PO references, duplicate invoices, and payment term discrepancies. Each exception routed to the right approver with full context.</li>
+        <li><strong>Vendor management</strong> &mdash; COI (Certificate of Insurance) tracking and expiration alerts, W-9 currency verification, sanctions screening (OIG, SAM, state exclusion lists), contract compliance monitoring, payment term optimization, and early payment discount capture.</li>
+        <li><strong>Contract pricing enforcement</strong> &mdash; automatic comparison of invoiced prices vs contracted rates for every line item. When a supplier invoices at $4.50/unit and your GPO contract says $3.80, the agent flags it before payment. Across 330 facilities with thousands of vendors, this alone pays for the platform.</li>
+    </ul>
+
+    <h3>Payroll & Month-End</h3>
+    <ul class="ops-list" style="--accent-color: var(--amber);">
+        <li><strong>Payroll processing</strong> &mdash; 892 timecards audited per day across your facilities. Overtime detection and cost allocation, meal break compliance verification (state-specific rules across 17 states), credential verification against scheduled position requirements, and differential/premium pay calculation.</li>
+        <li><strong>Payroll exceptions</strong> &mdash; missed punches, rate mismatches, duplicate shifts, agency labor reconciliation (agency invoiced hours vs facility-recorded hours), unauthorized overtime, and schedule vs actual variance.</li>
+        <li><strong>Monthly close</strong> &mdash; automated checklist execution: bank reconciliations, subledger reconciliations, accrual calculations, depreciation runs, intercompany eliminations, and variance commentary generation. Your controllers get a pre-populated close package, not a blank checklist. Close timeline compressed from 15 days to 5.</li>
+        <li><strong>Budget vs actual</strong> &mdash; real-time variance monitoring by facility, department, and cost center. Trend analysis with forward projections. Automatic reforecasting based on census and acuity trends. Variance commentary drafted for material items.</li>
+        <li><strong>Treasury/cash management</strong> &mdash; daily cash position monitoring, covenant tracking against credit agreements, banking relationship management, and cash flow forecasting based on AR/AP pipelines.</li>
+        <li><strong>Purchase order management</strong> &mdash; requisition workflow automation, approval routing based on amount/category/facility, budget checking at requisition time (not after the money's spent), and PO-to-invoice lifecycle tracking.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Billing staff manually coding claims from clinical records. AP clerks keying invoices by hand. Controllers running month-end close from a 47-item checklist. Payroll staff auditing timecards one by one. CFO getting financial reports 2 weeks after month-end. AR staff manually calling payers for follow-up. The entire "print, review, approve, scan" paper workflow.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 4. WORKFORCE MANAGEMENT -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-4" style="--accent-color: var(--violet);">
+<div class="container">
+    <span class="section-number" style="color: var(--violet);">Section 04</span>
+    <div class="section-accent" style="background: var(--violet);"></div>
+    <h2>Workforce Management</h2>
+    <p class="lead">You employ tens of thousands of people across 330+ facilities in 17 states. Every one of them has licenses that expire, training that lapses, and shifts that need filling. One agent handles all of it.</p>
+
+    <h3>Recruiting & Onboarding</h3>
+    <ul class="ops-list" style="--accent-color: var(--violet);">
+        <li><strong>Recruiting pipeline</strong> &mdash; open position tracking across all 330+ facilities with time-to-fill metrics, cost-per-hire analysis, and source effectiveness tracking. When Heritage Oaks needs 3 CNAs and Sunrise Gardens has an applicant who listed Heritage Oaks' zip code as preferred, the agent connects the dots.</li>
+        <li><strong>Job posting automation</strong> &mdash; syndication to Indeed, LinkedIn, nursing job boards, and state workforce agencies. Application tracking from submission through offer. Interview scheduling coordination. Compensation benchmarking against local market rates.</li>
+        <li><strong>Onboarding</strong> &mdash; new hire checklist tracking across every requirement: background check status, drug screen results, orientation scheduling, competency testing (medication pass, wound care, etc.), uniform ordering, badge creation, system access provisioning, and benefits enrollment. Nothing falls through the cracks across 330 facilities.</li>
+    </ul>
+
+    <h3>Scheduling & Staffing</h3>
+    <ul class="ops-list" style="--accent-color: var(--violet);">
+        <li><strong>Scheduling</strong> &mdash; shift coverage analysis against census and acuity, open shift management with automatic notification to qualified staff, float pool optimization across facilities, and call-off tracking with pattern detection (the CNA who calls off every other Friday).</li>
+        <li><strong>Agency labor management</strong> &mdash; agency usage monitoring by facility/unit/shift, cost comparison vs overtime vs float pool, preferred agency routing based on performance and rate, and invoice reconciliation (agency billed hours vs facility recorded hours). Agency spend is one of your largest controllable costs. The agent tracks every dollar.</li>
+        <li><strong>PPD staffing</strong> &mdash; calculating required staffing levels based on census and acuity, CMS Payroll-Based Journal (PBJ) reporting compliance, nurse staffing star calculation in real-time, and staffing plan deviation alerts. Your staffing star impacts your overall CMS star rating. The agent ensures every facility knows exactly where they stand.</li>
+    </ul>
+
+    <h3>Credentialing & Compliance</h3>
+    <ul class="ops-list" style="--accent-color: var(--violet);">
+        <li><strong>Credentialing</strong> &mdash; license and certification tracking for every clinical employee: RN, LPN, CNA, PT, OT, ST, respiratory therapy, dietary, pharmacy, social work. State-specific requirements across 17 states. Primary source verification.</li>
+        <li><strong>License expiration alerts</strong> &mdash; 90/60/30/15-day warnings with schedule impact analysis. If 3 CNAs' licenses expire next month and no renewals are in progress, the agent alerts the administrator AND adjusts the coverage contingency plan. Not after they expire &mdash; months before.</li>
+        <li><strong>Training compliance</strong> &mdash; required training tracking: OSHA (bloodborne pathogens, hazard communication), HIPAA, abuse prevention and reporting, fire safety, infection control, dementia care (state-specific requirements), and role-specific competencies. Automatically assigns training, tracks completion, and generates compliance reports.</li>
+        <li><strong>Annual in-service management</strong> &mdash; tracking completion across 330+ facilities for mandatory annual training. Generating compliance reports for survey readiness. Identifying facilities below threshold with time remaining.</li>
+    </ul>
+
+    <h3>Employee Lifecycle</h3>
+    <ul class="ops-list" style="--accent-color: var(--violet);">
+        <li><strong>Employee relations</strong> &mdash; investigation tracking with timeline management, disciplinary action documentation and consistency analysis (did similar situations get similar outcomes across facilities?), and grievance resolution tracking.</li>
+        <li><strong>Performance management</strong> &mdash; evaluation due date tracking, performance improvement plan management, goal tracking, and 90-day review compliance for new hires.</li>
+        <li><strong>Benefits administration</strong> &mdash; enrollment tracking, cost analysis, utilization monitoring, and open enrollment management across the enterprise.</li>
+        <li><strong>Workers compensation</strong> &mdash; claim tracking, OSHA 300 log management, return-to-work program coordination, experience modification rate tracking, and safety incident trending by facility/department/role.</li>
+        <li><strong>Retention analytics</strong> &mdash; turnover by facility/role/tenure/shift, exit interview analysis with theme detection, stay interview triggers (when a high-performer shows flight risk indicators), and compensation competitiveness analysis. The agent identifies which facilities are bleeding nurses 6 months before the turnover spike hits.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>HR coordinators manually tracking licenses in spreadsheets. Schedulers filling shifts by phone tree at 5 AM. Recruiters juggling applicants across 330 facilities in separate ATS instances. Training coordinators chasing completion certificates via email. The entire "who's licensed, who's trained, who's expired" panic before every survey.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 5. FACILITY OPERATIONS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-5" style="--accent-color: var(--cyan);">
+<div class="container">
+    <span class="section-number" style="color: var(--cyan);">Section 05</span>
+    <div class="section-accent" style="background: var(--cyan);"></div>
+    <h2>Facility Operations</h2>
+    <p class="lead">330+ buildings. Thousands of pieces of equipment. Supply chains. Kitchens. Laundry. Maintenance. Life safety. All tracked. All automated.</p>
+
+    <h3>Supply Chain & Inventory</h3>
+    <ul class="ops-list" style="--accent-color: var(--cyan);">
+        <li><strong>Supply chain management</strong> &mdash; par level management by item/facility, automatic reorder triggers when stock hits threshold, vendor price comparison against GPO contracted rates, GPO compliance tracking, and alternative product identification when items are backordered.</li>
+        <li><strong>Inventory management</strong> &mdash; real-time inventory tracking for medical supplies, dietary supplies, housekeeping supplies, and maintenance parts. Usage trending to identify anomalies (why did glove usage at Facility #183 triple last month?). Waste identification and expiration tracking.</li>
+    </ul>
+
+    <h3>Maintenance & Physical Plant</h3>
+    <ul class="ops-list" style="--accent-color: var(--cyan);">
+        <li><strong>Preventive maintenance</strong> &mdash; equipment maintenance schedules for HVAC, kitchen equipment, laundry equipment, medical devices, generators, elevators, fire suppression systems, and nurse call systems. Work order generation, vendor dispatch, completion tracking, and asset lifecycle management.</li>
+        <li><strong>Emergency maintenance</strong> &mdash; priority routing based on impact (life safety > resident comfort > operational > cosmetic), vendor dispatch with preferred vendor matching, cost tracking, and root cause analysis for recurring issues.</li>
+        <li><strong>Physical plant</strong> &mdash; building inspection scheduling and tracking, capital improvement project management, ADA compliance monitoring, parking lot and grounds maintenance, roof inspections, and HVAC system performance tracking.</li>
+    </ul>
+
+    <h3>Environmental & Support Services</h3>
+    <ul class="ops-list" style="--accent-color: var(--cyan);">
+        <li><strong>Environmental services</strong> &mdash; housekeeping schedules and task completion tracking, room turnover management (admission/discharge/transfer cleaning), deep clean protocols and scheduling, infection control enhanced cleaning triggers, and quality inspection tracking.</li>
+        <li><strong>Laundry services</strong> &mdash; linen inventory management, laundry cycle tracking, infection control protocols for contaminated linen, and personal laundry tracking for residents.</li>
+        <li><strong>Dietary operations</strong> &mdash; menu planning and rotation, food cost tracking per meal per resident, therapeutic diet management integrated with clinical orders, health department inspection readiness, temperature logs, and food safety compliance.</li>
+        <li><strong>Transportation</strong> &mdash; resident transport scheduling for medical appointments, vehicle fleet management, driver credential tracking, and route optimization for multi-resident trips.</li>
+    </ul>
+
+    <h3>Safety & Emergency Preparedness</h3>
+    <ul class="ops-list" style="--accent-color: var(--cyan);">
+        <li><strong>Life safety</strong> &mdash; fire drill scheduling and documentation (quarterly required), fire suppression system inspection tracking, emergency lighting testing logs, exit signage verification, and fire door inspection documentation.</li>
+        <li><strong>Emergency preparedness</strong> &mdash; disaster plan updates across all hazard types, evacuation drill tracking and after-action reviews, generator testing logs, emergency supply inventory, and mutual aid agreement management.</li>
+        <li><strong>Pest control</strong> &mdash; inspection scheduling, treatment tracking, regulatory compliance documentation, and trending by facility/season.</li>
+        <li><strong>IT service desk</strong> &mdash; device management across 330+ facilities, network monitoring, EHR system status, help desk ticket tracking, and cybersecurity incident monitoring.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Facility managers checking inventory by hand. Maintenance staff using paper work orders. Environmental services directors managing schedules on whiteboards. Administrators tracking fire drills in binders. Dietary managers doing food cost calculations on paper. The maintenance director who keeps the building's entire history in his head.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 6. ADMISSIONS & CENSUS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-6" style="--accent-color: var(--teal);">
+<div class="container">
+    <span class="section-number" style="color: var(--teal);">Section 06</span>
+    <div class="section-accent" style="background: var(--teal);"></div>
+    <h2>Admissions &amp; Census Management</h2>
+    <p class="lead">Census drives revenue. Every empty bed is $300-500/day in lost revenue. Across 330+ facilities, the agent manages the entire pipeline from referral to admission to discharge.</p>
+
+    <h3>Census Tracking & Forecasting</h3>
+    <ul class="ops-list" style="--accent-color: var(--teal);">
+        <li><strong>Real-time census tracking</strong> &mdash; occupancy by facility, unit, room, and bed &mdash; updated continuously. Not the whiteboard in the lobby. Not the spreadsheet the admissions coordinator updates at 3 PM. Real-time, pulled directly from PCC.</li>
+        <li><strong>Census forecasting</strong> &mdash; 5/15/30-day projections based on admission pipeline, expected discharges, historical patterns, and seasonal trends. When the agent predicts a census dip at Facility #92 in two weeks, marketing efforts can be redirected before it happens.</li>
+        <li><strong>Payer mix optimization</strong> &mdash; target vs actual payer mix by facility, impact analysis on revenue per patient day, and admission screening recommendations based on payer mix goals. When a facility is heavy on Medicaid, the agent prioritizes Medicare and managed care referrals.</li>
+    </ul>
+
+    <h3>Referral & Admission Pipeline</h3>
+    <ul class="ops-list" style="--accent-color: var(--teal);">
+        <li><strong>Referral management</strong> &mdash; hospital referral tracking from initial contact through admission decision. Response time monitoring (speed-to-bed is a competitive advantage). Conversion rates by referral source, diagnosis, and payer. When Memorial Hospital's referral volume drops 20%, the agent flags it for relationship intervention.</li>
+        <li><strong>Pre-admission screening</strong> &mdash; clinical screening automation (can we serve this patient's needs?), insurance verification, benefit eligibility confirmation, bed matching based on clinical needs and unit specialization, and financial counseling triggers for Medicaid-pending patients.</li>
+        <li><strong>Admission coordination</strong> &mdash; room assignment optimization, welcome packet generation, care team notification, physician assignment, therapy evaluation scheduling, dietary order initiation, and admission assessment deadline tracking.</li>
+    </ul>
+
+    <h3>Discharge & Relationships</h3>
+    <ul class="ops-list" style="--accent-color: var(--teal);">
+        <li><strong>Discharge planning</strong> &mdash; expected discharge tracking from day of admission, barriers identification (insurance, home setup, caregiver availability), post-acute referral coordination, and discharge summary generation.</li>
+        <li><strong>Hospital relationship management</strong> &mdash; referral volume by hospital, relationship health scoring based on volume trends, referral-to-admission conversion rates, and proactive outreach triggers when relationships show signs of cooling.</li>
+        <li><strong>Bed management</strong> &mdash; bed holds for hospitalized residents, therapeutic leave tracking, Medicaid bed hold policies by state (different in all 17), and bed hold financial impact analysis.</li>
+        <li><strong>Marketing/business development</strong> &mdash; campaign tracking, community outreach activity logging, physician liaison visit scheduling and outcome tracking, and competitive intelligence on new facilities or closures in the market.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Admissions coordinators manually calling hospitals and checking faxes. Census tracked on whiteboards updated twice a day. Discharge planners juggling phone calls with home health agencies. Marketing directors reporting referral numbers from memory at Monday meetings. The admissions director who drives to the hospital to "check on referrals."</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 7. QUALITY & RISK -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-7" style="--accent-color: var(--rose);">
+<div class="container">
+    <span class="section-number" style="color: var(--rose);">Section 07</span>
+    <div class="section-accent" style="background: var(--rose);"></div>
+    <h2>Quality &amp; Risk Management</h2>
+    <p class="lead">Survey readiness isn't a 3-month project before the state shows up. It's a continuous state. Every F-tag monitored. Every quality measure tracked. Every risk event analyzed.</p>
+
+    <h3>CMS Star Rating & Quality Measures</h3>
+    <ul class="ops-list" style="--accent-color: var(--rose);">
+        <li><strong>CMS 5-star rating monitoring</strong> &mdash; real-time quality measure tracking against star rating thresholds, staffing star calculations based on PBJ data, survey star impact modeling, and overall star rating projection. Every facility knows exactly where they stand on every measure, every day.</li>
+        <li><strong>Quality measures</strong> &mdash; short-stay QMs (readmission rates, discharge to community, functional improvement) and long-stay QMs (falls with major injury, pressure ulcers, UTIs, physical restraints, antipsychotic use). Trending by facility with peer comparison against state and national benchmarks.</li>
+        <li><strong>QAPI program management</strong> &mdash; performance improvement project tracking, root cause analysis templates, action plan monitoring with milestone tracking, and outcome measurement. The agent doesn't just track QAPI &mdash; it identifies which quality measures are trending in the wrong direction and recommends PIP topics.</li>
+    </ul>
+
+    <h3>Survey Readiness & Compliance</h3>
+    <ul class="ops-list" style="--accent-color: var(--rose);">
+        <li><strong>Survey readiness</strong> &mdash; continuous mock survey scoring across all F-tag categories. The agent runs the equivalent of a full survey audit every week across all 330+ facilities. Deficiency prediction with severity classification. Survey window estimation and preparation timeline.</li>
+        <li><strong>F-tag monitoring</strong> &mdash; real-time compliance scoring against all CMS F-tags (F550-F947). Automatic plan of correction generation when deficiencies are identified. Scope and severity estimation. Historical F-tag trending by facility and category.</li>
+        <li><strong>Infection control compliance</strong> &mdash; hand hygiene audit tracking, PPE compliance monitoring, antibiotic stewardship metrics, and infection control committee support documentation.</li>
+    </ul>
+
+    <h3>Risk Events & Insurance</h3>
+    <ul class="ops-list" style="--accent-color: var(--rose);">
+        <li><strong>Incident management</strong> &mdash; incident reporting with automatic categorization, trending by type/facility/unit/shift, root cause analysis, corrective action tracking, and resolution documentation. When falls increase 15% at a facility, the agent identifies the common factors before the DON even starts investigating.</li>
+        <li><strong>Risk events</strong> &mdash; slip/fall claims tracking, abuse allegation management (investigation timeline compliance), elopement attempt analysis, medication error trending, and sentinel event management.</li>
+        <li><strong>Insurance claims management</strong> &mdash; professional liability claims tracking, workers compensation claims, property claims, reserve monitoring, attorney assignment, and deadline management.</li>
+        <li><strong>Patient safety</strong> &mdash; safety event tracking, near-miss reporting and analysis, safety committee support, and root cause analysis for serious safety events.</li>
+        <li><strong>Grievance management</strong> &mdash; complaint intake from residents, families, and staff, investigation tracking with timeline compliance, resolution documentation, trend analysis by facility and category, and action planning for systemic issues.</li>
+        <li><strong>Satisfaction surveys</strong> &mdash; resident and family satisfaction tracking, response analysis with sentiment detection, action planning for low-scoring areas, and benchmarking against industry standards.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Quality teams doing quarterly chart audits that are obsolete by the time they're compiled. Risk managers maintaining spreadsheets of open claims. Survey prep teams spending months before the expected survey window. DONs manually reviewing incident reports. The compliance officer who maintains a binder of F-tag references. Mock surveys conducted once a year by expensive consultants.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 8. LEGAL & COMPLIANCE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-8" style="--accent-color: var(--indigo);">
+<div class="container">
+    <span class="section-number" style="color: var(--indigo);">Section 08</span>
+    <div class="section-accent" style="background: var(--indigo);"></div>
+    <h2>Legal &amp; Compliance</h2>
+    <p class="lead">17 states. Thousands of contracts. Dozens of regulatory bodies. State-specific requirements that change constantly. One agent tracks every deadline, every clause, every regulatory change.</p>
+
+    <h3>Contract Management</h3>
+    <ul class="ops-list" style="--accent-color: var(--indigo);">
+        <li><strong>Contract lifecycle management</strong> &mdash; every contract tracked from execution through expiration: vendor contracts, payer contracts, employment agreements, consulting agreements, and service contracts. Renewal alerts at 180/90/60/30 days. Term compliance monitoring. Auto-renewal date tracking to prevent unwanted renewals.</li>
+        <li><strong>Vendor contracts</strong> &mdash; pricing terms, volume commitments, termination provisions, SLA monitoring, insurance requirements, indemnification provisions, and amendment tracking.</li>
+        <li><strong>Payer contracts</strong> &mdash; rate schedules by service type, authorization requirements, timely filing deadlines (miss the window, lose the revenue), appeal timelines, and rate escalation tracking.</li>
+        <li><strong>Lease management</strong> &mdash; property leases, equipment leases, CAM reconciliation tracking, rent escalation schedules, option exercise dates, and maintenance responsibility tracking (landlord vs tenant).</li>
+    </ul>
+
+    <h3>Litigation & Regulatory</h3>
+    <ul class="ops-list" style="--accent-color: var(--indigo);">
+        <li><strong>Litigation management</strong> &mdash; open case tracking, reserve monitoring, attorney assignment and billing review, discovery deadline management, deposition scheduling, settlement analysis, and outcome tracking by case type.</li>
+        <li><strong>Regulatory compliance</strong> &mdash; state survey response management, plan of correction tracking, follow-up survey preparation, CMS penalty tracking, and informal dispute resolution (IDR) management.</li>
+        <li><strong>CMS regulatory changes</strong> &mdash; tracking new and proposed regulations, assessing operational impact across facilities, implementation planning with timeline, staff training requirements, and policy update coordination.</li>
+        <li><strong>State-specific requirements</strong> &mdash; varying regulations across 17 states: staffing ratios, training requirements, reporting obligations, licensure renewal timing, and scope-of-practice rules. The agent maintains a compliance matrix by state and alerts when any facility falls out of compliance with its state's specific requirements.</li>
+    </ul>
+
+    <h3>Corporate Compliance & Employment Law</h3>
+    <ul class="ops-list" style="--accent-color: var(--indigo);">
+        <li><strong>Corporate compliance program</strong> &mdash; compliance training completion tracking, hotline report intake and investigation management, corrective action monitoring, and compliance committee reporting.</li>
+        <li><strong>HIPAA compliance</strong> &mdash; privacy incident tracking, breach notification management (including 60-day notification timeline), training compliance, Business Associate Agreement tracking, and minimum necessary access monitoring.</li>
+        <li><strong>Anti-kickback/Stark</strong> &mdash; referral relationship monitoring, financial arrangement documentation, fair market value assessments, and physician arrangement tracking.</li>
+        <li><strong>Employment law</strong> &mdash; wage and hour compliance (FLSA + state-specific rules across 17 states), FMLA tracking (eligibility, usage, return-to-work), ADA accommodation management, and EEOC charge response management.</li>
+        <li><strong>Real estate</strong> &mdash; property portfolio management, lease vs own analysis for strategic planning, capital improvement planning and tracking, property tax assessment monitoring, and environmental compliance (asbestos, lead paint, Phase I/II assessments).</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Legal teams managing deadlines in Outlook calendars. Compliance officers tracking regulatory changes by reading CMS newsletters. Real estate managers maintaining property databases in Excel. Contract renewal dates missed because the responsible person was on vacation. The attorney who keeps the litigation docket in a Word document.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 9. STRATEGIC INTELLIGENCE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section id="section-9" style="--accent-color: var(--orange);">
+<div class="container">
+    <span class="section-number" style="color: var(--orange);">Section 09</span>
+    <div class="section-accent" style="background: var(--orange);"></div>
+    <h2>Strategic Intelligence</h2>
+    <p class="lead">M&amp;A due diligence that took 6 weeks now takes 6 hours. Board materials that took 3 people 2 weeks now generate automatically. Competitive intelligence that was anecdotal is now systematic.</p>
+
+    <h3>M&amp;A Pipeline &amp; Due Diligence</h3>
+    <ul class="ops-list" style="--accent-color: var(--orange);">
+        <li><strong>M&amp;A pipeline</strong> &mdash; deal tracking from initial identification through closing. Automated document analysis of broker packages, financial statements, and regulatory filings. Risk scoring on every target based on clinical, financial, legal, and operational indicators.</li>
+        <li><strong>M&amp;A due diligence</strong> &mdash; financial analysis (P&amp;L decomposition, AR aging profile, payer mix evaluation, revenue per patient day benchmarking), clinical analysis (survey history, quality measure trending, staffing analysis, complaint investigation history), labor analysis (turnover rates, staffing ratios, compensation benchmarking, union exposure), and legal analysis (litigation history, regulatory actions, outstanding citations, environmental exposure).</li>
+        <li><strong>Target identification</strong> &mdash; market analysis for new facility acquisitions based on demographic trends, competitive density, payer mix opportunity, and regulatory environment. Geographic expansion planning aligned with existing regional clusters for operational synergy.</li>
+    </ul>
+
+    <h3>Market & Competitive Intelligence</h3>
+    <ul class="ops-list" style="--accent-color: var(--orange);">
+        <li><strong>Market intelligence</strong> &mdash; competitor monitoring (new licenses, ownership changes, survey results, star rating changes), market rate tracking for private pay and managed care, referral source analysis, and demographic trend monitoring.</li>
+        <li><strong>Competitive analysis</strong> &mdash; competitor facility ratings compared against your facilities in the same market, ownership changes that signal acquisition opportunities, regulatory actions against competitors, and new facility openings or closures that affect your market share.</li>
+        <li><strong>Government affairs</strong> &mdash; legislative tracking across 17 states (proposed staffing mandates, Medicaid rate changes, scope-of-practice expansions), CMS proposed rule analysis (comment period tracking, impact modeling), and industry advocacy coordination.</li>
+    </ul>
+
+    <h3>Board &amp; Investor Relations</h3>
+    <ul class="ops-list" style="--accent-color: var(--orange);">
+        <li><strong>Board preparation</strong> &mdash; automated board materials generation: KPI dashboards, committee reports (audit, compensation, quality, compliance), strategic initiative updates, and financial summaries. What took 3 people 2 weeks is assembled in hours with human review for narrative quality.</li>
+        <li><strong>Investor relations</strong> &mdash; earnings preparation support, analyst question tracking and response management, shareholder communication coordination, and peer company benchmarking.</li>
+        <li><strong>Strategic planning</strong> &mdash; long-range financial modeling with scenario analysis, growth projections based on pipeline and market conditions, capital allocation modeling, and strategic initiative ROI tracking.</li>
+    </ul>
+
+    <div class="replaces-box">
+        <div class="replaces-title">What This Replaces</div>
+        <p>Consultants charging $200K for one-off M&amp;A analysis. Analysts manually compiling board books from 15 different data sources. Government affairs staff reading regulatory notices one by one. Corporate development team manually scoring acquisition targets in Excel. The VP of Strategy who maintains "the model" that only they understand.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 10. THE 99/1 PRINCIPLE -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<section class="intro-section" id="section-10" style="--accent-color: var(--blue);">
+<div class="container">
+    <span class="section-number" style="color: var(--blue);">The 99/1 Principle</span>
+    <div class="section-accent" style="background: linear-gradient(90deg, var(--blue), var(--violet));"></div>
+    <h2>Agents Handle 99%. <br>Humans Handle the 1%.</h2>
+
+    <p class="lead">Every night, before your first cup of coffee, the platform has already processed the work that used to consume your organization's first four hours.</p>
+
+    <div class="stats-grid" style="margin: 32px 0;">
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--amber);">47</div>
+            <div class="stat-label">Invoices Processed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--violet);">892</div>
+            <div class="stat-label">Timecards Audited</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--green);">540</div>
+            <div class="stat-label">Residents Monitored</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number" style="color: var(--cyan);">234</div>
+            <div class="stat-label">Vendors Checked</div>
+        </div>
+    </div>
+
+    <div class="content-card" style="margin-bottom: 20px;">
+        <h4>Every Action Logged</h4>
+        <p>Full evidence chain: what was detected, what data was analyzed, what decision was made, what policy was referenced. Immutable audit trail. Timestamped. Attributable.</p>
+    </div>
+
+    <div class="content-card" style="margin-bottom: 20px;">
+        <h4>Every Decision Transparent</h4>
+        <p>Confidence scores on every recommendation. Policy references cited. Supporting data linked. No black boxes. No "the AI said so." Your compliance team can audit any agent decision at any time.</p>
+    </div>
+
+    <div class="content-card" style="margin-bottom: 20px;">
+        <h4>Every Automation Reversible</h4>
+        <p>Any action can be reversed within the audit trail. Governance levels ensure the right human approves the right decisions. Kill switches at every level.</p>
+    </div>
+
+    <div class="content-card" style="margin-bottom: 20px;">
+        <h4>Patterns No Human Can See</h4>
+        <p>The platform doesn't just automate &mdash; it makes your organization smarter. When 330 facilities generate data simultaneously, the agent sees patterns across facilities, across time, across departments that no single human &mdash; no matter how experienced &mdash; could hold in their head.</p>
+    </div>
+
+    <div class="cta-box">
+        <h3 style="color: var(--blue); font-size: 1.5rem;">The question isn't whether AI will run healthcare operations.</h3>
+        <p style="font-size: 1.15rem; color: var(--text); margin-bottom: 0;">It's whether Ensign leads &mdash; or follows.</p>
+    </div>
+</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SCRIPTS -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<script>
+(function() {
+    const sections = document.querySelectorAll('section');
+    const navDotsContainer = document.getElementById('navDots');
+    const progressBar = document.getElementById('progressBar');
+
+    const sectionNames = [
+        'Intro', 'Platform Intelligence', 'Clinical Operations', 'Revenue Cycle',
+        'Workforce', 'Facility Operations', 'Admissions & Census',
+        'Quality & Risk', 'Legal & Compliance', 'Strategic Intelligence', 'The 99/1 Principle'
+    ];
+
+    // Create nav dots
+    sections.forEach((section, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'nav-dot';
+        dot.setAttribute('aria-label', sectionNames[i]);
+        const tooltip = document.createElement('span');
+        tooltip.className = 'tooltip';
+        tooltip.textContent = sectionNames[i];
+        dot.appendChild(tooltip);
+        dot.addEventListener('click', () => {
+            section.scrollIntoView({ behavior: 'smooth' });
+        });
+        navDotsContainer.appendChild(dot);
+    });
+
+    const dots = navDotsContainer.querySelectorAll('.nav-dot');
+
+    // Intersection observer for active dot
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const index = Array.from(sections).indexOf(entry.target);
+                dots.forEach((d, i) => d.classList.toggle('active', i === index));
+            }
+        });
+    }, { threshold: 0.3 });
+
+    sections.forEach(s => observer.observe(s));
+
+    // Progress bar
+    window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        progressBar.style.width = progress + '%';
+    });
+
+    // Keyboard navigation
+    let currentSection = 0;
+    document.addEventListener('keydown', (e) => {
+        if (['ArrowDown', 'ArrowRight', 'PageDown', ' '].includes(e.key)) {
+            e.preventDefault();
+            currentSection = Math.min(currentSection + 1, sections.length - 1);
+            sections[currentSection].scrollIntoView({ behavior: 'smooth' });
+        } else if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) {
+            e.preventDefault();
+            currentSection = Math.max(currentSection - 1, 0);
+            sections[currentSection].scrollIntoView({ behavior: 'smooth' });
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            currentSection = 0;
+            sections[0].scrollIntoView({ behavior: 'smooth' });
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            currentSection = sections.length - 1;
+            sections[currentSection].scrollIntoView({ behavior: 'smooth' });
+        }
+    });
+
+    // Sync currentSection with scroll
+    const scrollObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                currentSection = Array.from(sections).indexOf(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    sections.forEach(s => scrollObserver.observe(s));
+})();
+</script>
+
+</body>
+</html>

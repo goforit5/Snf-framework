@@ -1,50 +1,214 @@
+import { lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { ModalProvider } from './components/Widgets';
+import { AuthProvider } from './providers/AuthProvider';
+import { ScopeProvider } from './providers/ScopeProvider';
+import { AgentProvider } from './providers/AgentProvider';
+import { NotificationProvider } from './providers/NotificationProvider';
+import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
 import Layout from './components/Layout';
-import CommandCenter from './pages/CommandCenter';
-import ExceptionQueue from './pages/ExceptionQueue';
-import AgentWorkLedger from './pages/AgentWorkLedger';
-import ExecutiveDashboard from './pages/ExecutiveDashboard';
-import FacilityAdmin from './pages/FacilityAdmin';
-import MorningStandup from './pages/MorningStandup';
-import ClinicalCommand from './pages/ClinicalCommand';
-import SurveyReadiness from './pages/SurveyReadiness';
-import APOperations from './pages/APOperations';
-import InvoiceExceptions from './pages/InvoiceExceptions';
-import PayrollCommand from './pages/PayrollCommand';
-import FinanceCommand from './pages/FinanceCommand';
-import MonthlyClose from './pages/MonthlyClose';
-import MAPipeline from './pages/MAPipeline';
-import AuditTrail from './pages/AuditTrail';
-import ClinicalCompliance from './pages/ClinicalCompliance';
-import AuditLibrary from './pages/AuditLibrary';
+import ComingSoon from './pages/ComingSoon';
+
+/* ─── Helper: create a placeholder component for pages not yet built ─── */
+function placeholder(title, section) {
+  return function PlaceholderPage() {
+    return <ComingSoon title={title} section={section} />;
+  };
+}
+
+/* ─── Platform (existing pages) ─── */
+const CommandCenter = lazy(() => import('./pages/CommandCenter'));
+const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));
+const ExceptionQueue = lazy(() => import('./pages/ExceptionQueue'));
+const AgentOperations = lazy(() => import('./pages/AgentWorkLedger'));
+const MorningBriefing = lazy(() => import('./pages/MorningStandup'));
+const AuditTrail = lazy(() => import('./pages/AuditTrail'));
+const SettingsPage = lazy(() => import('./pages/platform/Settings'));
+
+/* ─── Clinical ─── */
+const ClinicalCommand = lazy(() => import('./pages/ClinicalCommand'));
+const SurveyReadiness = lazy(() => import('./pages/SurveyReadiness'));
+const ClinicalCompliance = lazy(() => import('./pages/ClinicalCompliance'));
+const AuditLibrary = lazy(() => import('./pages/AuditLibrary'));
+const PharmacyManagement = lazy(() => import('./pages/clinical/PharmacyManagement'));
+const TherapyRehab = lazy(() => import('./pages/clinical/TherapyRehab'));
+const InfectionControl = lazy(() => import('./pages/clinical/InfectionControl'));
+const DietaryNutrition = lazy(() => import('./pages/clinical/DietaryNutrition'));
+const SocialServices = lazy(() => import('./pages/clinical/SocialServices'));
+const MedicalRecords = lazy(() => import('./pages/clinical/MedicalRecords'));
+
+/* ─── Revenue Cycle ─── */
+const RevenueCycleCommand = lazy(() => import('./pages/revenue/RevenueCycleCommand'));
+const FinanceCommand = lazy(() => import('./pages/FinanceCommand'));
+const APOperations = lazy(() => import('./pages/APOperations'));
+const InvoiceExceptions = lazy(() => import('./pages/InvoiceExceptions'));
+const MonthlyClose = lazy(() => import('./pages/MonthlyClose'));
+const PayrollCommand = lazy(() => import('./pages/PayrollCommand'));
+const BillingClaims = lazy(() => import('./pages/revenue/BillingClaims'));
+const ARManagement = lazy(() => import('./pages/revenue/ARManagement'));
+const ManagedCareContracts = lazy(() => import('./pages/revenue/ManagedCareContracts'));
+const PDPMOptimization = lazy(() => import('./pages/revenue/PDPMOptimization'));
+const TreasuryCashFlow = lazy(() => import('./pages/revenue/TreasuryCashFlow'));
+const BudgetForecasting = lazy(() => import('./pages/revenue/BudgetForecasting'));
+
+/* ─── Workforce ─── */
+const WorkforceCommand = lazy(() => import('./pages/workforce/WorkforceCommand'));
+const RecruitingPipeline = lazy(() => import('./pages/workforce/RecruitingPipeline'));
+const OnboardingCenter = lazy(() => import('./pages/workforce/OnboardingCenter'));
+const SchedulingStaffing = lazy(() => import('./pages/workforce/SchedulingStaffing'));
+const Credentialing = lazy(() => import('./pages/workforce/Credentialing'));
+const TrainingEducation = lazy(() => import('./pages/workforce/TrainingEducation'));
+const EmployeeRelations = lazy(() => import('./pages/workforce/EmployeeRelations'));
+const BenefitsAdmin = lazy(() => import('./pages/workforce/BenefitsAdmin'));
+const WorkersComp = lazy(() => import('./pages/workforce/WorkersComp'));
+const RetentionAnalytics = lazy(() => import('./pages/workforce/RetentionAnalytics'));
+
+/* ─── Operations ─── */
+const FacilityCommand = lazy(() => import('./pages/operations/FacilityCommand'));
+const SupplyChain = lazy(() => import('./pages/operations/SupplyChain'));
+const MaintenanceWorkOrders = lazy(() => import('./pages/operations/MaintenanceWorkOrders'));
+const EnvironmentalServices = lazy(() => import('./pages/operations/EnvironmentalServices'));
+const LifeSafety = lazy(() => import('./pages/operations/LifeSafety'));
+const Transportation = lazy(() => import('./pages/operations/Transportation'));
+const ITServiceDesk = lazy(() => import('./pages/operations/ITServiceDesk'));
+
+/* ─── Admissions ─── */
+const CensusCommand = lazy(() => import('./pages/admissions/CensusCommand'));
+const ReferralManagement = lazy(() => import('./pages/admissions/ReferralManagement'));
+const PreAdmissionScreening = lazy(() => import('./pages/admissions/PreAdmissionScreening'));
+const PayerMixOptimization = lazy(() => import('./pages/admissions/PayerMixOptimization'));
+const MarketingBD = lazy(() => import('./pages/admissions/MarketingBD'));
+
+/* ─── Quality ─── */
+const QualityCommand = lazy(() => import('./pages/quality/QualityCommand'));
+const RiskManagement = lazy(() => import('./pages/quality/RiskManagement'));
+const PatientSafety = lazy(() => import('./pages/quality/PatientSafety'));
+const GrievancesComplaints = lazy(() => import('./pages/quality/GrievancesComplaints'));
+const OutcomesTracking = lazy(() => import('./pages/quality/OutcomesTracking'));
+
+/* ─── Legal ─── */
+const LegalCommand = lazy(() => import('./pages/legal/LegalCommand'));
+const ContractLifecycle = lazy(() => import('./pages/legal/ContractLifecycle'));
+const LitigationTracker = lazy(() => import('./pages/legal/LitigationTracker'));
+const RegulatoryResponse = lazy(() => import('./pages/legal/RegulatoryResponse'));
+const RealEstateLeases = lazy(() => import('./pages/legal/RealEstateLeases'));
+const CorporateCompliance = lazy(() => import('./pages/legal/CorporateCompliance'));
+
+/* ─── Strategic ─── */
+const MAPipeline = lazy(() => import('./pages/MAPipeline'));
+const MarketIntelligence = lazy(() => import('./pages/strategic/MarketIntelligence'));
+const BoardGovernance = lazy(() => import('./pages/strategic/BoardGovernance'));
+const InvestorRelations = lazy(() => import('./pages/strategic/InvestorRelations'));
+const GovernmentAffairs = lazy(() => import('./pages/strategic/GovernmentAffairs'));
 
 export default function App() {
   return (
     <Router>
-      <ModalProvider>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<CommandCenter />} />
-            <Route path="/dashboard" element={<ExecutiveDashboard />} />
-            <Route path="/exceptions" element={<ExceptionQueue />} />
-            <Route path="/agents" element={<AgentWorkLedger />} />
-            <Route path="/facility" element={<FacilityAdmin />} />
-            <Route path="/standup" element={<MorningStandup />} />
-            <Route path="/clinical" element={<ClinicalCommand />} />
-            <Route path="/survey" element={<SurveyReadiness />} />
-            <Route path="/ap" element={<APOperations />} />
-            <Route path="/invoice-exceptions" element={<InvoiceExceptions />} />
-            <Route path="/payroll" element={<PayrollCommand />} />
-            <Route path="/finance" element={<FinanceCommand />} />
-            <Route path="/close" element={<MonthlyClose />} />
-            <Route path="/ma" element={<MAPipeline />} />
-            <Route path="/audit" element={<AuditTrail />} />
-            <Route path="/compliance" element={<ClinicalCompliance />} />
-            <Route path="/audits" element={<AuditLibrary />} />
-          </Routes>
-        </Layout>
-      </ModalProvider>
+      <AuthProvider>
+        <ScopeProvider>
+          <AgentProvider>
+            <NotificationProvider>
+              <ModalProvider>
+                <ToastProvider>
+                  <Layout>
+                    <Suspense fallback={<PageSkeleton />}>
+                      <Routes>
+                        {/* Platform */}
+                        <Route path="/" element={<CommandCenter />} />
+                        <Route path="/dashboard" element={<ExecutiveDashboard />} />
+                        <Route path="/exceptions" element={<ExceptionQueue />} />
+                        <Route path="/agents" element={<AgentOperations />} />
+                        <Route path="/briefing" element={<MorningBriefing />} />
+                        <Route path="/audit" element={<AuditTrail />} />
+                        <Route path="/settings" element={<SettingsPage />} />
+
+                        {/* Backward compat */}
+                        <Route path="/standup" element={<MorningBriefing />} />
+                        <Route path="/finance" element={<FinanceCommand />} />
+
+                        {/* Clinical */}
+                        <Route path="/clinical" element={<ClinicalCommand />} />
+                        <Route path="/clinical/pharmacy" element={<PharmacyManagement />} />
+                        <Route path="/clinical/therapy" element={<TherapyRehab />} />
+                        <Route path="/clinical/infection-control" element={<InfectionControl />} />
+                        <Route path="/clinical/dietary" element={<DietaryNutrition />} />
+                        <Route path="/clinical/social-services" element={<SocialServices />} />
+                        <Route path="/clinical/medical-records" element={<MedicalRecords />} />
+                        <Route path="/survey" element={<SurveyReadiness />} />
+                        <Route path="/compliance" element={<ClinicalCompliance />} />
+                        <Route path="/audits" element={<AuditLibrary />} />
+
+                        {/* Revenue Cycle */}
+                        <Route path="/revenue" element={<RevenueCycleCommand />} />
+                        <Route path="/revenue/billing" element={<BillingClaims />} />
+                        <Route path="/revenue/ar" element={<ARManagement />} />
+                        <Route path="/revenue/managed-care" element={<ManagedCareContracts />} />
+                        <Route path="/revenue/pdpm" element={<PDPMOptimization />} />
+                        <Route path="/ap" element={<APOperations />} />
+                        <Route path="/invoice-exceptions" element={<InvoiceExceptions />} />
+                        <Route path="/close" element={<MonthlyClose />} />
+                        <Route path="/payroll" element={<PayrollCommand />} />
+                        <Route path="/revenue/treasury" element={<TreasuryCashFlow />} />
+                        <Route path="/revenue/budget" element={<BudgetForecasting />} />
+
+                        {/* Workforce */}
+                        <Route path="/workforce" element={<WorkforceCommand />} />
+                        <Route path="/workforce/recruiting" element={<RecruitingPipeline />} />
+                        <Route path="/workforce/onboarding" element={<OnboardingCenter />} />
+                        <Route path="/workforce/scheduling" element={<SchedulingStaffing />} />
+                        <Route path="/workforce/credentialing" element={<Credentialing />} />
+                        <Route path="/workforce/training" element={<TrainingEducation />} />
+                        <Route path="/workforce/employee-relations" element={<EmployeeRelations />} />
+                        <Route path="/workforce/benefits" element={<BenefitsAdmin />} />
+                        <Route path="/workforce/workers-comp" element={<WorkersComp />} />
+                        <Route path="/workforce/retention" element={<RetentionAnalytics />} />
+
+                        {/* Operations */}
+                        <Route path="/facility" element={<FacilityCommand />} />
+                        <Route path="/operations/supply-chain" element={<SupplyChain />} />
+                        <Route path="/operations/maintenance" element={<MaintenanceWorkOrders />} />
+                        <Route path="/operations/environmental" element={<EnvironmentalServices />} />
+                        <Route path="/operations/life-safety" element={<LifeSafety />} />
+                        <Route path="/operations/transportation" element={<Transportation />} />
+                        <Route path="/operations/it" element={<ITServiceDesk />} />
+
+                        {/* Admissions */}
+                        <Route path="/admissions" element={<CensusCommand />} />
+                        <Route path="/admissions/referrals" element={<ReferralManagement />} />
+                        <Route path="/admissions/pre-admission" element={<PreAdmissionScreening />} />
+                        <Route path="/admissions/payer-mix" element={<PayerMixOptimization />} />
+                        <Route path="/admissions/marketing" element={<MarketingBD />} />
+
+                        {/* Quality */}
+                        <Route path="/quality" element={<QualityCommand />} />
+                        <Route path="/quality/risk" element={<RiskManagement />} />
+                        <Route path="/quality/patient-safety" element={<PatientSafety />} />
+                        <Route path="/quality/grievances" element={<GrievancesComplaints />} />
+                        <Route path="/quality/outcomes" element={<OutcomesTracking />} />
+
+                        {/* Legal */}
+                        <Route path="/legal" element={<LegalCommand />} />
+                        <Route path="/legal/contracts" element={<ContractLifecycle />} />
+                        <Route path="/legal/litigation" element={<LitigationTracker />} />
+                        <Route path="/legal/regulatory" element={<RegulatoryResponse />} />
+                        <Route path="/legal/real-estate" element={<RealEstateLeases />} />
+                        <Route path="/legal/corporate-compliance" element={<CorporateCompliance />} />
+
+                        {/* Strategic */}
+                        <Route path="/ma" element={<MAPipeline />} />
+                        <Route path="/strategic/market-intel" element={<MarketIntelligence />} />
+                        <Route path="/strategic/board" element={<BoardGovernance />} />
+                        <Route path="/strategic/investor-relations" element={<InvestorRelations />} />
+                        <Route path="/strategic/government-affairs" element={<GovernmentAffairs />} />
+                      </Routes>
+                    </Suspense>
+                  </Layout>
+                </ToastProvider>
+              </ModalProvider>
+            </NotificationProvider>
+          </AgentProvider>
+        </ScopeProvider>
+      </AuthProvider>
     </Router>
   );
 }

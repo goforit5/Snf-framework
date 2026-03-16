@@ -1,0 +1,748 @@
+// Staff entity data — 110+ staff across 8 facilities
+// Realistic SNF staffing: RN, LPN, CNA, DON, ADON, MDS Coordinator, Administrator,
+// Activities Director, Social Worker, Dietary Manager, Maintenance Director,
+// Housekeeping, PT, OT, ST, Pharmacist
+// Hero staff: Sarah Mitchell (staff1) — RN with license expiring March 15, 2026
+
+export const staff = [
+  // ── Hero Staff ──────────────────────────────────────────────────────────
+
+  {
+    id: 'staff1', firstName: 'Sarah', lastName: 'Mitchell', role: 'RN', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2019-06-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Wound Care Certified'], licenseNumber: 'RN-2019-45678', licenseExpiry: '2026-03-15',
+    hourlyRate: 42.50, isAgency: false, phone: '(602) 555-0101', email: 'sarah.mitchell@phoenixsunrise.com',
+  },
+
+  // ── Phoenix Sunrise (f1) — 16 staff ─────────────────────────────────────
+
+  {
+    id: 'staff2', firstName: 'Karen', lastName: 'Whitfield', role: 'Administrator', facilityId: 'f1',
+    department: 'Administration', hireDate: '2018-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-AZ-2018-1234', licenseExpiry: '2027-02-01',
+    hourlyRate: 62.00, isAgency: false, phone: '(602) 555-0102', email: 'karen.whitfield@phoenixsunrise.com',
+  },
+  {
+    id: 'staff3', firstName: 'Sarah', lastName: 'Martinez', role: 'DON', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2020-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Gerontological Nursing'], licenseNumber: 'RN-2015-33210', licenseExpiry: '2027-08-15',
+    hourlyRate: 55.00, isAgency: false, phone: '(602) 555-0103', email: 'sarah.martinez@phoenixsunrise.com',
+  },
+  {
+    id: 'staff4', firstName: 'Jennifer', lastName: 'Reyes', role: 'ADON', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2021-04-10', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-2017-56789', licenseExpiry: '2027-04-10',
+    hourlyRate: 48.00, isAgency: false, phone: '(602) 555-0104', email: 'jennifer.reyes@phoenixsunrise.com',
+  },
+  {
+    id: 'staff5', firstName: 'Linda', lastName: 'Chen', role: 'MDS Coordinator', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2019-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-2016-78901', licenseExpiry: '2026-09-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(602) 555-0105', email: 'linda.chen@phoenixsunrise.com',
+  },
+  {
+    id: 'staff6', firstName: 'Maria', lastName: 'Santos', role: 'RN', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2022-03-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-2020-12345', licenseExpiry: '2026-12-15',
+    hourlyRate: 40.00, isAgency: false, phone: '(602) 555-0106', email: 'maria.santos@phoenixsunrise.com',
+  },
+  {
+    id: 'staff7', firstName: 'Angela', lastName: 'Wright', role: 'LPN', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2021-07-20', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-2019-44567', licenseExpiry: '2027-07-20',
+    hourlyRate: 28.50, isAgency: false, phone: '(602) 555-0107', email: 'angela.wright@phoenixsunrise.com',
+  },
+  {
+    id: 'staff8', firstName: 'Tanya', lastName: 'Jackson', role: 'LPN', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2023-01-10', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS'], licenseNumber: 'LPN-2021-55890', licenseExpiry: '2027-01-10',
+    hourlyRate: 29.00, isAgency: false, phone: '(602) 555-0108', email: 'tanya.jackson@phoenixsunrise.com',
+  },
+  {
+    id: 'staff9', firstName: 'Rosa', lastName: 'Hernandez', role: 'CNA', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2022-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-AZ-2022-1001', licenseExpiry: '2026-05-01',
+    hourlyRate: 18.50, isAgency: false, phone: '(602) 555-0109', email: 'rosa.hernandez@phoenixsunrise.com',
+  },
+  {
+    id: 'staff10', firstName: 'Darnell', lastName: 'Washington', role: 'CNA', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2023-08-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-AZ-2023-2002', licenseExpiry: '2027-08-15',
+    hourlyRate: 17.50, isAgency: false, phone: '(602) 555-0110', email: 'darnell.washington@phoenixsunrise.com',
+  },
+  {
+    id: 'staff11', firstName: 'Keisha', lastName: 'Brown', role: 'CNA', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2024-02-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-AZ-2024-3003', licenseExpiry: '2028-02-01',
+    hourlyRate: 17.00, isAgency: false, phone: '(602) 555-0111', email: 'keisha.brown@phoenixsunrise.com',
+  },
+  {
+    id: 'staff12', firstName: 'Robert', lastName: 'Kim', role: 'PT', facilityId: 'f1',
+    department: 'Therapy', hireDate: '2020-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS', 'Geriatric Certified Specialist'], licenseNumber: 'PT-AZ-2018-6789', licenseExpiry: '2026-11-01',
+    hourlyRate: 48.00, isAgency: false, phone: '(602) 555-0112', email: 'robert.kim@phoenixsunrise.com',
+  },
+  {
+    id: 'staff13', firstName: 'Diana', lastName: 'Patel', role: 'OT', facilityId: 'f1',
+    department: 'Therapy', hireDate: '2021-06-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['OTR/L', 'BLS'], licenseNumber: 'OT-AZ-2019-5432', licenseExpiry: '2027-06-15',
+    hourlyRate: 45.00, isAgency: false, phone: '(602) 555-0113', email: 'diana.patel@phoenixsunrise.com',
+  },
+  {
+    id: 'staff14', firstName: 'Susan', lastName: 'Novak', role: 'Activities Director', facilityId: 'f1',
+    department: 'Activities', hireDate: '2019-03-20', status: 'active', shiftPreference: 'Day',
+    certifications: ['CTRS', 'Activity Director Certified'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 24.00, isAgency: false, phone: '(602) 555-0114', email: 'susan.novak@phoenixsunrise.com',
+  },
+  {
+    id: 'staff15', firstName: 'Michael', lastName: 'Torres', role: 'Dietary Manager', facilityId: 'f1',
+    department: 'Dietary', hireDate: '2020-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'CFPP', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 26.00, isAgency: false, phone: '(602) 555-0115', email: 'michael.torres@phoenixsunrise.com',
+  },
+  {
+    id: 'staff16', firstName: 'Patricia', lastName: 'Owens', role: 'Social Worker', facilityId: 'f1',
+    department: 'Social Services', hireDate: '2021-01-10', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW', 'BLS'], licenseNumber: 'LCSW-AZ-2018-8901', licenseExpiry: '2027-01-10',
+    hourlyRate: 35.00, isAgency: false, phone: '(602) 555-0116', email: 'patricia.owens@phoenixsunrise.com',
+  },
+  {
+    id: 'staff17', firstName: 'Greg', lastName: 'Olsen', role: 'Maintenance Director', facilityId: 'f1',
+    department: 'Maintenance', hireDate: '2018-10-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['HVAC Certified', 'EPA 608'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 28.00, isAgency: false, phone: '(602) 555-0117', email: 'greg.olsen@phoenixsunrise.com',
+  },
+
+  // ── Denver Meadows (f2) — 14 staff ──────────────────────────────────────
+
+  {
+    id: 'staff18', firstName: 'David', lastName: 'Kowalski', role: 'Administrator', facilityId: 'f2',
+    department: 'Administration', hireDate: '2019-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-CO-2019-2345', licenseExpiry: '2027-06-01',
+    hourlyRate: 58.00, isAgency: false, phone: '(303) 555-0201', email: 'david.kowalski@denvermeadows.com',
+  },
+  {
+    id: 'staff19', firstName: 'Patricia', lastName: 'Hernandez', role: 'DON', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2020-03-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Wound Care Certified'], licenseNumber: 'RN-CO-2014-22345', licenseExpiry: '2027-03-15',
+    hourlyRate: 52.00, isAgency: false, phone: '(303) 555-0202', email: 'patricia.hernandez@denvermeadows.com',
+  },
+  {
+    id: 'staff20', firstName: 'Amanda', lastName: 'Brooks', role: 'ADON', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2021-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-CO-2018-33456', licenseExpiry: '2026-09-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(303) 555-0203', email: 'amanda.brooks@denvermeadows.com',
+  },
+  {
+    id: 'staff21', firstName: 'Catherine', lastName: 'Stone', role: 'MDS Coordinator', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2020-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-CO-2016-44567', licenseExpiry: '2026-06-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(303) 555-0204', email: 'catherine.stone@denvermeadows.com',
+  },
+  {
+    id: 'staff22', firstName: 'James', lastName: 'Brown', role: 'RN', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2022-01-10', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-CO-2020-55678', licenseExpiry: '2026-07-10',
+    hourlyRate: 39.00, isAgency: false, phone: '(303) 555-0205', email: 'james.brown@denvermeadows.com',
+  },
+  {
+    id: 'staff23', firstName: 'Nicole', lastName: 'Vasquez', role: 'LPN', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2021-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-CO-2019-66789', licenseExpiry: '2027-11-01',
+    hourlyRate: 27.00, isAgency: false, phone: '(303) 555-0206', email: 'nicole.vasquez@denvermeadows.com',
+  },
+  {
+    id: 'staff24', firstName: 'Marcus', lastName: 'Williams', role: 'LPN', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2023-04-15', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS'], licenseNumber: 'LPN-CO-2021-77890', licenseExpiry: '2027-04-15',
+    hourlyRate: 27.50, isAgency: false, phone: '(303) 555-0207', email: 'marcus.williams@denvermeadows.com',
+  },
+  {
+    id: 'staff25', firstName: 'Crystal', lastName: 'Johnson', role: 'CNA', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2022-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CO-2022-4001', licenseExpiry: '2026-08-01',
+    hourlyRate: 17.00, isAgency: false, phone: '(303) 555-0208', email: 'crystal.johnson@denvermeadows.com',
+  },
+  {
+    id: 'staff26', firstName: 'Tyler', lastName: 'Bennett', role: 'CNA', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2023-06-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CO-2023-5002', licenseExpiry: '2027-06-15',
+    hourlyRate: 16.50, isAgency: false, phone: '(303) 555-0209', email: 'tyler.bennett@denvermeadows.com',
+  },
+  {
+    id: 'staff27', firstName: 'Jasmine', lastName: 'Howard', role: 'CNA', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2024-01-08', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-CO-2024-6003', licenseExpiry: '2028-01-08',
+    hourlyRate: 16.50, isAgency: false, phone: '(303) 555-0210', email: 'jasmine.howard@denvermeadows.com',
+  },
+  {
+    id: 'staff28', firstName: 'Eric', lastName: 'Larson', role: 'PT', facilityId: 'f2',
+    department: 'Therapy', hireDate: '2021-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS'], licenseNumber: 'PT-CO-2019-8901', licenseExpiry: '2027-02-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(303) 555-0211', email: 'eric.larson@denvermeadows.com',
+  },
+  {
+    id: 'staff29', firstName: 'Robin', lastName: 'Kelley', role: 'Social Worker', facilityId: 'f2',
+    department: 'Social Services', hireDate: '2022-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-CO-2020-9012', licenseExpiry: '2026-04-01',
+    hourlyRate: 33.00, isAgency: false, phone: '(303) 555-0212', email: 'robin.kelley@denvermeadows.com',
+  },
+  {
+    id: 'staff30', firstName: 'Derek', lastName: 'Gibson', role: 'Maintenance Director', facilityId: 'f2',
+    department: 'Maintenance', hireDate: '2019-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['HVAC Certified', 'EPA 608'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 26.00, isAgency: false, phone: '(303) 555-0213', email: 'derek.gibson@denvermeadows.com',
+  },
+  {
+    id: 'staff31', firstName: 'Wendy', lastName: 'Foster', role: 'Dietary Manager', facilityId: 'f2',
+    department: 'Dietary', hireDate: '2020-05-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 24.00, isAgency: false, phone: '(303) 555-0214', email: 'wendy.foster@denvermeadows.com',
+  },
+
+  // ── San Diego Pacific (f3) — 18 staff ──────────────────────────────────
+
+  {
+    id: 'staff32', firstName: 'Michelle', lastName: 'Tanaka', role: 'Administrator', facilityId: 'f3',
+    department: 'Administration', hireDate: '2017-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-CA-2017-3456', licenseExpiry: '2027-08-01',
+    hourlyRate: 65.00, isAgency: false, phone: '(619) 555-0301', email: 'michelle.tanaka@sandiegopacific.com',
+  },
+  {
+    id: 'staff33', firstName: 'Angela', lastName: 'Foster', role: 'DON', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2019-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Gerontological Nursing', 'Wound Care Certified'], licenseNumber: 'RN-CA-2013-11234', licenseExpiry: '2027-02-01',
+    hourlyRate: 58.00, isAgency: false, phone: '(619) 555-0302', email: 'angela.foster@sandiegopacific.com',
+  },
+  {
+    id: 'staff34', firstName: 'Rachel', lastName: 'Nguyen', role: 'ADON', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2020-07-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-CA-2017-22345', licenseExpiry: '2027-07-15',
+    hourlyRate: 50.00, isAgency: false, phone: '(619) 555-0303', email: 'rachel.nguyen@sandiegopacific.com',
+  },
+  {
+    id: 'staff35', firstName: 'Deborah', lastName: 'Liu', role: 'MDS Coordinator', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2018-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT', 'RAC-CTA'], licenseNumber: 'RN-CA-2015-33456', licenseExpiry: '2026-11-01',
+    hourlyRate: 48.00, isAgency: false, phone: '(619) 555-0304', email: 'deborah.liu@sandiegopacific.com',
+  },
+  {
+    id: 'staff36', firstName: 'Kevin', lastName: 'Park', role: 'RN', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2021-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'IV Certified'], licenseNumber: 'RN-CA-2019-44567', licenseExpiry: '2027-03-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(619) 555-0305', email: 'kevin.park@sandiegopacific.com',
+  },
+  {
+    id: 'staff37', firstName: 'Samantha', lastName: 'Cruz', role: 'RN', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2022-06-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-CA-2020-55678', licenseExpiry: '2026-12-15',
+    hourlyRate: 43.00, isAgency: false, phone: '(619) 555-0306', email: 'samantha.cruz@sandiegopacific.com',
+  },
+  {
+    id: 'staff38', firstName: 'Laura', lastName: 'Chang', role: 'RN', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2023-01-20', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-CA-2021-66789', licenseExpiry: '2027-01-20',
+    hourlyRate: 44.00, isAgency: false, phone: '(619) 555-0307', email: 'laura.chang@sandiegopacific.com',
+  },
+  {
+    id: 'staff39', firstName: 'Brenda', lastName: 'Morales', role: 'LPN', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2021-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-CA-2019-77890', licenseExpiry: '2027-08-01',
+    hourlyRate: 30.00, isAgency: false, phone: '(619) 555-0308', email: 'brenda.morales@sandiegopacific.com',
+  },
+  {
+    id: 'staff40', firstName: 'Daniel', lastName: 'Okonkwo', role: 'LPN', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2022-12-01', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS'], licenseNumber: 'LPN-CA-2021-88901', licenseExpiry: '2026-12-01',
+    hourlyRate: 29.50, isAgency: false, phone: '(619) 555-0309', email: 'daniel.okonkwo@sandiegopacific.com',
+  },
+  {
+    id: 'staff41', firstName: 'Alicia', lastName: 'Ramirez', role: 'CNA', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2022-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-CA-2022-7001', licenseExpiry: '2026-03-01',
+    hourlyRate: 19.00, isAgency: false, phone: '(619) 555-0310', email: 'alicia.ramirez@sandiegopacific.com',
+  },
+  {
+    id: 'staff42', firstName: 'Jerome', lastName: 'Davis', role: 'CNA', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2023-05-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CA-2023-8002', licenseExpiry: '2027-05-15',
+    hourlyRate: 18.50, isAgency: false, phone: '(619) 555-0311', email: 'jerome.davis@sandiegopacific.com',
+  },
+  {
+    id: 'staff43', firstName: 'Priya', lastName: 'Sharma', role: 'CNA', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2023-09-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CA-2023-9003', licenseExpiry: '2027-09-01',
+    hourlyRate: 18.00, isAgency: false, phone: '(619) 555-0312', email: 'priya.sharma@sandiegopacific.com',
+  },
+  {
+    id: 'staff44', firstName: 'Nathan', lastName: 'Cho', role: 'PT', facilityId: 'f3',
+    department: 'Therapy', hireDate: '2019-10-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS', 'Neurological Specialist'], licenseNumber: 'PT-CA-2017-1234', licenseExpiry: '2027-10-01',
+    hourlyRate: 52.00, isAgency: false, phone: '(619) 555-0313', email: 'nathan.cho@sandiegopacific.com',
+  },
+  {
+    id: 'staff45', firstName: 'Emily', lastName: 'Walsh', role: 'OT', facilityId: 'f3',
+    department: 'Therapy', hireDate: '2020-04-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['OTR/L', 'BLS'], licenseNumber: 'OT-CA-2018-2345', licenseExpiry: '2026-04-15',
+    hourlyRate: 48.00, isAgency: false, phone: '(619) 555-0314', email: 'emily.walsh@sandiegopacific.com',
+  },
+  {
+    id: 'staff46', firstName: 'Andrea', lastName: 'Thompson', role: 'ST', facilityId: 'f3',
+    department: 'Therapy', hireDate: '2021-01-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CCC-SLP', 'BLS'], licenseNumber: 'SLP-CA-2018-3456', licenseExpiry: '2027-01-01',
+    hourlyRate: 50.00, isAgency: false, phone: '(619) 555-0315', email: 'andrea.thompson@sandiegopacific.com',
+  },
+  {
+    id: 'staff47', firstName: 'Grace', lastName: 'Yamamoto', role: 'Social Worker', facilityId: 'f3',
+    department: 'Social Services', hireDate: '2020-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-CA-2018-4567', licenseExpiry: '2026-09-01',
+    hourlyRate: 36.00, isAgency: false, phone: '(619) 555-0316', email: 'grace.yamamoto@sandiegopacific.com',
+  },
+  {
+    id: 'staff48', firstName: 'Victor', lastName: 'Reyes', role: 'Dietary Manager', facilityId: 'f3',
+    department: 'Dietary', hireDate: '2019-04-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'CFPP', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 28.00, isAgency: false, phone: '(619) 555-0317', email: 'victor.reyes@sandiegopacific.com',
+  },
+  {
+    id: 'staff49', firstName: 'Connie', lastName: 'Delgado', role: 'Activities Director', facilityId: 'f3',
+    department: 'Activities', hireDate: '2021-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CTRS'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 25.00, isAgency: false, phone: '(619) 555-0318', email: 'connie.delgado@sandiegopacific.com',
+  },
+
+  // ── Las Vegas Desert Springs (f4) — 15 staff ───────────────────────────
+
+  {
+    id: 'staff50', firstName: 'Brian', lastName: 'Caldwell', role: 'Administrator', facilityId: 'f4',
+    department: 'Administration', hireDate: '2020-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-NV-2020-4567', licenseExpiry: '2028-01-15',
+    hourlyRate: 58.00, isAgency: false, phone: '(702) 555-0401', email: 'brian.caldwell@lvdesertsprings.com',
+  },
+  {
+    id: 'staff51', firstName: 'Lisa', lastName: 'Nguyen', role: 'DON', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2020-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Gerontological Nursing'], licenseNumber: 'RN-NV-2015-11234', licenseExpiry: '2026-06-01',
+    hourlyRate: 52.00, isAgency: false, phone: '(702) 555-0402', email: 'lisa.nguyen@lvdesertsprings.com',
+  },
+  {
+    id: 'staff52', firstName: 'Monica', lastName: 'Grant', role: 'ADON', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2022-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-NV-2019-22345', licenseExpiry: '2026-08-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(702) 555-0403', email: 'monica.grant@lvdesertsprings.com',
+  },
+  {
+    id: 'staff53', firstName: 'Yolanda', lastName: 'Peters', role: 'MDS Coordinator', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2021-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-NV-2018-33456', licenseExpiry: '2027-04-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(702) 555-0404', email: 'yolanda.peters@lvdesertsprings.com',
+  },
+  {
+    id: 'staff54', firstName: 'Trevor', lastName: 'Hayes', role: 'RN', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2023-03-01', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-NV-2021-44567', licenseExpiry: '2027-03-01',
+    hourlyRate: 40.00, isAgency: false, phone: '(702) 555-0405', email: 'trevor.hayes@lvdesertsprings.com',
+  },
+  {
+    id: 'staff55', firstName: 'Vanessa', lastName: 'Long', role: 'LPN', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2022-07-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-NV-2020-55678', licenseExpiry: '2026-07-15',
+    hourlyRate: 27.00, isAgency: false, phone: '(702) 555-0406', email: 'vanessa.long@lvdesertsprings.com',
+  },
+  {
+    id: 'staff56', firstName: 'Raymond', lastName: 'Cole', role: 'LPN', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2023-10-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS'], licenseNumber: 'LPN-NV-2022-66789', licenseExpiry: '2027-10-01',
+    hourlyRate: 27.50, isAgency: false, phone: '(702) 555-0407', email: 'raymond.cole@lvdesertsprings.com',
+  },
+  {
+    id: 'staff57', firstName: 'Destiny', lastName: 'Carter', role: 'CNA', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2023-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-NV-2023-1001', licenseExpiry: '2027-02-01',
+    hourlyRate: 16.50, isAgency: false, phone: '(702) 555-0408', email: 'destiny.carter@lvdesertsprings.com',
+  },
+  {
+    id: 'staff58', firstName: 'Andre', lastName: 'Robinson', role: 'CNA', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2023-08-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-NV-2023-2002', licenseExpiry: '2027-08-15',
+    hourlyRate: 16.50, isAgency: false, phone: '(702) 555-0409', email: 'andre.robinson@lvdesertsprings.com',
+  },
+  {
+    id: 'staff59', firstName: 'Latoya', lastName: 'James', role: 'CNA', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2024-03-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-NV-2024-3003', licenseExpiry: '2028-03-01',
+    hourlyRate: 16.00, isAgency: false, phone: '(702) 555-0410', email: 'latoya.james@lvdesertsprings.com',
+  },
+  {
+    id: 'staff60', firstName: 'Tony', lastName: 'Aguilar', role: 'CNA', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2025-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-NV-2025-4004', licenseExpiry: '2029-01-15',
+    hourlyRate: 16.00, isAgency: true, phone: '(702) 555-0411', email: 'tony.aguilar@allstaffagency.com',
+  },
+  {
+    id: 'staff61', firstName: 'Melissa', lastName: 'Ford', role: 'PT', facilityId: 'f4',
+    department: 'Therapy', hireDate: '2021-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS'], licenseNumber: 'PT-NV-2019-5678', licenseExpiry: '2027-05-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(702) 555-0412', email: 'melissa.ford@lvdesertsprings.com',
+  },
+  {
+    id: 'staff62', firstName: 'Sandra', lastName: 'Miles', role: 'Social Worker', facilityId: 'f4',
+    department: 'Social Services', hireDate: '2022-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-NV-2020-6789', licenseExpiry: '2026-09-01',
+    hourlyRate: 32.00, isAgency: false, phone: '(702) 555-0413', email: 'sandra.miles@lvdesertsprings.com',
+  },
+  {
+    id: 'staff63', firstName: 'Ruben', lastName: 'Ortiz', role: 'Dietary Manager', facilityId: 'f4',
+    department: 'Dietary', hireDate: '2021-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 24.00, isAgency: false, phone: '(702) 555-0414', email: 'ruben.ortiz@lvdesertsprings.com',
+  },
+  {
+    id: 'staff64', firstName: 'Wayne', lastName: 'Burton', role: 'Maintenance Director', facilityId: 'f4',
+    department: 'Maintenance', hireDate: '2020-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['HVAC Certified', 'EPA 608', 'Electrical'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 26.00, isAgency: false, phone: '(702) 555-0415', email: 'wayne.burton@lvdesertsprings.com',
+  },
+
+  // ── Sacramento Valley (f5) — 12 staff ───────────────────────────────────
+
+  {
+    id: 'staff65', firstName: 'Jennifer', lastName: 'Okafor', role: 'Administrator', facilityId: 'f5',
+    department: 'Administration', hireDate: '2019-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-CA-2019-5678', licenseExpiry: '2027-09-01',
+    hourlyRate: 60.00, isAgency: false, phone: '(916) 555-0501', email: 'jennifer.okafor@sacramentovalley.com',
+  },
+  {
+    id: 'staff66', firstName: 'Diane', lastName: 'Collins', role: 'DON', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2020-11-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Wound Care Certified'], licenseNumber: 'RN-CA-2014-12345', licenseExpiry: '2026-11-15',
+    hourlyRate: 54.00, isAgency: false, phone: '(916) 555-0502', email: 'diane.collins@sacramentovalley.com',
+  },
+  {
+    id: 'staff67', firstName: 'Theresa', lastName: 'Palmer', role: 'MDS Coordinator', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2021-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-CA-2017-23456', licenseExpiry: '2027-03-01',
+    hourlyRate: 46.00, isAgency: false, phone: '(916) 555-0503', email: 'theresa.palmer@sacramentovalley.com',
+  },
+  {
+    id: 'staff68', firstName: 'Brittany', lastName: 'Wells', role: 'RN', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2022-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-CA-2020-34567', licenseExpiry: '2026-05-01',
+    hourlyRate: 42.00, isAgency: false, phone: '(916) 555-0504', email: 'brittany.wells@sacramentovalley.com',
+  },
+  {
+    id: 'staff69', firstName: 'Omar', lastName: 'Hassan', role: 'RN', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2023-02-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-CA-2021-45678', licenseExpiry: '2027-02-15',
+    hourlyRate: 43.00, isAgency: false, phone: '(916) 555-0505', email: 'omar.hassan@sacramentovalley.com',
+  },
+  {
+    id: 'staff70', firstName: 'Stephanie', lastName: 'Price', role: 'LPN', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2022-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-CA-2020-56789', licenseExpiry: '2026-08-01',
+    hourlyRate: 29.00, isAgency: false, phone: '(916) 555-0506', email: 'stephanie.price@sacramentovalley.com',
+  },
+  {
+    id: 'staff71', firstName: 'Ashley', lastName: 'Griffin', role: 'CNA', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2023-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CA-2023-1001', licenseExpiry: '2027-04-01',
+    hourlyRate: 18.00, isAgency: false, phone: '(916) 555-0507', email: 'ashley.griffin@sacramentovalley.com',
+  },
+  {
+    id: 'staff72', firstName: 'Brandon', lastName: 'Simmons', role: 'CNA', facilityId: 'f5',
+    department: 'Nursing', hireDate: '2023-10-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-CA-2023-2002', licenseExpiry: '2027-10-15',
+    hourlyRate: 17.50, isAgency: false, phone: '(916) 555-0508', email: 'brandon.simmons@sacramentovalley.com',
+  },
+  {
+    id: 'staff73', firstName: 'Holly', lastName: 'Barnes', role: 'PT', facilityId: 'f5',
+    department: 'Therapy', hireDate: '2021-07-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS'], licenseNumber: 'PT-CA-2019-6789', licenseExpiry: '2027-07-01',
+    hourlyRate: 48.00, isAgency: false, phone: '(916) 555-0509', email: 'holly.barnes@sacramentovalley.com',
+  },
+  {
+    id: 'staff74', firstName: 'Luis', lastName: 'Mendoza', role: 'OT', facilityId: 'f5',
+    department: 'Therapy', hireDate: '2022-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['OTR/L', 'BLS'], licenseNumber: 'OT-CA-2020-7890', licenseExpiry: '2026-07-15',
+    hourlyRate: 46.00, isAgency: false, phone: '(916) 555-0510', email: 'luis.mendoza@sacramentovalley.com',
+  },
+  {
+    id: 'staff75', firstName: 'Irene', lastName: 'Doyle', role: 'Social Worker', facilityId: 'f5',
+    department: 'Social Services', hireDate: '2021-10-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-CA-2019-8901', licenseExpiry: '2027-10-01',
+    hourlyRate: 34.00, isAgency: false, phone: '(916) 555-0511', email: 'irene.doyle@sacramentovalley.com',
+  },
+  {
+    id: 'staff76', firstName: 'Marco', lastName: 'Alvarez', role: 'Dietary Manager', facilityId: 'f5',
+    department: 'Dietary', hireDate: '2020-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 25.00, isAgency: false, phone: '(916) 555-0512', email: 'marco.alvarez@sacramentovalley.com',
+  },
+
+  // ── Portland Evergreen (f6) — 14 staff ─────────────────────────────────
+
+  {
+    id: 'staff77', firstName: 'Thomas', lastName: 'Regan', role: 'Administrator', facilityId: 'f6',
+    department: 'Administration', hireDate: '2018-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-OR-2018-6789', licenseExpiry: '2027-05-01',
+    hourlyRate: 58.00, isAgency: false, phone: '(503) 555-0601', email: 'thomas.regan@portlandevergreen.com',
+  },
+  {
+    id: 'staff78', firstName: 'Amanda', lastName: 'Pearson', role: 'DON', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2019-10-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Gerontological Nursing'], licenseNumber: 'RN-OR-2014-11234', licenseExpiry: '2027-10-01',
+    hourlyRate: 54.00, isAgency: false, phone: '(503) 555-0602', email: 'amanda.pearson@portlandevergreen.com',
+  },
+  {
+    id: 'staff79', firstName: 'Christine', lastName: 'Bell', role: 'ADON', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2021-02-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-OR-2018-22345', licenseExpiry: '2027-02-15',
+    hourlyRate: 46.00, isAgency: false, phone: '(503) 555-0603', email: 'christine.bell@portlandevergreen.com',
+  },
+  {
+    id: 'staff80', firstName: 'Janet', lastName: 'Wagner', role: 'MDS Coordinator', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2020-08-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-OR-2016-33456', licenseExpiry: '2026-08-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(503) 555-0604', email: 'janet.wagner@portlandevergreen.com',
+  },
+  {
+    id: 'staff81', firstName: 'Craig', lastName: 'Sullivan', role: 'RN', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2022-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-OR-2020-44567', licenseExpiry: '2026-10-01',
+    hourlyRate: 41.00, isAgency: false, phone: '(503) 555-0605', email: 'craig.sullivan@portlandevergreen.com',
+  },
+  {
+    id: 'staff82', firstName: 'Dana', lastName: 'Fitzgerald', role: 'RN', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2023-01-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-OR-2021-55678', licenseExpiry: '2027-01-15',
+    hourlyRate: 42.00, isAgency: false, phone: '(503) 555-0606', email: 'dana.fitzgerald@portlandevergreen.com',
+  },
+  {
+    id: 'staff83', firstName: 'Heather', lastName: 'Dixon', role: 'LPN', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2021-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-OR-2019-66789', licenseExpiry: '2027-11-01',
+    hourlyRate: 27.50, isAgency: false, phone: '(503) 555-0607', email: 'heather.dixon@portlandevergreen.com',
+  },
+  {
+    id: 'staff84', firstName: 'Miguel', lastName: 'Santos', role: 'LPN', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2023-06-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS'], licenseNumber: 'LPN-OR-2022-77890', licenseExpiry: '2027-06-01',
+    hourlyRate: 27.00, isAgency: false, phone: '(503) 555-0608', email: 'miguel.santos@portlandevergreen.com',
+  },
+  {
+    id: 'staff85', firstName: 'April', lastName: 'Freeman', role: 'CNA', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2022-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-OR-2022-1001', licenseExpiry: '2026-09-01',
+    hourlyRate: 17.50, isAgency: false, phone: '(503) 555-0609', email: 'april.freeman@portlandevergreen.com',
+  },
+  {
+    id: 'staff86', firstName: 'Corey', lastName: 'Hawkins', role: 'CNA', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2023-12-01', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-OR-2023-2002', licenseExpiry: '2027-12-01',
+    hourlyRate: 17.00, isAgency: false, phone: '(503) 555-0610', email: 'corey.hawkins@portlandevergreen.com',
+  },
+  {
+    id: 'staff87', firstName: 'Lisa', lastName: 'Warren', role: 'CNA', facilityId: 'f6',
+    department: 'Nursing', hireDate: '2024-04-15', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-OR-2024-3003', licenseExpiry: '2028-04-15',
+    hourlyRate: 16.50, isAgency: false, phone: '(503) 555-0611', email: 'lisa.warren@portlandevergreen.com',
+  },
+  {
+    id: 'staff88', firstName: 'Sean', lastName: 'Gallagher', role: 'PT', facilityId: 'f6',
+    department: 'Therapy', hireDate: '2020-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS', 'Geriatric Certified Specialist'], licenseNumber: 'PT-OR-2018-8901', licenseExpiry: '2026-06-01',
+    hourlyRate: 47.00, isAgency: false, phone: '(503) 555-0612', email: 'sean.gallagher@portlandevergreen.com',
+  },
+  {
+    id: 'staff89', firstName: 'Natalie', lastName: 'Hudson', role: 'Social Worker', facilityId: 'f6',
+    department: 'Social Services', hireDate: '2021-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-OR-2019-9012', licenseExpiry: '2027-09-01',
+    hourlyRate: 33.00, isAgency: false, phone: '(503) 555-0613', email: 'natalie.hudson@portlandevergreen.com',
+  },
+  {
+    id: 'staff90', firstName: 'Phil', lastName: 'Mackenzie', role: 'Maintenance Director', facilityId: 'f6',
+    department: 'Maintenance', hireDate: '2019-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['HVAC Certified', 'EPA 608'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 27.00, isAgency: false, phone: '(503) 555-0614', email: 'phil.mackenzie@portlandevergreen.com',
+  },
+
+  // ── Salt Lake Mountain View (f7) — 13 staff ────────────────────────────
+
+  {
+    id: 'staff91', firstName: 'Nathan', lastName: 'Briggs', role: 'Administrator', facilityId: 'f7',
+    department: 'Administration', hireDate: '2019-01-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-UT-2019-7890', licenseExpiry: '2027-01-15',
+    hourlyRate: 56.00, isAgency: false, phone: '(801) 555-0701', email: 'nathan.briggs@slcmountainview.com',
+  },
+  {
+    id: 'staff92', firstName: 'Rachel', lastName: 'Kim', role: 'DON', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2020-04-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Gerontological Nursing'], licenseNumber: 'RN-UT-2015-11234', licenseExpiry: '2026-10-01',
+    hourlyRate: 52.00, isAgency: false, phone: '(801) 555-0702', email: 'rachel.kim@slcmountainview.com',
+  },
+  {
+    id: 'staff93', firstName: 'Donna', lastName: 'Marsh', role: 'MDS Coordinator', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2021-06-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-UT-2017-22345', licenseExpiry: '2027-06-15',
+    hourlyRate: 44.00, isAgency: false, phone: '(801) 555-0703', email: 'donna.marsh@slcmountainview.com',
+  },
+  {
+    id: 'staff94', firstName: 'Paul', lastName: 'Andersen', role: 'RN', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2021-11-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'IV Certified'], licenseNumber: 'RN-UT-2019-33456', licenseExpiry: '2027-11-01',
+    hourlyRate: 40.00, isAgency: false, phone: '(801) 555-0704', email: 'paul.andersen@slcmountainview.com',
+  },
+  {
+    id: 'staff95', firstName: 'Kendra', lastName: 'Hale', role: 'RN', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2022-07-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-UT-2020-44567', licenseExpiry: '2026-07-15',
+    hourlyRate: 39.00, isAgency: false, phone: '(801) 555-0705', email: 'kendra.hale@slcmountainview.com',
+  },
+  {
+    id: 'staff96', firstName: 'Gloria', lastName: 'Hubbard', role: 'LPN', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2022-02-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-UT-2020-55678', licenseExpiry: '2026-08-01',
+    hourlyRate: 26.00, isAgency: false, phone: '(801) 555-0706', email: 'gloria.hubbard@slcmountainview.com',
+  },
+  {
+    id: 'staff97', firstName: 'Austin', lastName: 'Sharp', role: 'CNA', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2023-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-UT-2023-1001', licenseExpiry: '2027-03-01',
+    hourlyRate: 16.00, isAgency: false, phone: '(801) 555-0707', email: 'austin.sharp@slcmountainview.com',
+  },
+  {
+    id: 'staff98', firstName: 'Monique', lastName: 'Dean', role: 'CNA', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2023-09-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-UT-2023-2002', licenseExpiry: '2027-09-15',
+    hourlyRate: 16.00, isAgency: false, phone: '(801) 555-0708', email: 'monique.dean@slcmountainview.com',
+  },
+  {
+    id: 'staff99', firstName: 'Jared', lastName: 'Christensen', role: 'CNA', facilityId: 'f7',
+    department: 'Nursing', hireDate: '2024-01-10', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-UT-2024-3003', licenseExpiry: '2028-01-10',
+    hourlyRate: 15.50, isAgency: false, phone: '(801) 555-0709', email: 'jared.christensen@slcmountainview.com',
+  },
+  {
+    id: 'staff100', firstName: 'Tamara', lastName: 'Gibbs', role: 'PT', facilityId: 'f7',
+    department: 'Therapy', hireDate: '2020-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS'], licenseNumber: 'PT-UT-2018-6789', licenseExpiry: '2026-09-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(801) 555-0710', email: 'tamara.gibbs@slcmountainview.com',
+  },
+  {
+    id: 'staff101', firstName: 'Blake', lastName: 'Sorensen', role: 'OT', facilityId: 'f7',
+    department: 'Therapy', hireDate: '2021-12-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['OTR/L', 'BLS'], licenseNumber: 'OT-UT-2019-7890', licenseExpiry: '2027-12-01',
+    hourlyRate: 43.00, isAgency: false, phone: '(801) 555-0711', email: 'blake.sorensen@slcmountainview.com',
+  },
+  {
+    id: 'staff102', firstName: 'Diane', lastName: 'Rasmussen', role: 'Social Worker', facilityId: 'f7',
+    department: 'Social Services', hireDate: '2022-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-UT-2020-8901', licenseExpiry: '2026-03-01',
+    hourlyRate: 32.00, isAgency: false, phone: '(801) 555-0712', email: 'diane.rasmussen@slcmountainview.com',
+  },
+  {
+    id: 'staff103', firstName: 'Keith', lastName: 'Olsen', role: 'Maintenance Director', facilityId: 'f7',
+    department: 'Maintenance', hireDate: '2019-07-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['HVAC Certified', 'EPA 608'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 25.00, isAgency: false, phone: '(801) 555-0713', email: 'keith.olsen@slcmountainview.com',
+  },
+
+  // ── Tucson Desert Bloom (f8) — 11 staff ─────────────────────────────────
+
+  {
+    id: 'staff104', firstName: 'Carlos', lastName: 'Vega', role: 'Administrator', facilityId: 'f8',
+    department: 'Administration', hireDate: '2020-03-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['NHA', 'LNHA'], licenseNumber: 'NHA-AZ-2020-8901', licenseExpiry: '2028-03-01',
+    hourlyRate: 55.00, isAgency: false, phone: '(520) 555-0801', email: 'carlos.vega@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff105', firstName: 'Brenda', lastName: 'Washington', role: 'DON', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2020-08-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'ACLS', 'Wound Care Certified'], licenseNumber: 'RN-AZ-2015-12345', licenseExpiry: '2026-08-15',
+    hourlyRate: 50.00, isAgency: false, phone: '(520) 555-0802', email: 'brenda.washington@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff106', firstName: 'Pamela', lastName: 'Floyd', role: 'MDS Coordinator', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2021-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'RAC-CT'], licenseNumber: 'RN-AZ-2018-23456', licenseExpiry: '2027-05-01',
+    hourlyRate: 42.00, isAgency: false, phone: '(520) 555-0803', email: 'pamela.floyd@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff107', firstName: 'Rita', lastName: 'Sandoval', role: 'RN', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2022-09-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['BLS', 'IV Certified'], licenseNumber: 'RN-AZ-2020-34567', licenseExpiry: '2026-09-01',
+    hourlyRate: 39.00, isAgency: false, phone: '(520) 555-0804', email: 'rita.sandoval@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff108', firstName: 'Felix', lastName: 'Romero', role: 'LPN', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2023-01-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-AZ-2021-45678', licenseExpiry: '2027-01-15',
+    hourlyRate: 26.50, isAgency: false, phone: '(520) 555-0805', email: 'felix.romero@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff109', firstName: 'Carmen', lastName: 'Delgado', role: 'CNA', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2023-05-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['CNA', 'BLS', 'Dementia Care'], licenseNumber: 'CNA-AZ-2023-1001', licenseExpiry: '2027-05-01',
+    hourlyRate: 17.00, isAgency: false, phone: '(520) 555-0806', email: 'carmen.delgado@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff110', firstName: 'Terrence', lastName: 'Booker', role: 'CNA', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2024-02-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-AZ-2024-2002', licenseExpiry: '2028-02-15',
+    hourlyRate: 16.50, isAgency: false, phone: '(520) 555-0807', email: 'terrence.booker@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff111', firstName: 'Guadalupe', lastName: 'Herrera', role: 'CNA', facilityId: 'f8',
+    department: 'Nursing', hireDate: '2024-06-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-AZ-2024-3003', licenseExpiry: '2028-06-01',
+    hourlyRate: 16.00, isAgency: false, phone: '(520) 555-0808', email: 'guadalupe.herrera@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff112', firstName: 'Lori', lastName: 'Bates', role: 'PT', facilityId: 'f8',
+    department: 'Therapy', hireDate: '2021-10-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['DPT', 'BLS'], licenseNumber: 'PT-AZ-2019-5678', licenseExpiry: '2027-10-01',
+    hourlyRate: 44.00, isAgency: false, phone: '(520) 555-0809', email: 'lori.bates@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff113', firstName: 'Martha', lastName: 'Espinoza', role: 'Social Worker', facilityId: 'f8',
+    department: 'Social Services', hireDate: '2022-06-01', status: 'active', shiftPreference: 'Day',
+    certifications: ['LCSW'], licenseNumber: 'LCSW-AZ-2020-6789', licenseExpiry: '2026-06-01',
+    hourlyRate: 31.00, isAgency: false, phone: '(520) 555-0810', email: 'martha.espinoza@tucsondesertbloom.com',
+  },
+  {
+    id: 'staff114', firstName: 'Hector', lastName: 'Soto', role: 'Dietary Manager', facilityId: 'f8',
+    department: 'Dietary', hireDate: '2021-03-15', status: 'active', shiftPreference: 'Day',
+    certifications: ['CDM', 'ServSafe'], licenseNumber: null, licenseExpiry: null,
+    hourlyRate: 23.00, isAgency: false, phone: '(520) 555-0811', email: 'hector.soto@tucsondesertbloom.com',
+  },
+
+  // ── Agency / Leave / Terminated Staff ───────────────────────────────────
+
+  {
+    id: 'staff115', firstName: 'Kayla', lastName: 'Rhodes', role: 'RN', facilityId: 'f2',
+    department: 'Nursing', hireDate: '2025-12-01', status: 'active', shiftPreference: 'Night',
+    certifications: ['BLS', 'ACLS'], licenseNumber: 'RN-CO-AG-2023-99001', licenseExpiry: '2027-06-01',
+    hourlyRate: 58.00, isAgency: true, phone: '(720) 555-9901', email: 'kayla.rhodes@allstaffagency.com',
+  },
+  {
+    id: 'staff116', firstName: 'Marcus', lastName: 'Bell', role: 'CNA', facilityId: 'f4',
+    department: 'Nursing', hireDate: '2026-01-15', status: 'active', shiftPreference: 'Evening',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-NV-AG-2024-99002', licenseExpiry: '2028-01-15',
+    hourlyRate: 24.00, isAgency: true, phone: '(702) 555-9902', email: 'marcus.bell@allstaffagency.com',
+  },
+  {
+    id: 'staff117', firstName: 'Tammy', lastName: 'Arnold', role: 'LPN', facilityId: 'f1',
+    department: 'Nursing', hireDate: '2024-08-01', status: 'leave', shiftPreference: 'Day',
+    certifications: ['BLS', 'Medication Administration'], licenseNumber: 'LPN-AZ-2020-88901', licenseExpiry: '2026-08-01',
+    hourlyRate: 28.00, isAgency: false, phone: '(602) 555-9903', email: 'tammy.arnold@phoenixsunrise.com',
+  },
+  {
+    id: 'staff118', firstName: 'Jerome', lastName: 'Patterson', role: 'CNA', facilityId: 'f3',
+    department: 'Nursing', hireDate: '2022-11-01', status: 'terminated', shiftPreference: 'Night',
+    certifications: ['CNA', 'BLS'], licenseNumber: 'CNA-CA-2022-99003', licenseExpiry: '2026-11-01',
+    hourlyRate: 18.00, isAgency: false, phone: '(619) 555-9904', email: 'jerome.patterson@sandiegopacific.com',
+  },
+];
+
+// Quick lookup map
+export const staffMap = Object.fromEntries(staff.map(s => [s.id, s]));

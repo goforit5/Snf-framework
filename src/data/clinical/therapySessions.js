@@ -1,0 +1,165 @@
+// Therapy sessions — PT, OT, ST with functional gains and Section GG scores
+// Tracks rehabilitation progress for Medicare Part A and managed care residents
+
+export const therapySessions = [
+  // ── James Patterson (res4, f1) — Post-CHF rehab, improving ───────────────
+  {
+    id: 'ts-001', residentId: 'res4', facilityId: 'f1', therapyType: 'PT', therapistId: 'staff12', therapistName: 'Robert Kim, PT',
+    date: '2026-03-14', startTime: '09:00', endTime: '09:45', minutes: 45,
+    goals: ['Improve bed mobility', 'Increase ambulation distance', 'Stair negotiation training'],
+    activities: ['Bed mobility exercises', 'Seated exercises for LE strength', 'Ambulation 150ft with rolling walker — min assist x1'],
+    sectionGG: { selfCare: 3, mobility: 3, priorLevel: 'Modified Independent' },
+    functionalGain: 'Ambulation distance increased from 100ft to 150ft. Reduced from mod assist to min assist.',
+    notes: 'Resident motivated and compliant. Progressing well. Target discharge to home with home health.',
+    billingCode: '97110', billingUnits: 3, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-002', residentId: 'res4', facilityId: 'f1', therapyType: 'OT', therapistId: 'staff13', therapistName: 'Lisa Chen, OT',
+    date: '2026-03-14', startTime: '10:30', endTime: '11:15', minutes: 45,
+    goals: ['Improve ADL independence', 'Upper body strengthening', 'Energy conservation for CHF'],
+    activities: ['Dressing training — upper and lower body', 'Grooming at sink — seated', 'Energy conservation education'],
+    sectionGG: { selfCare: 3, mobility: 3, priorLevel: 'Modified Independent' },
+    functionalGain: 'Dressing improved from mod assist to min assist. Grooming independent with setup.',
+    notes: 'Resident managing energy expenditure well. Demonstrating learned pacing techniques.',
+    billingCode: '97530', billingUnits: 3, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-003', residentId: 'res4', facilityId: 'f1', therapyType: 'PT', therapistId: 'staff12', therapistName: 'Robert Kim, PT',
+    date: '2026-03-12', startTime: '09:00', endTime: '09:45', minutes: 45,
+    goals: ['Improve bed mobility', 'Increase ambulation distance', 'Balance training'],
+    activities: ['Standing balance exercises', 'Ambulation 120ft with rolling walker — min assist x1', 'Stair training 4 steps — rail + min assist'],
+    sectionGG: { selfCare: 3, mobility: 2, priorLevel: 'Modified Independent' },
+    functionalGain: 'First stair training session. 4 steps ascending/descending with rail and min assist.',
+    notes: 'Good progress this week. Resident eager to return home.',
+    billingCode: '97110', billingUnits: 3, payerType: 'Medicare Part A',
+  },
+
+  // ── Dorothy Evans (res3, f2) — Limited mobility, wound healing ───────────
+  {
+    id: 'ts-004', residentId: 'res3', facilityId: 'f2', therapyType: 'PT', therapistId: 'staff26', therapistName: 'Michael Torres, PT',
+    date: '2026-03-14', startTime: '10:00', endTime: '10:30', minutes: 30,
+    goals: ['Maintain current mobility level', 'Pressure relief positioning', 'Wheelchair mobility'],
+    activities: ['Wheelchair propulsion training 50ft', 'Weight shifts for pressure relief', 'Transfer training bed to wheelchair — mod assist x1'],
+    sectionGG: { selfCare: 2, mobility: 2, priorLevel: 'Substantial Assistance' },
+    functionalGain: 'Maintaining function. Weight shift technique improving — performing independently with verbal cues.',
+    notes: 'Limited by wound pain. Positioning education reinforced for pressure ulcer prevention.',
+    billingCode: '97542', billingUnits: 2, payerType: 'Medicaid - Colorado',
+  },
+  {
+    id: 'ts-005', residentId: 'res3', facilityId: 'f2', therapyType: 'OT', therapistId: 'staff27', therapistName: 'Jennifer Adams, OT',
+    date: '2026-03-13', startTime: '14:00', endTime: '14:30', minutes: 30,
+    goals: ['Improve ADL function', 'Adaptive equipment training', 'Skin protection education'],
+    activities: ['Dressing lower body with reacher and sock aid', 'Grooming at bedside', 'Skin inspection education'],
+    sectionGG: { selfCare: 2, mobility: 2, priorLevel: 'Substantial Assistance' },
+    functionalGain: 'Beginning to use reacher for lower body dressing. Requires mod assist for sock placement.',
+    notes: 'Resident cooperative but limited endurance. Sessions kept to 30 minutes.',
+    billingCode: '97530', billingUnits: 2, payerType: 'Medicaid - Colorado',
+  },
+
+  // ── Margaret Chen (res1, f4) — Fall recovery, limited participation ──────
+  {
+    id: 'ts-006', residentId: 'res1', facilityId: 'f4', therapyType: 'PT', therapistId: 'staff46', therapistName: 'David Park, PT',
+    date: '2026-03-10', startTime: '10:00', endTime: '10:30', minutes: 30,
+    goals: ['Gait assessment post-falls', 'Balance training', 'Fall prevention strategies'],
+    activities: ['TUG test — 22 seconds (high fall risk)', 'Standing balance — eyes open/closed', 'Walker adjustment and fitting verification'],
+    sectionGG: { selfCare: 3, mobility: 2, priorLevel: 'Modified Independent' },
+    functionalGain: 'TUG test 22 seconds — high fall risk. Baseline established for intervention planning.',
+    notes: 'Resident confused at times during session. Cognitive status affecting ability to follow multi-step instructions. PT recommends supervised ambulation at all times.',
+    billingCode: '97110', billingUnits: 2, payerType: 'Medicare Part A',
+  },
+
+  // ── Robert Williams (res2, f4) — Deconditioning ─────────────────────────
+  {
+    id: 'ts-007', residentId: 'res2', facilityId: 'f4', therapyType: 'PT', therapistId: 'staff46', therapistName: 'David Park, PT',
+    date: '2026-03-14', startTime: '11:00', endTime: '11:30', minutes: 30,
+    goals: ['Prevent deconditioning', 'Improve endurance', 'Maintain independence in transfers'],
+    activities: ['Seated LE exercises', 'Standing exercises at parallel bars — 5 min', 'Transfer training — min assist'],
+    sectionGG: { selfCare: 3, mobility: 2, priorLevel: 'Supervision' },
+    functionalGain: 'Standing tolerance improved to 5 minutes from 3 minutes last week. Low energy but cooperative.',
+    notes: 'Malnutrition and COPD limiting endurance. Sessions kept short due to fatigue.',
+    billingCode: '97110', billingUnits: 2, payerType: 'Medicaid - Nevada',
+  },
+  {
+    id: 'ts-008', residentId: 'res2', facilityId: 'f4', therapyType: 'ST', therapistId: 'staff47', therapistName: 'Amanda Williams, SLP',
+    date: '2026-03-13', startTime: '14:00', endTime: '14:30', minutes: 30,
+    goals: ['Swallow safety assessment', 'Oral motor exercises', 'Diet texture evaluation'],
+    activities: ['Modified barium swallow study review', 'Oral motor strengthening exercises', 'Diet texture trial — mechanical soft with thin liquids'],
+    sectionGG: { selfCare: null, mobility: null, priorLevel: null },
+    functionalGain: 'Swallow function adequate for mechanical soft diet. No aspiration noted on modified barium swallow.',
+    notes: 'Post-choking incident follow-up. Mechanical soft diet appropriate. Regular diet not recommended due to decreased oral motor control.',
+    billingCode: '92610', billingUnits: 2, payerType: 'Medicaid - Nevada',
+  },
+
+  // ── Background therapy sessions across facilities ─────────────────────────
+  {
+    id: 'ts-009', residentId: 'res12', facilityId: 'f2', therapyType: 'PT', therapistId: 'staff26', therapistName: 'Michael Torres, PT',
+    date: '2026-03-14', startTime: '08:00', endTime: '09:00', minutes: 60,
+    goals: ['Post-hip replacement rehab', 'Weight bearing as tolerated', 'Gait training'],
+    activities: ['WBAT exercises', 'Ambulation 200ft with walker — CGA', 'Stair training 6 steps'],
+    sectionGG: { selfCare: 4, mobility: 3, priorLevel: 'Independent' },
+    functionalGain: 'Ambulation progressing well. From mod assist to CGA in 2 weeks. On track for discharge.',
+    notes: 'Excellent progress. Hip precautions maintained. Targeting discharge 3/21.',
+    billingCode: '97110', billingUnits: 4, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-010', residentId: 'res44', facilityId: 'f8', therapyType: 'PT', therapistId: 'staff83', therapistName: 'Carlos Medina, PT',
+    date: '2026-03-14', startTime: '10:00', endTime: '10:45', minutes: 45,
+    goals: ['Parkinson gait training', 'Freezing episode management', 'Balance training'],
+    activities: ['Visual cueing for gait initiation', 'Rhythmic auditory stimulation walking', 'Sit-to-stand 10 reps', 'Balance on foam surface'],
+    sectionGG: { selfCare: 3, mobility: 2, priorLevel: 'Supervision' },
+    functionalGain: 'Visual cueing reducing freezing episodes. 3 freezing events during session (down from 7 last week).',
+    notes: 'Responding well to visual cues. Recommend gait belt and close supervision during ambulation.',
+    billingCode: '97112', billingUnits: 3, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-011', residentId: 'res5', facilityId: 'f5', therapyType: 'OT', therapistId: 'staff64', therapistName: 'Sarah Johnson, OT',
+    date: '2026-03-13', startTime: '09:00', endTime: '09:30', minutes: 30,
+    goals: ['Increase ADL participation', 'Improve social engagement', 'Activity tolerance'],
+    activities: ['Personal care routine — grooming', 'Craft activity for fine motor and social engagement', 'Kitchen task — tea preparation with setup'],
+    sectionGG: { selfCare: 4, mobility: 4, priorLevel: 'Modified Independent' },
+    functionalGain: 'Resident completing grooming independently. Social engagement improving — participated in group craft activity for 20 minutes.',
+    notes: 'Depression limiting motivation. Positive response to structured activities. Recommend daily activity schedule.',
+    billingCode: '97530', billingUnits: 2, payerType: 'Medicaid - California',
+  },
+  {
+    id: 'ts-012', residentId: 'res16', facilityId: 'f3', therapyType: 'PT', therapistId: 'staff40', therapistName: 'Emily Watson, PT',
+    date: '2026-03-14', startTime: '09:00', endTime: '09:30', minutes: 30,
+    goals: ['Cardiac rehab maintenance', 'Endurance training', 'Fall prevention'],
+    activities: ['Seated bicycle 10 min at low resistance', 'Standing exercises 5 min', 'Ambulation 100ft — supervised'],
+    sectionGG: { selfCare: 4, mobility: 3, priorLevel: 'Supervision' },
+    functionalGain: 'Endurance stable. Able to complete 10 min on bicycle without desaturation.',
+    notes: 'CHF resident on maintenance therapy. Monitoring SpO2 throughout — stable at 95-97%.',
+    billingCode: '97110', billingUnits: 2, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-013', residentId: 'res29', facilityId: 'f5', therapyType: 'OT', therapistId: 'staff64', therapistName: 'Sarah Johnson, OT',
+    date: '2026-03-12', startTime: '14:00', endTime: '14:45', minutes: 45,
+    goals: ['Seizure safety in ADLs', 'Independent self-care', 'Cognitive-perceptual skills'],
+    activities: ['Kitchen safety training — stove alternatives', 'Bathroom safety assessment', 'Medication management training'],
+    sectionGG: { selfCare: 4, mobility: 4, priorLevel: 'Modified Independent' },
+    functionalGain: 'Demonstrating safe use of microwave for meal prep. Medication reminder system setup complete.',
+    notes: 'Good cognitive function between seizure episodes. Focus on safety and independence.',
+    billingCode: '97530', billingUnits: 3, payerType: 'Medicare Part A',
+  },
+  {
+    id: 'ts-014', residentId: 'res37', facilityId: 'f7', therapyType: 'PT', therapistId: 'staff72', therapistName: 'Angela Wright, PT',
+    date: '2026-03-13', startTime: '10:00', endTime: '10:30', minutes: 30,
+    goals: ['Pain management through movement', 'Maintain ROM', 'Transfer safety'],
+    activities: ['Gentle ROM exercises all extremities', 'Bed mobility with assist', 'Transfer training bed to wheelchair'],
+    sectionGG: { selfCare: 2, mobility: 1, priorLevel: 'Substantial Assistance' },
+    functionalGain: 'Maintaining ROM. Pain well-controlled during session with fentanyl patch.',
+    notes: 'Palliative therapy — focus on comfort and function preservation. No aggressive rehab goals.',
+    billingCode: '97110', billingUnits: 2, payerType: 'Medicare Part A',
+  },
+];
+
+export const therapySummary = {
+  totalSessionsThisWeek: therapySessions.filter(s => s.date >= '2026-03-10').length,
+  byType: {
+    PT: therapySessions.filter(s => s.therapyType === 'PT').length,
+    OT: therapySessions.filter(s => s.therapyType === 'OT').length,
+    ST: therapySessions.filter(s => s.therapyType === 'ST').length,
+  },
+  totalMinutesThisWeek: therapySessions.filter(s => s.date >= '2026-03-10').reduce((sum, s) => sum + s.minutes, 0),
+  residentsWithGains: therapySessions.filter(s => s.functionalGain && s.functionalGain.includes('improv')).length,
+};
