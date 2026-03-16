@@ -17,16 +17,16 @@ export function ModalProvider({ children }) {
     <ModalContext.Provider value={{ open: setModal, close }}>
       {children}
       {modal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-enter" onClick={close}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-enter" role="dialog" aria-modal="true" aria-labelledby="modal-title" onClick={close}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
             className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">{modal.title}</h2>
-              <button onClick={close} className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
-                <X size={18} className="text-gray-400" />
+              <h2 id="modal-title" className="text-lg font-semibold text-gray-900">{modal.title}</h2>
+              <button onClick={close} aria-label="Close dialog" className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+                <X size={18} className="text-gray-400" aria-hidden="true" />
               </button>
             </div>
             <div className="overflow-y-auto max-h-[calc(85vh-130px)] p-6 scrollbar-thin">
@@ -99,6 +99,10 @@ export function StatCard({ label, value, change, changeType, icon: Icon, color =
     <div
       className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-gray-200 transition-all active:scale-[0.98]' : ''}`}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+      aria-label={onClick ? `${label}: ${value}` : undefined}
     >
       <div className="flex items-center justify-between mb-3">
         <span className="text-xs text-gray-500 font-medium">{label}</span>
@@ -122,7 +126,13 @@ export function StatCard({ label, value, change, changeType, icon: Icon, color =
 /* ─── Card ─── */
 export function Card({ title, children, className = '', action, badge, onClick }) {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${onClick ? 'cursor-pointer hover:shadow-md transition-all' : ''} ${className}`} onClick={onClick}>
+    <div
+      className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${onClick ? 'cursor-pointer hover:shadow-md transition-all' : ''} ${className}`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
+    >
       {title && (
         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
@@ -177,12 +187,13 @@ export function StatusBadge({ status }) {
 /* ─── Confidence Bar ─── */
 export function ConfidenceBar({ value }) {
   const color = value >= 0.9 ? 'bg-green-500' : value >= 0.7 ? 'bg-amber-500' : 'bg-red-500';
+  const pct = (value * 100).toFixed(0);
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+    <div className="flex items-center gap-2" role="meter" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`Confidence: ${pct}%`}>
+      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden" aria-hidden="true">
         <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${value * 100}%` }} />
       </div>
-      <span className="text-[10px] text-gray-500 font-mono font-medium">{(value * 100).toFixed(0)}%</span>
+      <span className="text-[10px] text-gray-500 font-mono font-medium">{pct}%</span>
     </div>
   );
 }
@@ -208,14 +219,14 @@ export function ActionButton({ label, variant = 'primary', onClick, icon: Icon }
 export function ProgressBar({ value, label, color = 'blue' }) {
   const colors = { blue: 'bg-blue-500', emerald: 'bg-emerald-500', amber: 'bg-amber-500', red: 'bg-red-500' };
   return (
-    <div>
+    <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label ? `${label}: ${value}%` : `${value}%`}>
       {label && (
         <div className="flex justify-between mb-1.5">
           <span className="text-xs text-gray-500">{label}</span>
           <span className="text-xs text-gray-700 font-mono font-semibold">{value}%</span>
         </div>
       )}
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-gray-100 rounded-full overflow-hidden" aria-hidden="true">
         <div className={`h-full rounded-full ${colors[color]} transition-all`} style={{ width: `${value}%` }} />
       </div>
     </div>
@@ -258,6 +269,10 @@ export function FacilityCard({ facility, onClick }) {
     <div
       className={`bg-white border ${riskBorder} rounded-2xl p-5 hover:shadow-md transition-all cursor-pointer active:scale-[0.98]`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
+      aria-label={`${facility.name}, health score ${facility.healthScore}, ${facility.surveyRisk} risk`}
     >
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-gray-900">{facility.name}</h3>
@@ -284,6 +299,9 @@ export function ClickableRow({ children, onClick, className = '' }) {
     <div
       className={`rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995] ${className}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
     >
       {children}
     </div>

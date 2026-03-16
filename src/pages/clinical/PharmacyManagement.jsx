@@ -3,7 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
-import { medications, beersListMedications, psychotropicMedications, medicationsWithInteractions, activeMedications } from '../../data/clinical/medications';
+import { beersListMedications, psychotropicMedications, medicationsWithInteractions, activeMedications } from '../../data/clinical/medications';
 import { residents } from '../../data/entities/residents';
 
 const residentName = (id) => {

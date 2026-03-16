@@ -1,6 +1,7 @@
 import { MapPin, Bed, AlertTriangle, CheckCircle2, TrendingUp, Target, FileSearch, Bot, ChevronRight } from 'lucide-react';
 import { maData } from '../data/mockData';
-import { PageHeader, Card, StatusBadge, ConfidenceBar, useModal, ActionButton } from '../components/Widgets';
+import { PageHeader, Card, StatusBadge, ConfidenceBar, ActionButton } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 

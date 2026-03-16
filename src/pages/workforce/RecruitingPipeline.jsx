@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { Briefcase, Users, UserCheck, Clock, AlertTriangle, Send } from 'lucide-react';
-import { PageHeader, Card, StatusBadge, PriorityBadge, useModal } from '../../components/Widgets';
+import { PageHeader, Card, StatusBadge, PriorityBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
@@ -9,8 +8,6 @@ import { openPositions, candidates, recruitingSummary } from '../../data/workfor
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
 
 export default function RecruitingPipeline() {
-  const { open } = useModal();
-
   const inInterview = candidates.filter(c => c.status === 'interview').length;
   const offersPending = candidates.filter(c => c.status === 'offer').length;
   const positionsOver30 = openPositions.filter(p => p.daysOpen > 30).length;

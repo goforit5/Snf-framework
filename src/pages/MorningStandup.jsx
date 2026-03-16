@@ -1,22 +1,22 @@
 import { useState, useMemo } from 'react';
 import { AlertTriangle, Bed, UserPlus, UserMinus, ArrowLeftRight, ArrowUpRight, DollarSign, TrendingUp, TrendingDown, FileWarning, Activity, Shield, Users, Building2, BarChart3, Star, ClipboardCheck, Heart, Briefcase, ChevronRight, Clock, Banknote, Receipt, Stethoscope, MapPin } from 'lucide-react';
-import { morningStandup, financeData, clinicalData, maData as legacyMaData } from '../data/mockData';
+import { morningStandup, financeData } from '../data/mockData';
 import { facilities, facilityMap } from '../data/entities/facilities';
 import { regions } from '../data/entities/regions';
-import { censusByFacility, censusSummary, referralPipeline } from '../data/operations/census';
+import { censusByFacility, censusSummary } from '../data/operations/census';
 import { arAgingSummary, arAgingByFacility } from '../data/financial/arAging';
 import { budgetSummary, budgetByFacility } from '../data/financial/budgetData';
-import { cashPosition, cashForecast, covenants } from '../data/financial/treasuryData';
+import { cashPosition, cashForecast } from '../data/financial/treasuryData';
 import { claims } from '../data/financial/claims';
 import { starRatings, qualitySummary } from '../data/compliance/qualityMetrics';
 import { openIncidents, incidents } from '../data/clinical/incidents';
-import { coverageGaps, agencyFills, schedulingSummary } from '../data/workforce/scheduling';
+import { coverageGaps } from '../data/workforce/scheduling';
 import { maPipeline } from '../data/strategic/maData';
 import { PageHeader, Card, StatusBadge, ClickableRow, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 
 /* ─── Role Definitions ─── */
 const ROLES = [
@@ -331,8 +331,8 @@ function DONBriefing({ open }) {
 function AdminBriefing({ open }) {
   const { censusChanges, newAdmits, dischargesExpected, staffingIssues, criticalItems } = morningStandup;
   const projectedEOD = censusChanges.currentCensus + censusChanges.admissions - censusChanges.discharges;
-  const f4Census = censusByFacility.find(c => c.facilityId === 'f4');
-  const f4Budget = budgetByFacility.find(b => b.facilityId === 'f4');
+  const _f4Census = censusByFacility.find(c => c.facilityId === 'f4');
+  const _f4Budget = budgetByFacility.find(b => b.facilityId === 'f4');
   const f4Fac = facilityMap['f4'];
 
   const censusStats = [

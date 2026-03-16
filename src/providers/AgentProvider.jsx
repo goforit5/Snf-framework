@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useState, useCallback, useMemo } from 'react';
 import { agentRegistry, agentById, agentsByDomain } from '../data/agents/agentRegistry';
 import { agentActivity as agentActivityData } from '../data/agents/agentActivity';
 
@@ -45,9 +45,3 @@ export function AgentProvider({ children }) {
 }
 
 export { AgentContext };
-
-export function useAgentContext() {
-  const ctx = useContext(AgentContext);
-  if (!ctx) throw new Error('useAgentContext must be used within AgentProvider');
-  return ctx;
-}

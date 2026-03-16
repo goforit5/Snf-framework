@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { CalendarClock, AlertTriangle, Users, Clock, DollarSign, Activity } from 'lucide-react';
 import { PageHeader, Card, PriorityBadge, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
@@ -9,9 +8,9 @@ import { shifts, coverageGaps, agencyFills, schedulingSummary } from '../../data
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
 
 export default function SchedulingStaffing() {
-  const totalRequired = shifts.reduce((s, sh) => s + sh.required, 0);
-  const totalFilled = shifts.reduce((s, sh) => s + sh.filled, 0);
-  const totalAgency = shifts.reduce((s, sh) => s + sh.agency, 0);
+  const _totalRequired = shifts.reduce((s, sh) => s + sh.required, 0);
+  const _totalFilled = shifts.reduce((s, sh) => s + sh.filled, 0);
+  const _totalAgency = shifts.reduce((s, sh) => s + sh.agency, 0);
   const openShifts = coverageGaps.length;
   const otHours = 68.5; // from payroll data
   const ppdRatio = 3.8;

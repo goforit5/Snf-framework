@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Globe, Building2, Users, TrendingUp, ArrowUpRight, MapPin, BarChart3 } from 'lucide-react';
 import { competitors, marketRates, referralTrends, demographicData } from '../../data/strategic/marketIntel';
 import { PageHeader, Card, SectionLabel } from '../../components/Widgets';

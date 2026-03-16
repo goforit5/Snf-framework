@@ -1,7 +1,8 @@
 import { Shield, AlertTriangle, DollarSign, Search, Clock, Activity } from 'lucide-react';
 import { riskEvents, insuranceClaims, riskSummary } from '../../data/compliance/riskData';
 import { facilityName, formatCurrency, formatDate } from '../../data/helpers';
-import { PageHeader, Card, useModal, ActionButton } from '../../components/Widgets';
+import { PageHeader, Card, ActionButton } from '../../components/Widgets';
+import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

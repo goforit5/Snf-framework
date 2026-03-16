@@ -82,10 +82,11 @@ export function DataTable({
     <div>
       {searchable && (
         <div className="mb-3 relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
           <input
             type="text"
             placeholder="Search..."
+            aria-label="Search table"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
@@ -93,9 +94,10 @@ export function DataTable({
           {searchQuery && (
             <button
               onClick={() => handleSearch('')}
+              aria-label="Clear search"
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              &times;
+              <span aria-hidden="true">&times;</span>
             </button>
           )}
         </div>
@@ -108,17 +110,19 @@ export function DataTable({
               {columns.map((col) => (
                 <th
                   key={col.key}
+                  scope="col"
                   className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider ${
                     sortable && col.sortable !== false ? 'cursor-pointer select-none hover:text-gray-700 transition-colors' : ''
                   }`}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
+                  aria-sort={sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
                 >
                   <div className="flex items-center gap-1">
                     {col.label}
                     {sortable && col.sortable !== false && sortKey === col.key && (
                       sortDir === 'asc'
-                        ? <ChevronUp size={12} className="text-blue-600" />
-                        : <ChevronDown size={12} className="text-blue-600" />
+                        ? <ChevronUp size={12} className="text-blue-600" aria-hidden="true" />
+                        : <ChevronDown size={12} className="text-blue-600" aria-hidden="true" />
                     )}
                   </div>
                 </th>
@@ -157,20 +161,22 @@ export function DataTable({
             {sortedData.length} item{sortedData.length !== 1 ? 's' : ''}
             {' '}&middot; Page {currentPage} of {totalPages}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" role="navigation" aria-label="Table pagination">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
+              aria-label="Previous page"
               className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeft size={14} className="text-gray-500" />
+              <ChevronLeft size={14} className="text-gray-500" aria-hidden="true" />
             </button>
             <button
               onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
+              aria-label="Next page"
               className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronRight size={14} className="text-gray-500" />
+              <ChevronRight size={14} className="text-gray-500" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -222,15 +228,14 @@ export function TrendIndicator({ value, direction = 'flat', sentiment = 'neutral
 }
 
 /* ─── Metric Sparkline ─── */
-export function MetricSparkline({ data = [], height = 40, color = '#3B82F6', showLast = false }) {
+export function MetricSparkline({ data = [], height = 40, width: svgWidth = 120, color = '#3B82F6', showLast = false, trend }) {
   if (!data || data.length < 2) return null;
 
   const max = Math.max(...data);
   const min = Math.min(...data);
   const range = max - min || 1;
-  const width = 120;
   const padding = showLast ? 6 : 2;
-  const plotWidth = width - padding * 2;
+  const plotWidth = svgWidth - padding * 2;
   const plotHeight = height - 4;
 
   const points = data.map((val, i) => {
@@ -242,24 +247,98 @@ export function MetricSparkline({ data = [], height = 40, color = '#3B82F6', sho
   const pathD = `M ${points.join(' L ')}`;
   const lastPoint = points[points.length - 1]?.split(',');
 
+  // Auto-detect trend from data if not provided
+  const resolvedTrend = trend ?? (data[data.length - 1] > data[0] ? 'up' : data[data.length - 1] < data[0] ? 'down' : 'flat');
+  const trendConfig = {
+    up: { icon: ArrowUpRight, color: 'text-green-600' },
+    down: { icon: ArrowDownRight, color: 'text-red-500' },
+    flat: { icon: Minus, color: 'text-gray-400' },
+  };
+  const tc = trendConfig[resolvedTrend] || trendConfig.flat;
+  const TrendIcon = tc.icon;
+
   return (
-    <svg width={width} height={height} className="overflow-visible">
-      <path
-        d={pathD}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      {showLast && lastPoint && (
-        <circle
-          cx={parseFloat(lastPoint[0])}
-          cy={parseFloat(lastPoint[1])}
-          r={3}
-          fill={color}
+    <div className="inline-flex items-center gap-1.5">
+      <svg width={svgWidth} height={height} className="overflow-visible">
+        <path
+          d={pathD}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
         />
-      )}
-    </svg>
+        {showLast && lastPoint && (
+          <circle
+            cx={parseFloat(lastPoint[0])}
+            cy={parseFloat(lastPoint[1])}
+            r={3}
+            fill={color}
+          />
+        )}
+      </svg>
+      <TrendIcon size={14} className={tc.color} />
+    </div>
+  );
+}
+
+/* ─── Time Grouped List ─── */
+export function TimeGroupedList({ items = [], renderItem, getTimestamp }) {
+  const groups = useMemo(() => {
+    if (!items.length || !getTimestamp) return [];
+
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterdayStart = new Date(todayStart);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    const weekStart = new Date(todayStart);
+    weekStart.setDate(weekStart.getDate() - 7);
+
+    const buckets = {
+      Today: [],
+      Yesterday: [],
+      'This Week': [],
+      Older: [],
+    };
+
+    const sorted = [...items].sort((a, b) => new Date(getTimestamp(b)) - new Date(getTimestamp(a)));
+
+    for (const item of sorted) {
+      const ts = new Date(getTimestamp(item));
+      if (ts >= todayStart) {
+        buckets.Today.push(item);
+      } else if (ts >= yesterdayStart) {
+        buckets.Yesterday.push(item);
+      } else if (ts >= weekStart) {
+        buckets['This Week'].push(item);
+      } else {
+        buckets.Older.push(item);
+      }
+    }
+
+    return Object.entries(buckets).filter(([, arr]) => arr.length > 0);
+  }, [items, getTimestamp]);
+
+  if (!groups.length) return null;
+
+  return (
+    <div className="space-y-5">
+      {groups.map(([label, groupItems]) => (
+        <div key={label}>
+          <div className="flex items-center gap-3 mb-2.5">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</h3>
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="text-[10px] text-gray-400 tabular-nums">{groupItems.length}</span>
+          </div>
+          <div className="space-y-1.5">
+            {groupItems.map((item, i) => (
+              <div key={item.id ?? i}>
+                {renderItem(item)}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

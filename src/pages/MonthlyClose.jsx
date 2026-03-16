@@ -1,6 +1,7 @@
 import { CheckCircle2, Circle, Loader2, Clock, AlertTriangle, Bot, Calendar, Lock, FileText, User } from 'lucide-react';
 import { financeData } from '../data/mockData';
-import { PageHeader, Card, ActorBadge, useModal, ActionButton, ProgressBar } from '../components/Widgets';
+import { PageHeader, Card, ActorBadge, ActionButton, ProgressBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 

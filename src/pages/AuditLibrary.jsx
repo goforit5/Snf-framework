@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Shield, Activity, AlertTriangle, Users, Bot, User, Play, FileText, CheckCircle2, ChevronRight, Database, Pencil, Plus } from 'lucide-react';
 import { auditCategories, auditTypes, complianceFindings } from '../data/complianceData';
-import { PageHeader, ActionButton, useModal, ConfidenceBar } from '../components/Widgets';
+import { PageHeader, ActionButton, ConfidenceBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { QuickFilter, SearchInput } from '../components/FilterComponents';

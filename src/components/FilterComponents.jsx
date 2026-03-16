@@ -13,13 +13,14 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
   }
 
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" role="group" aria-label="Filters">
       {filters.map((filter) => {
         const isActive = active.includes(filter.value);
         return (
           <button
             key={filter.value}
             onClick={() => toggleFilter(filter.value)}
+            aria-pressed={isActive}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-[0.97] ${
               isActive
                 ? 'bg-blue-600 text-white shadow-sm'
@@ -47,10 +48,11 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
 export function SearchInput({ placeholder = 'Search...', value = '', onChange, onClear }) {
   return (
     <div className="relative">
-      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
       <input
         type="text"
         placeholder={placeholder}
+        aria-label={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
@@ -58,9 +60,10 @@ export function SearchInput({ placeholder = 'Search...', value = '', onChange, o
       {value && (
         <button
           onClick={() => { onClear ? onClear() : onChange?.(''); }}
+          aria-label="Clear search"
           className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-gray-100 transition-colors"
         >
-          <X size={13} className="text-gray-400" />
+          <X size={13} className="text-gray-400" aria-hidden="true" />
         </button>
       )}
     </div>
@@ -144,9 +147,10 @@ export function DateRangeFilter({ startDate, endDate, onChange, presets = defaul
         </button>
       ))}
       <div className="flex items-center gap-1.5 ml-1">
-        <Calendar size={13} className="text-gray-400" />
+        <Calendar size={13} className="text-gray-400" aria-hidden="true" />
         <input
           type="date"
+          aria-label="Start date"
           value={startDate || ''}
           onChange={(e) => handleDateChange('start', e.target.value)}
           className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
@@ -154,6 +158,7 @@ export function DateRangeFilter({ startDate, endDate, onChange, presets = defaul
         <span className="text-xs text-gray-400">to</span>
         <input
           type="date"
+          aria-label="End date"
           value={endDate || ''}
           onChange={(e) => handleDateChange('end', e.target.value)}
           className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
@@ -207,13 +212,16 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+        aria-label={`Scope: ${currentScope?.label || 'Enterprise'}`}
         className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
       >
         {scopeIcon()}
         <span className="text-sm font-medium text-gray-700">
           {currentScope?.label || 'Enterprise'}
         </span>
-        <ChevronDown size={13} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={13} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
 
       {isOpen && (

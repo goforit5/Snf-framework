@@ -1,7 +1,7 @@
-import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
-import { useAuth } from './AuthProvider';
+import { createContext, useState, useCallback, useMemo, useEffect } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { facilities } from '../data/entities/facilities';
-import { regions, regionMap } from '../data/entities/regions';
+import { regionMap } from '../data/entities/regions';
 
 /* ─── Scope Context ─── */
 const ScopeContext = createContext(null);
@@ -118,9 +118,3 @@ export function ScopeProvider({ children }) {
 }
 
 export { ScopeContext };
-
-export function useScopeContext() {
-  const ctx = useContext(ScopeContext);
-  if (!ctx) throw new Error('useScopeContext must be used within ScopeProvider');
-  return ctx;
-}

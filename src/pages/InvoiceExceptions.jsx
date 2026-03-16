@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { AlertTriangle, FileText, DollarSign, Bot, Shield, CheckCircle2, XCircle, HelpCircle, PenLine, Tag, Scale, BarChart3 } from 'lucide-react';
 import { invoiceExceptions } from '../data/mockData';
-import { PageHeader, ActionButton, useModal } from '../components/Widgets';
+import { PageHeader, ActionButton } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue, EvidencePanel } from '../components/DecisionComponents';

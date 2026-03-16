@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Calendar, FileText, BarChart3, AlertTriangle, CheckCircle2, Users, Clock } from 'lucide-react';
 import { upcomingMeetings, resolutions, committeeReports, kpiDashboard } from '../../data/strategic/boardData';
 import { PageHeader, Card, SectionLabel, StatusBadge, ProgressBar } from '../../components/Widgets';

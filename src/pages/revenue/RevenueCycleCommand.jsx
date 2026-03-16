@@ -20,10 +20,10 @@ export default function RevenueCycleCommand() {
   ];
 
   const deniedClaims = claims.filter(c => c.status === 'denied');
-  const over120 = claims.filter(c => c.status !== 'paid' && c.status !== 'denied');
+  const _over120 = claims.filter(c => c.status !== 'paid' && c.status !== 'denied');
 
   const decisions = [
-    ...deniedClaims.slice(0, 3).map((c, i) => ({
+    ...deniedClaims.slice(0, 3).map((c) => ({
       id: `rev-deny-${c.id}`,
       title: `Appeal denied claim ${c.claimNumber}`,
       description: `${c.denialReason}. Total charge: $${c.totalCharge.toLocaleString()}. Denial code: ${c.denialCode}.`,

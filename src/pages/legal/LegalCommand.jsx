@@ -23,7 +23,7 @@ export default function LegalCommand() {
   ];
 
   const decisions = [
-    ...expiringContracts.map((c, i) => ({
+    ...expiringContracts.map((c) => ({
       id: `dec-contract-${c.id}`,
       title: `Renewal: ${c.title}`,
       description: `Contract expires ${c.endDate}. Annual value: $${(c.annualValue / 1000).toFixed(0)}K. ${c.autoRenewal ? 'Auto-renewal enabled — opt out if renegotiating.' : 'Manual renewal required.'}`,

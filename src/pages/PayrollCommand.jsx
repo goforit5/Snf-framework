@@ -1,7 +1,7 @@
-import { useState } from 'react';
 import { Users, Clock, AlertTriangle, DollarSign, UserCheck, FileWarning, Bot, CheckCircle2, TrendingUp, ArrowUpRight, Shield, Briefcase, CalendarClock, ChevronRight } from 'lucide-react';
 import { payrollData } from '../data/mockData';
-import { PageHeader, Card, PriorityBadge, ActionButton, AgentHumanSplit, SectionLabel, ConfidenceBar, useModal } from '../components/Widgets';
+import { PageHeader, Card, PriorityBadge, ActionButton, AgentHumanSplit, SectionLabel, ConfidenceBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';

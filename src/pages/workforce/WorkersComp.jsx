@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Shield, DollarSign, AlertTriangle, Clock, Activity, TrendingDown } from 'lucide-react';
 import { PageHeader, Card, PriorityBadge, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';

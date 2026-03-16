@@ -7,7 +7,7 @@ import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
-const criticalItems = inventory.filter(i => i.status === 'critical' || (i.currentQty <= i.reorderPoint && i.status !== 'on-order'));
+const _criticalItems = inventory.filter(i => i.status === 'critical' || (i.currentQty <= i.reorderPoint && i.status !== 'on-order'));
 const totalOnOrder = inventory.filter(i => i.status === 'on-order').length;
 const parCompliance = Math.round((inventory.filter(i => i.currentQty >= i.parLevel).length / inventory.length) * 100);
 const monthlySpend = Math.round(inventory.reduce((s, i) => s + (i.unitCost * i.reorderQty * 0.4), 0));

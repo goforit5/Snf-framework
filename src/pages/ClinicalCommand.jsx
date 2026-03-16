@@ -1,6 +1,7 @@
 import { AlertTriangle, Activity, Shield, Heart, Brain, Pill, FileWarning, ClipboardList, Bot, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { clinicalData } from '../data/mockData';
-import { PageHeader, Card, PriorityBadge, ActionButton, useModal, EmptyAgentBadge } from '../components/Widgets';
+import { PageHeader, Card, PriorityBadge, ActionButton, EmptyAgentBadge } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';

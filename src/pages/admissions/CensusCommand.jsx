@@ -3,7 +3,7 @@ import { Bed, UserPlus, UserMinus, Users, TrendingUp, Clock } from 'lucide-react
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { censusByFacility, censusSummary, referralPipeline } from '../../data/operations/census';
 import { facilities, facilityMap } from '../../data/entities/facilities';
-import { PageHeader, Card, useModal } from '../../components/Widgets';
+import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

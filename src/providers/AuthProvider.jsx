@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useState, useCallback, useMemo } from 'react';
 import { demoUsers, SECTION_VISIBILITY } from '../data/platform/users';
 
 /* ─── Auth Context ─── */
@@ -38,9 +38,3 @@ export function AuthProvider({ children }) {
 }
 
 export { AuthContext };
-
-export function useAuth() {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-}

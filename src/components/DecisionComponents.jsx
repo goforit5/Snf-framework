@@ -142,6 +142,9 @@ export function DecisionCard({
         <div
           className="flex-1 min-w-0 cursor-pointer"
           onClick={onToggle}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.(); } }}
         >
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="text-sm font-semibold text-gray-900 truncate">{title}</h4>
@@ -158,12 +161,12 @@ export function DecisionCard({
             </span>
           )}
           {governanceLevel != null && <GovernanceBadge level={governanceLevel} />}
-          <div className="flex items-center gap-1 ml-1">
+          <div className="flex items-center gap-1 ml-1" role="group" aria-label="Decision actions">
             {onApprove && (
               <button
                 onClick={handleApprove}
                 className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97]"
-                title="Approve"
+                aria-label={`Approve: ${title}`}
               >
                 Approve
               </button>
@@ -172,7 +175,7 @@ export function DecisionCard({
               <button
                 onClick={handleDismissAction(onOverride)}
                 className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97]"
-                title="Override"
+                aria-label={`Override: ${title}`}
               >
                 Override
               </button>
@@ -181,17 +184,19 @@ export function DecisionCard({
               <button
                 onClick={(e) => { e.stopPropagation(); onEscalate(); }}
                 className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97]"
-                title="Escalate"
+                aria-label={`Escalate: ${title}`}
               >
-                <ArrowUp size={12} />
+                <ArrowUp size={12} aria-hidden="true" />
               </button>
             )}
           </div>
           <button
             onClick={onToggle}
+            aria-expanded={isExpanded}
+            aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for: ${title}`}
             className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
           >
-            {isExpanded ? <ChevronDown size={14} className="text-gray-400 transition-transform duration-200" /> : <ChevronRight size={14} className="text-gray-400 transition-transform duration-200" />}
+            {isExpanded ? <ChevronDown size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" /> : <ChevronRight size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -234,40 +239,44 @@ export function DecisionCard({
             )}
             <EvidencePanel evidence={evidence} />
             {/* Action buttons repeated in expanded view for accessibility */}
-            <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-100" role="group" aria-label="Decision actions">
               {onApprove && (
                 <button
                   onClick={handleApprove}
+                  aria-label={`Approve: ${title}`}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
-                  <CheckCircle2 size={13} />
+                  <CheckCircle2 size={13} aria-hidden="true" />
                   Approve
                 </button>
               )}
               {onOverride && (
                 <button
                   onClick={handleDismissAction(onOverride)}
+                  aria-label={`Override: ${title}`}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
-                  <XCircle size={13} />
+                  <XCircle size={13} aria-hidden="true" />
                   Override
                 </button>
               )}
               {onEscalate && (
                 <button
                   onClick={onEscalate}
+                  aria-label={`Escalate: ${title}`}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
-                  <ArrowUp size={13} />
+                  <ArrowUp size={13} aria-hidden="true" />
                   Escalate
                 </button>
               )}
               {onDefer && (
                 <button
                   onClick={onDefer}
+                  aria-label={`Defer: ${title}`}
                   className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
-                  <Clock size={13} />
+                  <Clock size={13} aria-hidden="true" />
                   Defer
                 </button>
               )}

@@ -39,6 +39,10 @@ export function AuditEntry({ entry, isExpanded = false, onToggle }) {
     <div
       className="rounded-xl border border-gray-100 bg-white hover:border-gray-200 transition-all duration-200 cursor-pointer"
       onClick={onToggle}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isExpanded}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.(); } }}
     >
       <div className="flex items-center gap-3 px-4 py-3">
         <div className={`w-7 h-7 rounded-lg ${aConfig.bg} flex items-center justify-center flex-shrink-0`}>

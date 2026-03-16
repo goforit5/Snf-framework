@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { TrendingDown, Clock, Users, UserMinus, MessageSquare, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import { PageHeader, Card } from '../../components/Widgets';

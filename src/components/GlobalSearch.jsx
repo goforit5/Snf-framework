@@ -290,7 +290,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
   let globalIndex = -1;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]" role="dialog" aria-modal="true" aria-label="Global search" onClick={onClose}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
 
@@ -314,13 +314,15 @@ export default function GlobalSearch({ isOpen, onClose }) {
           {query && (
             <button
               onClick={() => setQuery('')}
+              aria-label="Clear search query"
               className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              <X size={16} className="text-gray-400" />
+              <X size={16} className="text-gray-400" aria-hidden="true" />
             </button>
           )}
           <button
             onClick={onClose}
+            aria-label="Close search"
             className="text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-md"
           >
             ESC

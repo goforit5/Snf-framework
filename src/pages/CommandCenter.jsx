@@ -1,10 +1,12 @@
 import { Building2, AlertTriangle, Bot, DollarSign, Clock, ShieldAlert, Users, CheckCircle2, ArrowRight, Zap, ChevronRight } from 'lucide-react';
 import { facilities, exceptions, agentActivity, surveyData } from '../data/mockData';
-import { PageHeader, Card, FacilityCard, PriorityBadge, ActionButton, AgentHumanSplit, ClickableRow, SectionLabel, ConfidenceBar, useModal } from '../components/Widgets';
+import { PageHeader, Card, FacilityCard, PriorityBadge, ActionButton, AgentHumanSplit, ClickableRow, SectionLabel, ConfidenceBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
+import FacilityHeatmap from '../components/FacilityHeatmap';
 
 const agentSummaries = [
   { name: 'AP Processing', actions: '47 invoices', detail: '$187,400 processed', savings: '$1,240 corrections caught', icon: DollarSign, color: 'text-emerald-600', bgColor: 'bg-emerald-50' },
@@ -215,7 +217,12 @@ export default function CommandCenter() {
         <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Do These First" badge={decisions.length} />
       </div>
 
-      <SectionLabel>Portfolio Facilities</SectionLabel>
+      <SectionLabel>Portfolio Heatmap</SectionLabel>
+      <div className="mb-8">
+        <FacilityHeatmap />
+      </div>
+
+      <SectionLabel>Facility Spotlight</SectionLabel>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
         {facilities.map((facility) => (
           <FacilityCard key={facility.id} facility={facility} onClick={() => openFacilityModal(facility)} />

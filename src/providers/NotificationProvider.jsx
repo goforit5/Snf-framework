@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import { createContext, useState, useCallback, useMemo } from 'react';
 import { notifications as seedNotifications } from '../data/platform/notifications';
 
 /* ─── Notification Context ─── */
@@ -20,6 +20,12 @@ export function NotificationProvider({ children }) {
   const markAsRead = useCallback((id) => {
     setNotifications(prev =>
       prev.map(n => n.id === id ? { ...n, read: true } : n)
+    );
+  }, []);
+
+  const dismiss = useCallback((id) => {
+    setNotifications(prev =>
+      prev.filter(n => n.id !== id)
     );
   }, []);
 
@@ -46,9 +52,10 @@ export function NotificationProvider({ children }) {
     unreadCount,
     criticalCount,
     markAsRead,
+    dismiss,
     dismissAll,
     addNotification,
-  }), [notifications, unreadCount, criticalCount, markAsRead, dismissAll, addNotification]);
+  }), [notifications, unreadCount, criticalCount, markAsRead, dismiss, dismissAll, addNotification]);
 
   return (
     <NotificationContext.Provider value={value}>
@@ -58,9 +65,3 @@ export function NotificationProvider({ children }) {
 }
 
 export { NotificationContext };
-
-export function useNotificationContext() {
-  const ctx = useContext(NotificationContext);
-  if (!ctx) throw new Error('useNotificationContext must be used within NotificationProvider');
-  return ctx;
-}

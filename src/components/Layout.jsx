@@ -12,16 +12,17 @@ import {
   Building, Globe, Landmark, LineChart, Flag,
   Menu, X, ChevronDown, ChevronRight, Bot, Search, Bell
 } from 'lucide-react';
-import { useAuth } from '../providers/AuthProvider';
-import { useScopeContext } from '../providers/ScopeProvider';
-import { useAgentContext } from '../providers/AgentProvider';
-import { useNotificationContext } from '../providers/NotificationProvider';
+import { useAuth } from '../hooks/useAuth';
+import { useScopeContext } from '../hooks/useScopeContext';
+import { useAgentContext } from '../hooks/useAgentContext';
+import { useNotificationContext } from '../hooks/useNotificationContext';
 import { demoUserList } from '../data/platform/users';
 import { facilities } from '../data/entities/facilities';
 import { regions } from '../data/entities/regions';
 import { ScopeSelector } from './FilterComponents';
 import GlobalSearch from './GlobalSearch';
 import { useGlobalSearchShortcut } from './GlobalSearchUtils';
+import NotificationCenter from './NotificationCenter';
 
 /* ─── Navigation Definition ─── */
 const NAV_SECTIONS = [
@@ -237,27 +238,32 @@ function RoleSwitcher() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="true"
+        aria-label={`Switch role, current: ${user.name}`}
         className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
       >
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm" aria-hidden="true">
           {user.avatarInitials}
         </div>
-        <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+        <div className="absolute top-full right-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden" role="menu" aria-label="Role switcher">
           {/* Current user header */}
           <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
             <p className="text-sm font-semibold text-gray-900">{user.name}</p>
             <p className="text-[11px] text-gray-500">{user.title}</p>
           </div>
           <div className="py-1">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 pt-2 pb-1">Switch Role</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 pt-2 pb-1" id="role-switcher-label">Switch Role</p>
             {demoUserList.map((u) => (
               <button
                 key={u.id}
+                role="menuitem"
                 onClick={() => { switchRole(u.role); setIsOpen(false); }}
+                aria-current={user.id === u.id ? 'true' : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
                   user.id === u.id ? 'bg-blue-50' : 'hover:bg-gray-50'
                 }`}
@@ -283,16 +289,23 @@ function RoleSwitcher() {
 }
 
 /* ─── Notification Bell ─── */
-function NotificationBell() {
+function NotificationBell({ onClick }) {
   const { unreadCount, criticalCount } = useNotificationContext();
 
   return (
-    <button className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
-      <Bell size={18} className="text-gray-500" />
+    <button
+      onClick={onClick}
+      className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
+      aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+    >
+      <Bell size={18} className="text-gray-500" aria-hidden="true" />
       {unreadCount > 0 && (
-        <span className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
-          criticalCount > 0 ? 'bg-red-500' : 'bg-blue-500'
-        }`}>
+        <span
+          className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
+            criticalCount > 0 ? 'bg-red-500' : 'bg-blue-500'
+          }`}
+          aria-hidden="true"
+        >
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}
@@ -305,8 +318,8 @@ function AgentPulse() {
   const { agentCount } = useAgentContext();
 
   return (
-    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100">
-      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100" role="status" aria-live="polite">
+      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
       <span className="text-xs text-green-700 font-medium">{agentCount.active} agents active</span>
     </div>
   );
@@ -352,20 +365,19 @@ export default function Layout({ children }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
   const { user, canViewSection } = useAuth();
 
   useGlobalSearchShortcut(setSearchOpen);
 
   // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [location.pathname]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- conditional on prev !== current, not cascading
+  useEffect(() => { setMobileMenuOpen(prev => prev ? false : prev); }, [location.pathname]);
 
   // Close mobile menu when resizing away from mobile
-  useEffect(() => {
-    if (responsiveMode !== 'mobile') setMobileMenuOpen(false);
-  }, [responsiveMode]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- conditional, only fires on breakpoint change
+  useEffect(() => { if (responsiveMode !== 'mobile') setMobileMenuOpen(prev => prev ? false : prev); }, [responsiveMode]);
 
   const currentSectionKey = findCurrentSection(location.pathname);
   const breadcrumb = buildBreadcrumb(location.pathname);
@@ -425,7 +437,7 @@ export default function Layout({ children }) {
       </div>
 
       {/* Navigation */}
-      <nav className={`flex-1 overflow-y-auto py-3 ${full ? 'px-3' : 'px-1.5'} scrollbar-thin`}>
+      <nav className={`flex-1 overflow-y-auto py-3 ${full ? 'px-3' : 'px-1.5'} scrollbar-thin`} aria-label="Main navigation">
         {visibleSections.map((section) => {
           const SectionIcon = section.icon;
           const isCurrentSection = section.key === currentSectionKey;
@@ -436,6 +448,8 @@ export default function Layout({ children }) {
               {full ? (
                 <button
                   onClick={() => toggleSection(section.key)}
+                  aria-expanded={isExpanded}
+                  aria-label={`${section.title} section`}
                   className={`w-full flex items-center justify-between px-2 py-2 min-h-[44px] text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
                     isCurrentSection
                       ? 'text-blue-600 bg-blue-50/50'
@@ -443,10 +457,10 @@ export default function Layout({ children }) {
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
-                    <SectionIcon size={12} />
+                    <SectionIcon size={12} aria-hidden="true" />
                     {section.title}
                   </div>
-                  {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                  {isExpanded ? <ChevronDown size={12} aria-hidden="true" /> : <ChevronRight size={12} aria-hidden="true" />}
                 </button>
               ) : (
                 <div className="flex justify-center py-1">
@@ -472,13 +486,14 @@ export default function Layout({ children }) {
                       <Link
                         key={item.path}
                         to={item.path}
+                        aria-current={isActive ? 'page' : undefined}
                         className={`flex items-center gap-2.5 px-3 py-2 min-h-[44px] rounded-xl text-sm transition-all ${
                           isActive
                             ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                       >
-                        <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
+                        <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} aria-hidden="true" />
                         {item.label}
                       </Link>
                     );
@@ -509,6 +524,11 @@ export default function Layout({ children }) {
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
+      {/* Skip navigation link */}
+      <a href="#main-content" className="skip-nav">
+        Skip to main content
+      </a>
+
       {/* Mobile sidebar overlay */}
       {isMobile && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex">
@@ -527,7 +547,7 @@ export default function Layout({ children }) {
 
       {/* Desktop / tablet sidebar */}
       {!isMobile && (
-        <aside className={`${isIconsOnly ? 'w-16' : 'w-64'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`}>
+        <aside className={`${isIconsOnly ? 'w-16' : 'w-64'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`} aria-label="Primary navigation">
           {sidebarContent(!isIconsOnly)}
         </aside>
       )}
@@ -541,16 +561,19 @@ export default function Layout({ children }) {
             {isMobile ? (
               <button
                 onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open menu"
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
               >
-                <Menu size={20} />
+                <Menu size={20} aria-hidden="true" />
               </button>
             ) : (
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
+                aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+                aria-expanded={sidebarOpen}
                 className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
               >
-                {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+                {sidebarOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
               </button>
             )}
             <div className="hidden sm:flex items-center gap-1.5 text-sm">
@@ -564,9 +587,10 @@ export default function Layout({ children }) {
           <div className="flex-1 flex justify-center px-2 md:px-4">
             <button
               onClick={() => setSearchOpen(true)}
+              aria-label="Search the platform (Command+K)"
               className="w-full max-w-md flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 min-h-[44px] text-sm text-gray-400 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
             >
-              <Search size={14} className="text-gray-400 flex-shrink-0" />
+              <Search size={14} className="text-gray-400 flex-shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left hidden sm:inline">Search anything...</span>
               <span className="flex-1 text-left sm:hidden">Search...</span>
               <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-gray-200 text-[10px] font-semibold text-gray-500">
@@ -579,19 +603,22 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-1 md:gap-2">
             <div className="hidden lg:block"><ScopeSelectorBar /></div>
             <div className="hidden md:block"><AgentPulse /></div>
-            <NotificationBell />
+            <NotificationBell onClick={() => setNotificationsOpen(true)} />
             <RoleSwitcher />
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin">
+        <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin" tabIndex={-1}>
           {children}
         </main>
       </div>
 
       {/* Global Search Overlay */}
       <GlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* Notification Center */}
+      <NotificationCenter isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
     </div>
   );
 }

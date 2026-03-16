@@ -21,7 +21,7 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-labelledby="slide-panel-title">
       <div
         className="absolute inset-0 bg-black/20 backdrop-blur-sm backdrop-enter"
         onClick={onClose}
@@ -30,12 +30,13 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
         className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white shadow-2xl flex flex-col slide-in-right`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <h2 id="slide-panel-title" className="text-lg font-semibold text-gray-900">{title}</h2>
           <button
             onClick={onClose}
+            aria-label="Close panel"
             className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
           >
-            <X size={18} className="text-gray-400" />
+            <X size={18} className="text-gray-400" aria-hidden="true" />
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
@@ -75,7 +76,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={{ toast, removeToast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[60] flex flex-col-reverse gap-2 pointer-events-none">
+      <div className="fixed bottom-4 right-4 z-[60] flex flex-col-reverse gap-2 pointer-events-none" role="status" aria-live="polite" aria-label="Notifications">
         {toasts.map((t) => (
           <ToastItem key={t.id} toast={t} onDismiss={() => removeToast(t.id)} />
         ))}
@@ -109,9 +110,10 @@ function ToastItem({ toast, onDismiss }) {
       )}
       <button
         onClick={onDismiss}
+        aria-label="Dismiss notification"
         className="p-0.5 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
       >
-        <X size={13} className="text-gray-400" />
+        <X size={13} className="text-gray-400" aria-hidden="true" />
       </button>
     </div>
   );
@@ -143,9 +145,10 @@ export function Toast({ message, type = 'info', action, duration = 5000, onDismi
       {onDismiss && (
         <button
           onClick={onDismiss}
+          aria-label="Dismiss notification"
           className="p-0.5 rounded-full hover:bg-gray-100 transition-colors flex-shrink-0"
         >
-          <X size={13} className="text-gray-400" />
+          <X size={13} className="text-gray-400" aria-hidden="true" />
         </button>
       )}
     </div>
@@ -173,17 +176,17 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" onClick={onCancel}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
         className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
-          <div className={`w-10 h-10 rounded-xl ${config.iconBg} flex items-center justify-center mb-4`}>
+          <div className={`w-10 h-10 rounded-xl ${config.iconBg} flex items-center justify-center mb-4`} aria-hidden="true">
             <VIcon size={20} className={config.iconColor} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
+          <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
           <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
         </div>
         <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
@@ -206,8 +209,9 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
 }
 
 /* ─── Empty State ─── */
-export function EmptyState({ icon: Icon, title = 'All clear', description = 'Agents handled everything. No decisions needed.', action }) {
+export function EmptyState({ icon: Icon, title = 'All clear', description = 'Agents handled everything. No decisions needed.', action, actionLabel, onAction }) {
   const DisplayIcon = Icon || CheckCircle2;
+  const resolvedAction = action || (actionLabel && onAction ? { label: actionLabel, onClick: onAction } : null);
 
   return (
     <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
@@ -216,13 +220,62 @@ export function EmptyState({ icon: Icon, title = 'All clear', description = 'Age
       </div>
       <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
       <p className="text-xs text-gray-500 max-w-xs">{description}</p>
-      {action && (
+      {resolvedAction && (
         <button
-          onClick={action.onClick}
+          onClick={resolvedAction.onClick}
           className="mt-4 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all active:scale-[0.97]"
         >
-          {action.label}
+          {resolvedAction.label}
         </button>
+      )}
+    </div>
+  );
+}
+
+/* ─── Bulk Action Bar ─── */
+export function BulkActionBar({ selectedCount, actions = [], onClear }) {
+  if (!selectedCount || selectedCount === 0) return null;
+
+  const variantClasses = {
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    success: 'bg-green-600 hover:bg-green-700 text-white',
+    danger: 'bg-red-600 hover:bg-red-700 text-white',
+    ghost: 'bg-white/20 hover:bg-white/30 text-white',
+  };
+
+  return (
+    <div
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-900 text-white rounded-2xl px-5 py-3 shadow-2xl border border-gray-700 bulk-bar-enter"
+    >
+      <span className="text-sm font-semibold tabular-nums">
+        {selectedCount} selected
+      </span>
+      <div className="w-px h-5 bg-gray-600" />
+      <div className="flex items-center gap-2">
+        {actions.map((action, i) => {
+          const ActionIcon = action.icon;
+          return (
+            <button
+              key={i}
+              onClick={action.onClick}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex items-center gap-1.5 ${variantClasses[action.variant] || variantClasses.ghost}`}
+            >
+              {ActionIcon && <ActionIcon size={13} />}
+              {action.label}
+            </button>
+          );
+        })}
+      </div>
+      {onClear && (
+        <>
+          <div className="w-px h-5 bg-gray-600" />
+          <button
+            onClick={onClear}
+            className="p-1 rounded-full hover:bg-white/10 transition-colors"
+          >
+            <X size={14} className="text-gray-400" />
+          </button>
+        </>
       )}
     </div>
   );

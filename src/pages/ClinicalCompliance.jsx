@@ -1,13 +1,10 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Shield, Activity, ChevronRight, CheckCircle2, FileText,
   Bot, AlertTriangle, Database, Pencil, Plus, User
 } from 'lucide-react';
-import {
-  PageHeader, Card, ActionButton, ClickableRow, useModal,
-  ConfidenceBar, AgentHumanSplit, SectionLabel, ProgressBar
-} from '../components/Widgets';
+import { PageHeader, Card, ActionButton, ClickableRow, ConfidenceBar, AgentHumanSplit, SectionLabel, ProgressBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import {
   complianceTrends, agentMetrics,

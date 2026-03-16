@@ -3,7 +3,6 @@ import { DollarSign, PieChart as PieIcon, TrendingUp, Percent, Users, CreditCard
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { censusByFacility, censusSummary } from '../../data/operations/census';
 import { facilities, facilityMap } from '../../data/entities/facilities';
-import { payers } from '../../data/entities/payers';
 import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { DollarSign, Clock, TrendingUp, AlertTriangle, Wallet, BarChart3 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PageHeader, Card } from '../../components/Widgets';
@@ -16,7 +15,7 @@ export default function ARManagement() {
     }, 0),
   }));
 
-  const over120Total = bucketTotals.find(b => b.bucket === '120+')?.amount || 0;
+  const _over120Total = bucketTotals.find(b => b.bucket === '120+')?.amount || 0;
   const over90Total = arAgingSummary.over90Total;
 
   const stats = [
@@ -42,7 +41,7 @@ export default function ARManagement() {
     .filter(f => f.over120 > 0)
     .sort((a, b) => b.over120 - a.over120);
 
-  const decisions = facilityOver120.slice(0, 5).map((f, i) => ({
+  const decisions = facilityOver120.slice(0, 5).map((f) => ({
     id: `ar-wo-${f.facilityId}`,
     title: `${f.facilityId.toUpperCase()} — ${f.count} accounts over 90 days ($${(f.over90 / 1000).toFixed(0)}K)`,
     description: `$${(f.over120 / 1000).toFixed(0)}K in 120+ day bucket. Review for write-off or escalated collection action.`,

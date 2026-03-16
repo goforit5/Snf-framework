@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Shield, AlertTriangle, Clock, CheckCircle2, FileWarning, RefreshCw } from 'lucide-react';
 import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';

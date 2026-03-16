@@ -1,13 +1,14 @@
 import { DollarSign, TrendingDown, TrendingUp, AlertTriangle, Clock, Wallet, CreditCard, Building2, CheckCircle2, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { financeData, facilities } from '../data/mockData';
-import { PageHeader, Card, useModal, ActionButton, ConfidenceBar, ProgressBar } from '../components/Widgets';
+import { financeData } from '../data/mockData';
+import { PageHeader, Card, ActionButton, ConfidenceBar, ProgressBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 
 export default function FinanceCommand() {
   const { open } = useModal();
   const { summary, variance } = financeData;
-  const totalVariance = variance.reduce((sum, v) => sum + v.variance, 0);
+  const _totalVariance = variance.reduce((sum, v) => sum + v.variance, 0);
 
   const stats = [
     { label: 'Cash Position', value: `$${(summary.cash / 1000000).toFixed(1)}M`, icon: Wallet, color: 'emerald', change: '+$180K vs prior month', changeType: 'positive' },

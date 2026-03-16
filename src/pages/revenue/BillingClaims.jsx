@@ -21,7 +21,7 @@ export default function BillingClaims() {
     { label: 'Clean Claim Rate', value: `${cleanRate}%`, icon: DollarSign, color: 'cyan', change: 'Target 95%', changeType: cleanRate >= 95 ? 'positive' : 'negative' },
   ];
 
-  const decisions = denied.map((c, i) => ({
+  const decisions = denied.map((c) => ({
     id: `bill-${c.id}`,
     title: `Appeal ${c.claimNumber} — ${c.denialCode}`,
     description: `${c.denialReason}. Charge: $${c.totalCharge.toLocaleString()}. Facility: ${c.facilityId.toUpperCase()}.`,

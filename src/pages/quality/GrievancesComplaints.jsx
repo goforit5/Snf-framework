@@ -1,7 +1,8 @@
 import { MessageSquare, Clock, Users, UserCheck, AlertTriangle, ThumbsUp } from 'lucide-react';
 import { grievances, grievanceSummary } from '../../data/compliance/grievances';
 import { facilityName, formatDate } from '../../data/helpers';
-import { PageHeader, Card, useModal, ActionButton } from '../../components/Widgets';
+import { PageHeader, Card, ActionButton } from '../../components/Widgets';
+import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

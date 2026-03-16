@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, DollarSign, Users, Percent, ShieldAlert, Activity, AlertTriangle, Bot, CheckCircle2, ChevronRight } from 'lucide-react';
 import { facilities, revenueData, financeData, surveyData, clinicalData } from '../data/mockData';
-import { PageHeader, Card, ClickableRow, ActionButton, SectionLabel, useModal } from '../components/Widgets';
+import { PageHeader, Card, ClickableRow, ActionButton, SectionLabel } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 
@@ -23,7 +24,7 @@ export default function ExecutiveDashboard() {
   const ebitdarChange = ((latestEbitdar - prevEbitdar) / prevEbitdar * 100).toFixed(0);
   const maxRevenue = Math.max(...revenueData.map(d => d.revenue));
   const avgHealth = (facilities.reduce((s, f) => s + f.healthScore, 0) / facilities.length).toFixed(0);
-  const totalIncidents = facilities.reduce((s, f) => s + f.openIncidents, 0);
+  const _totalIncidents = facilities.reduce((s, f) => s + f.openIncidents, 0);
 
   const stats = [
     { label: 'EBITDAR (Mar)', value: `$${latestEbitdar}K`, icon: TrendingUp, color: 'emerald', change: `+${ebitdarChange}% vs Feb`, changeType: 'positive', onClick: () => openFinancialDetail(revenueData[revenueData.length - 1]) },

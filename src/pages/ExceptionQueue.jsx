@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Filter, CheckCircle2, XCircle, MessageSquare, ArrowUpCircle, Building2, Clock, Zap, Shield } from 'lucide-react';
 import { exceptions } from '../data/mockData';
-import { PageHeader, PriorityBadge, ConfidenceBar, ActionButton, EmptyAgentBadge, AgentHumanSplit, useModal } from '../components/Widgets';
+import { PageHeader, PriorityBadge, ConfidenceBar, ActionButton, EmptyAgentBadge, AgentHumanSplit } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { QuickFilter } from '../components/FilterComponents';
 import { EmptyState } from '../components/FeedbackComponents';
-import { useDecisionQueue } from '../hooks/useDecisionQueue';
 
 const FILTER_OPTIONS = [
   { label: 'All', value: 'All' },
@@ -64,8 +64,9 @@ export default function ExceptionQueue() {
     { label: 'Avg Resolution', value: '4.2h', change: 'Under 6h SLA', changeType: 'positive' },
   ];
 
+  const [_now] = useState(() => Date.now());
   function timeAgo(ts) {
-    const diff = Date.now() - new Date(ts).getTime();
+    const diff = _now - new Date(ts).getTime();
     const hours = Math.floor(diff / 3600000);
     if (hours < 1) return 'Just now';
     if (hours < 24) return `${hours}h ago`;

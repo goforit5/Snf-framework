@@ -1,7 +1,8 @@
 import { Star, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Activity, BarChart3 } from 'lucide-react';
 import { starRatings, qualityMeasures, qualitySummary } from '../../data/compliance/qualityMetrics';
 import { facilityName } from '../../data/helpers';
-import { PageHeader, Card, useModal, ActionButton } from '../../components/Widgets';
+import { PageHeader, Card, ActionButton } from '../../components/Widgets';
+import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

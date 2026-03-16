@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2, Bot, ChevronRight } from 'lucide-react';
 import { surveyData } from '../data/mockData';
-import { PageHeader, Card, PriorityBadge, ActionButton, ClickableRow, useModal, ProgressBar } from '../components/Widgets';
+import { PageHeader, Card, PriorityBadge, ActionButton, ClickableRow, ProgressBar } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 

@@ -1,6 +1,7 @@
 import { Building2, AlertTriangle, Users, ShieldAlert, FileText, Bed, Heart, Clock, Bot, Wrench } from 'lucide-react';
 import { facilities, clinicalData } from '../data/mockData';
-import { PageHeader, Card, PriorityBadge, StatusBadge, ClickableRow, useModal, ActionButton } from '../components/Widgets';
+import { PageHeader, Card, PriorityBadge, StatusBadge, ClickableRow, ActionButton } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';

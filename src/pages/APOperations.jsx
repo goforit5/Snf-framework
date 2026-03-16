@@ -1,6 +1,7 @@
 import { Receipt, CheckCircle2, AlertTriangle, Clock, DollarSign, FileText, Bot, ArrowRight, Package, ShieldCheck, XCircle } from 'lucide-react';
 import { apData } from '../data/mockData';
-import { PageHeader, Card, StatusBadge, ConfidenceBar, ActionButton, AgentHumanSplit, SectionLabel, useModal } from '../components/Widgets';
+import { PageHeader, Card, StatusBadge, ConfidenceBar, ActionButton, AgentHumanSplit, SectionLabel } from '../components/Widgets';
+import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 

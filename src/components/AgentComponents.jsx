@@ -81,6 +81,10 @@ export function AgentActivityFeed({ activities = [], maxItems = 10, showViewAll 
             key={activity.id}
             className="rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 transition-all duration-200 cursor-pointer"
             onClick={() => setExpandedId(isExpanded ? null : activity.id)}
+            role="button"
+            tabIndex={0}
+            aria-expanded={isExpanded}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedId(isExpanded ? null : activity.id); } }}
           >
             <div className="flex items-center gap-3 px-4 py-2.5">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot(activity.status)}`} />
@@ -176,8 +180,8 @@ export function AgentStatusIndicator({ status, agentName, lastRun }) {
   }
 
   return (
-    <div className="inline-flex items-center gap-2">
-      <div className={`w-2 h-2 rounded-full ${config.dot} ${status === 'active' ? 'animate-pulse' : ''}`} />
+    <div className="inline-flex items-center gap-2" role="status" aria-label={`${agentName || 'Agent'}: ${config.label}`}>
+      <div className={`w-2 h-2 rounded-full ${config.dot} ${status === 'active' ? 'animate-pulse' : ''}`} aria-hidden="true" />
       {agentName && <span className="text-xs font-medium text-gray-700">{agentName}</span>}
       {lastRun && <span className="text-[10px] text-gray-400">ran {formatTimeAgo(lastRun)}</span>}
     </div>
@@ -234,6 +238,10 @@ export function AgentCard({ agent, onClick }) {
     <div
       className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 hover:shadow-md hover:border-gray-200 transition-all duration-200 cursor-pointer active:scale-[0.98]"
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}
+      aria-label={`${displayName || name} agent, ${domain} domain, ${sc.label}`}
     >
       <div className="flex items-start gap-3 mb-3">
         <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>

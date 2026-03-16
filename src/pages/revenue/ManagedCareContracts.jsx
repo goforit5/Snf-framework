@@ -2,7 +2,7 @@ import { FileText, DollarSign, TrendingUp, Clock, AlertTriangle, BarChart3 } fro
 import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
-import { contracts, contractSummary } from '../../data/financial/contracts';
+import { contracts } from '../../data/financial/contracts';
 
 export default function ManagedCareContracts() {
   const payerContracts = contracts.filter(c => c.type === 'payer');

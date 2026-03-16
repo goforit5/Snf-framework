@@ -5,6 +5,23 @@
     @apply bg-[#f5f5f7] text-gray-900 antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
   }
+
+  /* Global focus-visible styles for accessibility (WCAG 2.1 AA) */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white;
+    border-radius: inherit;
+  }
+
+  /* Skip navigation link — visually hidden until focused */
+  .skip-nav {
+    @apply absolute z-[100] -translate-y-full bg-blue-600 text-white px-4 py-3 text-sm font-semibold rounded-b-xl transition-transform duration-200;
+    left: 50%;
+    transform: translateX(-50%) translateY(-100%);
+  }
+  .skip-nav:focus {
+    transform: translateX(-50%) translateY(0);
+    @apply outline-none ring-2 ring-blue-300;
+  }
 }
 
 @layer utilities {

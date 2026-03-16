@@ -22,8 +22,8 @@ export default function TreasuryCashFlow() {
 
   const covenantColumns = [
     { key: 'name', label: 'Covenant', render: (v) => <span className="text-xs font-semibold">{v}</span> },
-    { key: 'threshold', label: 'Threshold', render: (v, row) => <span className="font-mono text-xs">{typeof v === 'number' && v > 1000 ? `$${(v / 1000000).toFixed(1)}M` : v}</span> },
-    { key: 'current', label: 'Current', render: (v, row) => <span className="font-mono text-xs font-semibold text-green-600">{typeof v === 'number' && v > 1000 ? `$${(v / 1000000).toFixed(1)}M` : v}</span> },
+    { key: 'threshold', label: 'Threshold', render: (v) => <span className="font-mono text-xs">{typeof v === 'number' && v > 1000 ? `$${(v / 1000000).toFixed(1)}M` : v}</span> },
+    { key: 'current', label: 'Current', render: (v) => <span className="font-mono text-xs font-semibold text-green-600">{typeof v === 'number' && v > 1000 ? `$${(v / 1000000).toFixed(1)}M` : v}</span> },
     { key: 'margin', label: 'Margin', render: (v) => <span className="text-xs text-green-600 font-medium">{v}</span> },
     { key: 'status', label: 'Status', render: (v) => <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${v === 'compliant' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{v}</span> },
     { key: 'lender', label: 'Lender', render: (v) => <span className="text-xs text-gray-500">{v}</span> },

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Users, Briefcase, TrendingDown, Clock, GraduationCap, CalendarClock, AlertTriangle, Shield, UserMinus, DollarSign } from 'lucide-react';
 import { PageHeader, Card, SectionLabel, AgentHumanSplit } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
