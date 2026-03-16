@@ -550,7 +550,7 @@ function DependencyGraphTab() {
 function PerformanceTrendingTab() {
   const [selectedAgent, setSelectedAgent] = useState('clinical-monitor');
 
-  const metrics = agentPerformance[selectedAgent] || [];
+  const metrics = useMemo(() => agentPerformance[selectedAgent] || [], [selectedAgent]);
   const anomalies = useMemo(() => detectAnomalies(metrics), [metrics]);
   const anomalyDates = new Set(anomalies.map(a => a.date));
 
