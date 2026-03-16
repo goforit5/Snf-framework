@@ -144,7 +144,7 @@ const routineActivities = [
   ]),
 
   // ─── Quality Measures (daily trending) ──────────────────────────────
-  ...days.flatMap((day, di) => [
+  ...days.flatMap((day) => [
     { id: `qm-${day}-001`, agentId: 'quality-measures', trigger: 'Daily quality measure update', action: `Updated quality measure trending for 5 facilities. Recalculated 15 CMS quality measures.`, result: `${2} measures improving, ${1} measure declining, ${12} stable`, confidence: 0.90, timeSaved: '1.0 hrs', costImpact: '$0', status: 'completed', policiesChecked: ['CMS quality measure thresholds', '5-star rating methodology', 'Peer comparison benchmarks'], timestamp: `${day}T04:00:00Z`, facilityId: 'all', details: `Improving: pressure ulcer rate (Pacific Gardens), rehospitalization rate (Bayview). Declining: fall rate (Heritage Oaks). All other measures within acceptable range.` },
   ]),
 

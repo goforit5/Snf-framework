@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, TrendingUp, TrendingDown, Bot, User, ChevronRight, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
+import { ModalContext } from './WidgetUtils';
 
 /* ─── Modal System ─── */
-const ModalContext = createContext(null);
-
 export function ModalProvider({ children }) {
   const [modal, setModal] = useState(null);
   const close = useCallback(() => setModal(null), []);
@@ -21,12 +20,12 @@ export function ModalProvider({ children }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-enter" onClick={close}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
-            className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden modal-enter"
+            className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <h2 className="text-lg font-semibold text-gray-900">{modal.title}</h2>
-              <button onClick={close} className="p-1.5 rounded-full hover:bg-gray-100 transition-colors">
+              <button onClick={close} className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
                 <X size={18} className="text-gray-400" />
               </button>
             </div>
@@ -43,10 +42,6 @@ export function ModalProvider({ children }) {
       )}
     </ModalContext.Provider>
   );
-}
-
-export function useModal() {
-  return useContext(ModalContext);
 }
 
 /* ─── Page Header ─── */
@@ -202,7 +197,7 @@ export function ActionButton({ label, variant = 'primary', onClick, icon: Icon }
     outline: 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700',
   };
   return (
-    <button onClick={onClick} className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex items-center gap-1.5 ${variants[variant]}`}>
+    <button onClick={onClick} className={`px-3.5 py-2 min-h-[44px] min-w-[44px] rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 ${variants[variant]}`}>
       {Icon && <Icon size={13} />}
       {label}
     </button>

@@ -9,13 +9,6 @@ import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
 import Layout from './components/Layout';
 import ComingSoon from './pages/ComingSoon';
 
-/* ─── Helper: create a placeholder component for pages not yet built ─── */
-function placeholder(title, section) {
-  return function PlaceholderPage() {
-    return <ComingSoon title={title} section={section} />;
-  };
-}
-
 /* ─── Platform (existing pages) ─── */
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
 const ExecutiveDashboard = lazy(() => import('./pages/ExecutiveDashboard'));

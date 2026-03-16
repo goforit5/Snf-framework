@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { ToastContext } from './FeedbackUtils';
 
 /* ─── Slide Out Panel ─── */
 export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }) {
@@ -22,14 +23,11 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       <div
-        className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-200"
+        className="absolute inset-0 bg-black/20 backdrop-blur-sm backdrop-enter"
         onClick={onClose}
       />
       <div
-        className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white shadow-2xl flex flex-col animate-slide-in-right`}
-        style={{
-          animation: 'slideInRight 250ms ease-out',
-        }}
+        className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white shadow-2xl flex flex-col slide-in-right`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
@@ -44,37 +42,27 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
           {children}
         </div>
       </div>
-      <style>{`
-        @keyframes slideInRight {
-          from { transform: translateX(100%); }
-          to { transform: translateX(0); }
-        }
-      `}</style>
     </div>
   );
 }
 
 /* ─── Toast System ─── */
-const ToastContext = createContext(null);
-
-export function useToast() {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within a ToastProvider');
-  return ctx;
-}
-
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const counterRef = useRef(0);
 
   const removeToast = useCallback((id) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    // Mark toast as exiting, then remove after exit animation
+    setToasts((prev) => prev.map((t) => t.id === id ? { ...t, exiting: true } : t));
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 200);
   }, []);
 
   const toast = useCallback(({ message, type = 'info', action, duration = 5000 }) => {
     const id = ++counterRef.current;
     setToasts((prev) => {
-      const next = [...prev, { id, message, type, action, duration }];
+      const next = [...prev, { id, message, type, action, duration, exiting: false }];
       // Stack max 3
       return next.slice(-3);
     });
@@ -107,8 +95,7 @@ function ToastItem({ toast, onDismiss }) {
 
   return (
     <div
-      className="pointer-events-auto bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px]"
-      style={{ animation: 'toastIn 200ms ease-out' }}
+      className={`pointer-events-auto bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] ${toast.exiting ? 'toast-exit' : 'toast-enter'}`}
     >
       <Icon size={16} className={color} />
       <p className="text-sm text-gray-700 flex-1">{toast.message}</p>
@@ -126,12 +113,6 @@ function ToastItem({ toast, onDismiss }) {
       >
         <X size={13} className="text-gray-400" />
       </button>
-      <style>{`
-        @keyframes toastIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 }
@@ -148,7 +129,7 @@ export function Toast({ message, type = 'info', action, duration = 5000, onDismi
   }, [duration, onDismiss]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px]">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] toast-enter">
       <Icon size={16} className={color} />
       <p className="text-sm text-gray-700 flex-1">{message}</p>
       {action && (
@@ -195,9 +176,8 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onCancel}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
-        className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden modal-enter"
         onClick={(e) => e.stopPropagation()}
-        style={{ animation: 'modalIn 200ms ease-out' }}
       >
         <div className="p-6">
           <div className={`w-10 h-10 rounded-xl ${config.iconBg} flex items-center justify-center mb-4`}>
@@ -220,12 +200,6 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
             {confirmLabel}
           </button>
         </div>
-        <style>{`
-          @keyframes modalIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-          }
-        `}</style>
       </div>
     </div>
   );
@@ -257,7 +231,7 @@ export function EmptyState({ icon: Icon, title = 'All clear', description = 'Age
 /* ─── Page Skeleton ─── */
 export function PageSkeleton() {
   return (
-    <div className="animate-pulse space-y-6 p-6">
+    <div className="animate-pulse skeleton-pulse space-y-6 p-6">
       {/* Header skeleton */}
       <div className="space-y-2">
         <div className="h-7 w-48 bg-gray-200 rounded-lg" />

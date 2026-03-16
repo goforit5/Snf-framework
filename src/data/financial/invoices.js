@@ -1,7 +1,7 @@
 // Invoice data — 100+ invoices across 8 facilities
 // GL codes follow standard SNF chart of accounts
 
-const vendors = [
+const _vendors = [
   { id: 'v1', name: 'Sysco Foods' },
   { id: 'v2', name: 'McKesson Medical' },
   { id: 'v3', name: 'Medline Industries' },

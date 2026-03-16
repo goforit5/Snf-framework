@@ -1,16 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 
 export function useKeyboardNav(items = [], { onSelect, onApprove, onEscalate } = {}) {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [rawSelectedIndex, setSelectedIndex] = useState(0);
 
-  // Clamp index when items change
-  useEffect(() => {
-    if (items.length === 0) {
-      setSelectedIndex(0);
-    } else if (selectedIndex >= items.length) {
-      setSelectedIndex(items.length - 1);
-    }
-  }, [items.length, selectedIndex]);
+  // Clamp index to valid range — derived from raw state + items length
+  const selectedIndex = useMemo(() => {
+    if (items.length === 0) return 0;
+    if (rawSelectedIndex >= items.length) return items.length - 1;
+    return rawSelectedIndex;
+  }, [rawSelectedIndex, items.length]);
 
   const handleKeyDown = useCallback((e) => {
     if (items.length === 0) return;

@@ -117,7 +117,7 @@ const routineAuditEntries = [
   ]),
 
   // ─── Quality Measures (daily) ──────────────────────────────────────
-  ...days.flatMap((day, di) => [
+  ...days.flatMap((day) => [
     { id: `raud-qm-${day}-001`, traceId: `TRACE-QM-${day}`, timestamp: `${day}T04:00:00Z`, agentId: 'quality-measures', actorName: 'Quality Measures Agent', actorType: 'agent', action: 'Updated 15 CMS quality measures', target: 'All facilities — quality measures', targetType: 'facility', confidence: 0.90, policiesChecked: ['CMS quality measure thresholds', '5-star methodology', 'Peer comparison'], evidence: ['MDS data', 'Clinical records', 'CMS benchmarks'], disposition: `${2} improving, ${1} declining, ${12} stable`, facilityId: 'all', parentId: null, governanceLevel: 0 },
   ]),
 
@@ -223,7 +223,7 @@ const routineAuditEntries = [
   ))),
 
   // ─── Per-Facility Infection Control Audit ──────────────────────────
-  ...days.filter((_, di) => di % 2 === 0).flatMap((day, di) => ['f1', 'f2', 'f3', 'f4', 'f5'].map((fid, fi) => (
+  ...days.filter((_, di) => di % 2 === 0).flatMap((day) => ['f1', 'f2', 'f3', 'f4', 'f5'].map((fid, fi) => (
     { id: `raud-ic-fac-${day}-${fid}`, traceId: `TRACE-IC-FAC-${day}-${fid}`, timestamp: `${day}T06:${String(15 + fi * 6).padStart(2, '0')}:00Z`, agentId: 'infection-control', actorName: 'Infection Control Agent', actorType: 'agent', action: `Surveillance at ${['Sunrise', 'Meadowbrook', 'Pacific Gardens', 'Heritage Oaks', 'Bayview'][fi]}: ${[2, 3, 1, 4, 2][fi]} active cases`, target: `${['Sunrise', 'Meadowbrook', 'Pacific Gardens', 'Heritage Oaks', 'Bayview'][fi]} — infection surveillance`, targetType: 'facility', confidence: 0.92, policiesChecked: ['Infection surveillance', 'Hand hygiene standards', 'Antibiotic stewardship'], evidence: ['Lab results', 'Audit data', 'Antibiotic orders'], disposition: `Hand hygiene: ${[82, 72, 86, 68, 80][fi]}%`, facilityId: fid, parentId: null, governanceLevel: 0 }
   ))),
 

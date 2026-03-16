@@ -16,11 +16,12 @@ import { useAuth } from '../providers/AuthProvider';
 import { useScopeContext } from '../providers/ScopeProvider';
 import { useAgentContext } from '../providers/AgentProvider';
 import { useNotificationContext } from '../providers/NotificationProvider';
-import { demoUsers, demoUserList } from '../data/platform/users';
+import { demoUserList } from '../data/platform/users';
 import { facilities } from '../data/entities/facilities';
 import { regions } from '../data/entities/regions';
 import { ScopeSelector } from './FilterComponents';
-import GlobalSearch, { useGlobalSearchShortcut } from './GlobalSearch';
+import GlobalSearch from './GlobalSearch';
+import { useGlobalSearchShortcut } from './GlobalSearchUtils';
 
 /* ─── Navigation Definition ─── */
 const NAV_SECTIONS = [
@@ -286,7 +287,7 @@ function NotificationBell() {
   const { unreadCount, criticalCount } = useNotificationContext();
 
   return (
-    <button className="relative p-2 rounded-xl hover:bg-gray-100 transition-colors">
+    <button className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
       <Bell size={18} className="text-gray-500" />
       {unreadCount > 0 && (
         <span className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
@@ -311,8 +312,44 @@ function AgentPulse() {
   );
 }
 
+/* ─── Responsive Breakpoint Constants ─── */
+const BREAKPOINT_MOBILE = 768;
+const BREAKPOINT_TABLET = 1024;
+
+function useResponsiveMode() {
+  const [mode, setMode] = useState(() => {
+    if (typeof window === 'undefined') return 'full';
+    const w = window.innerWidth;
+    if (w < BREAKPOINT_MOBILE) return 'mobile';
+    if (w < BREAKPOINT_TABLET) return 'icons';
+    return 'full';
+  });
+
+  useEffect(() => {
+    const mqMobile = window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE - 1}px)`);
+    const mqTablet = window.matchMedia(`(min-width: ${BREAKPOINT_MOBILE}px) and (max-width: ${BREAKPOINT_TABLET - 1}px)`);
+
+    function update() {
+      if (mqMobile.matches) setMode('mobile');
+      else if (mqTablet.matches) setMode('icons');
+      else setMode('full');
+    }
+
+    mqMobile.addEventListener('change', update);
+    mqTablet.addEventListener('change', update);
+    return () => {
+      mqMobile.removeEventListener('change', update);
+      mqTablet.removeEventListener('change', update);
+    };
+  }, []);
+
+  return mode;
+}
+
 /* ─── Main Layout ─── */
 export default function Layout({ children }) {
+  const responsiveMode = useResponsiveMode();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
   const location = useLocation();
@@ -320,11 +357,24 @@ export default function Layout({ children }) {
 
   useGlobalSearchShortcut(setSearchOpen);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Close mobile menu when resizing away from mobile
+  useEffect(() => {
+    if (responsiveMode !== 'mobile') setMobileMenuOpen(false);
+  }, [responsiveMode]);
+
   const currentSectionKey = findCurrentSection(location.pathname);
   const breadcrumb = buildBreadcrumb(location.pathname);
 
+  const isIconsOnly = responsiveMode === 'icons' || (responsiveMode === 'full' && !sidebarOpen);
+  const isMobile = responsiveMode === 'mobile';
+
   // Initialize collapsed state: current section + platform expanded, rest collapsed
-  const [expandedSections, setExpandedSections] = useState(() => {
+  const [userExpandedSections, setUserExpandedSections] = useState(() => {
     const stored = loadCollapsedState();
     if (stored) return stored;
     const initial = {};
@@ -334,18 +384,16 @@ export default function Layout({ children }) {
     return initial;
   });
 
-  // Auto-expand current section when route changes
-  useEffect(() => {
-    setExpandedSections(prev => {
-      if (prev[currentSectionKey]) return prev;
-      const next = { ...prev, [currentSectionKey]: true };
-      saveCollapsedState(next);
-      return next;
-    });
-  }, [currentSectionKey]);
+  // Auto-expand current section — derived from user state + current route
+  const expandedSections = useMemo(() => {
+    if (userExpandedSections[currentSectionKey]) return userExpandedSections;
+    const merged = { ...userExpandedSections, [currentSectionKey]: true };
+    saveCollapsedState(merged);
+    return merged;
+  }, [userExpandedSections, currentSectionKey]);
 
   const toggleSection = (key) => {
-    setExpandedSections(prev => {
+    setUserExpandedSections(prev => {
       const next = { ...prev, [key]: !prev[key] };
       saveCollapsedState(next);
       return next;
@@ -358,88 +406,131 @@ export default function Layout({ children }) {
     [canViewSection]
   );
 
-  return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
-      {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-0'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`}>
-        <div className="w-64 h-full flex flex-col">
-          {/* Logo */}
-          <div className="p-5 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm">
-                <Bot size={18} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-sm font-bold text-gray-900 tracking-tight">Ensign</h1>
-                <p className="text-[10px] text-gray-400 leading-tight font-medium">Agentic Framework</p>
-              </div>
-            </div>
+  /* ─── Sidebar content (shared between desktop and mobile overlay) ─── */
+  const sidebarContent = (full) => (
+    <div className={`${full ? 'w-64' : 'w-16'} h-full flex flex-col transition-all duration-200`}>
+      {/* Logo */}
+      <div className={`${full ? 'p-5' : 'p-3'} border-b border-gray-100`}>
+        <div className={`flex items-center ${full ? 'gap-3' : 'justify-center'}`}>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
+            <Bot size={18} className="text-white" />
           </div>
+          {full && (
+            <div>
+              <h1 className="text-sm font-bold text-gray-900 tracking-tight">Ensign</h1>
+              <p className="text-[10px] text-gray-400 leading-tight font-medium">Agentic Framework</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-          {/* Navigation */}
-          <nav className="flex-1 overflow-y-auto py-3 px-3 scrollbar-thin">
-            {visibleSections.map((section) => {
-              const SectionIcon = section.icon;
-              const isCurrentSection = section.key === currentSectionKey;
-              const isExpanded = expandedSections[section.key];
+      {/* Navigation */}
+      <nav className={`flex-1 overflow-y-auto py-3 ${full ? 'px-3' : 'px-1.5'} scrollbar-thin`}>
+        {visibleSections.map((section) => {
+          const SectionIcon = section.icon;
+          const isCurrentSection = section.key === currentSectionKey;
+          const isExpanded = expandedSections[section.key];
 
-              return (
-                <div key={section.key} className="mb-1">
-                  <button
-                    onClick={() => toggleSection(section.key)}
-                    className={`w-full flex items-center justify-between px-2 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
+          return (
+            <div key={section.key} className="mb-1">
+              {full ? (
+                <button
+                  onClick={() => toggleSection(section.key)}
+                  className={`w-full flex items-center justify-between px-2 py-2 min-h-[44px] text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
+                    isCurrentSection
+                      ? 'text-blue-600 bg-blue-50/50'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <SectionIcon size={12} />
+                    {section.title}
+                  </div>
+                  {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                </button>
+              ) : (
+                <div className="flex justify-center py-1">
+                  <Link
+                    to={section.items[0]?.path || '/'}
+                    title={section.title}
+                    className={`w-11 h-11 flex items-center justify-center rounded-xl transition-colors ${
                       isCurrentSection
-                        ? 'text-blue-600 bg-blue-50/50'
+                        ? 'text-blue-600 bg-blue-50'
                         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <div className="flex items-center gap-1.5">
-                      <SectionIcon size={12} />
-                      {section.title}
-                    </div>
-                    {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                  </button>
-                  {isExpanded && (
-                    <div className="space-y-0.5">
-                      {section.items.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        const Icon = item.icon;
-                        return (
-                          <Link
-                            key={item.path}
-                            to={item.path}
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-all ${
-                              isActive
-                                ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
-                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                            }`}
-                          >
-                            <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
-                            {item.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+                    <SectionIcon size={18} />
+                  </Link>
                 </div>
-              );
-            })}
-          </nav>
-
-          {/* User */}
-          <div className="p-4 border-t border-gray-100">
-            <div className="flex items-center gap-3 px-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm">
-                {user.avatarInitials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-                <p className="text-[10px] text-gray-400 font-medium truncate">{user.title}</p>
-              </div>
+              )}
+              {full && isExpanded && (
+                <div className="space-y-0.5">
+                  {section.items.map((item) => {
+                    const isActive = location.pathname === item.path;
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        className={`flex items-center gap-2.5 px-3 py-2 min-h-[44px] rounded-xl text-sm transition-all ${
+                          isActive
+                            ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
+                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
+                      >
+                        <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
+          );
+        })}
+      </nav>
+
+      {/* User */}
+      <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100`}>
+        <div className={`flex items-center ${full ? 'gap-3 px-2' : 'justify-center'}`}>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm flex-shrink-0">
+            {user.avatarInitials}
           </div>
+          {full && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium truncate">{user.title}</p>
+            </div>
+          )}
         </div>
-      </aside>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
+      {/* Mobile sidebar overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
+          <aside className="relative w-64 bg-white border-r border-gray-200 shadow-xl">
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors z-10"
+            >
+              <X size={20} className="text-gray-500" />
+            </button>
+            {sidebarContent(true)}
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop / tablet sidebar */}
+      {!isMobile && (
+        <aside className={`${isIconsOnly ? 'w-16' : 'w-64'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`}>
+          {sidebarContent(!isIconsOnly)}
+        </aside>
+      )}
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
@@ -447,12 +538,21 @@ export default function Layout({ children }) {
         <header className="h-14 border-b border-gray-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-4 flex-shrink-0">
           {/* Left: hamburger + breadcrumb */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="text-gray-400 hover:text-gray-600 transition-colors p-1"
-            >
-              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
-            </button>
+            {isMobile ? (
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <Menu size={20} />
+              </button>
+            ) : (
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            )}
             <div className="hidden sm:flex items-center gap-1.5 text-sm">
               <span className="text-gray-400 font-medium">{breadcrumb.section}</span>
               <ChevronRight size={12} className="text-gray-300" />
@@ -461,13 +561,14 @@ export default function Layout({ children }) {
           </div>
 
           {/* Center: search trigger */}
-          <div className="flex-1 flex justify-center px-4">
+          <div className="flex-1 flex justify-center px-2 md:px-4">
             <button
               onClick={() => setSearchOpen(true)}
-              className="w-full max-w-md flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-400 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
+              className="w-full max-w-md flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 min-h-[44px] text-sm text-gray-400 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
             >
               <Search size={14} className="text-gray-400 flex-shrink-0" />
-              <span className="flex-1 text-left">Search anything...</span>
+              <span className="flex-1 text-left hidden sm:inline">Search anything...</span>
+              <span className="flex-1 text-left sm:hidden">Search...</span>
               <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-gray-200 text-[10px] font-semibold text-gray-500">
                 &#8984;K
               </kbd>
@@ -475,16 +576,16 @@ export default function Layout({ children }) {
           </div>
 
           {/* Right: scope, pulse, notifications, role */}
-          <div className="flex items-center gap-2">
-            <ScopeSelectorBar />
-            <AgentPulse />
+          <div className="flex items-center gap-1 md:gap-2">
+            <div className="hidden lg:block"><ScopeSelectorBar /></div>
+            <div className="hidden md:block"><AgentPulse /></div>
             <NotificationBell />
             <RoleSwitcher />
           </div>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-8 scrollbar-thin">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin">
           {children}
         </main>
       </div>
