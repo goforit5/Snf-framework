@@ -3,7 +3,7 @@ import { facilities, exceptions, agentActivity, surveyData } from '../data/mockD
 import { PageHeader, Card, FacilityCard, PriorityBadge, ActionButton, AgentHumanSplit, ClickableRow, SectionLabel, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
-import { StatGrid } from '../components/DataComponents';
+import { StatGrid, HealthScoreCard } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import FacilityHeatmap from '../components/FacilityHeatmap';
@@ -56,7 +56,6 @@ export default function CommandCenter() {
   const openFacilityModal = (facility) => {
     const facilityExceptions = exceptions.filter(e => e.facility === facility.name && e.status === 'pending');
     const riskItems = surveyData.riskItems.filter(r => r.facility === facility.name);
-    const healthColor = facility.healthScore >= 80 ? 'text-green-600' : facility.healthScore >= 70 ? 'text-amber-600' : 'text-red-600';
     open({
       title: facility.name,
       content: (
@@ -64,8 +63,7 @@ export default function CommandCenter() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-500">{facility.city} — {facility.region}</p>
             <div className="text-right">
-              <span className={`text-3xl font-bold ${healthColor}`}>{facility.healthScore}</span>
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider">Health Score</p>
+              <HealthScoreCard score={facility.healthScore} label="Health Score" size="md" />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertTriangle, CheckCircle2, Clock, TrendingUp, TrendingDown, Bot, User, ChevronRight, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Clock, TrendingUp, TrendingDown, Bot, User, ChevronRight, ChevronDown, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
 import { ModalContext } from './WidgetUtils';
 
 /* ─── Modal System ─── */
@@ -145,6 +145,33 @@ export function Card({ title, children, className = '', action, badge, onClick }
         </div>
       )}
       <div className="p-6">{children}</div>
+    </div>
+  );
+}
+
+/* ─── Collapsible Card ─── */
+export function CollapsibleCard({ title, defaultOpen = true, children, badge, className = '' }) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${className}`}>
+      <button
+        className="w-full px-6 py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+      >
+        <div className="flex items-center gap-2.5">
+          <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+          {badge && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">{badge}</span>
+          )}
+        </div>
+        {isOpen
+          ? <ChevronDown size={16} className="text-gray-400 transition-transform" aria-hidden="true" />
+          : <ChevronRight size={16} className="text-gray-400 transition-transform" aria-hidden="true" />
+        }
+      </button>
+      {isOpen && <div className="p-6">{children}</div>}
     </div>
   );
 }

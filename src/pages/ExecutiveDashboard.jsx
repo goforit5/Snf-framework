@@ -1,9 +1,9 @@
-import { TrendingUp, TrendingDown, DollarSign, Users, Percent, ShieldAlert, Activity, AlertTriangle, Bot, CheckCircle2, ChevronRight } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Users, Percent, ShieldAlert, Activity, AlertTriangle, CheckCircle2, ChevronRight } from 'lucide-react';
 import { facilities, revenueData, financeData, surveyData, clinicalData } from '../data/mockData';
 import { PageHeader, Card, ClickableRow, ActionButton, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
-import { StatGrid, DataTable } from '../components/DataComponents';
+import { StatGrid, DataTable, AIAnalysisCard, HealthScoreCard } from '../components/DataComponents';
 
 function fmt$(val) {
   if (Math.abs(val) >= 1000000) return `$${(val / 1000000).toFixed(2)}M`;
@@ -67,7 +67,7 @@ export default function ExecutiveDashboard() {
           <div className="flex items-center justify-between">
             <p className="text-xs text-gray-500">{f.city} | {f.region}</p>
             <div className="flex items-center gap-3">
-              <span className={`text-3xl font-bold ${healthColor}`}>{f.healthScore}</span>
+              <HealthScoreCard score={f.healthScore} label={null} size="md" />
               <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border ${riskBadgeColor}`}>{f.surveyRisk} RISK</span>
             </div>
           </div>
@@ -97,11 +97,7 @@ export default function ExecutiveDashboard() {
               <p className="text-[10px] text-gray-500">Outstanding</p>
             </div>
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Bot size={14} className="text-blue-600" />
-              <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">AI Risk Assessment</p>
-            </div>
+          <AIAnalysisCard title="AI Risk Assessment">
             <div className="space-y-2">
               {risks.map((risk, i) => (
                 <div key={i} className={`flex items-start gap-2.5 rounded-xl px-4 py-2.5 ${risk.includes('No significant') ? 'bg-green-50 border border-green-100' : 'bg-amber-50 border border-amber-100'}`}>
@@ -110,7 +106,7 @@ export default function ExecutiveDashboard() {
                 </div>
               ))}
             </div>
-          </div>
+          </AIAnalysisCard>
         </div>
       ),
       actions: <ActionButton label="Close" variant="ghost" />,
@@ -141,19 +137,11 @@ export default function ExecutiveDashboard() {
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">EBITDAR Margin</p>
             <p className="text-lg font-bold text-gray-900">{margin}%</p>
           </div>
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Bot size={14} className="text-blue-600" />
-              <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">AI Analysis</p>
-            </div>
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-              <p className="text-sm text-gray-700">
-                {d.ebitdar >= 400
-                  ? `Strong month with ${margin}% EBITDAR margin. Revenue growth outpacing expense growth. Agency labor remains the primary cost pressure at 67% over budget.`
-                  : `EBITDAR margin of ${margin}% is below the 10% target. Primary drivers: labor costs ${(parseFloat(avgLaborPct) - 46).toFixed(1)}pts above target and agency spend 67% over budget.`}
-              </p>
-            </div>
-          </div>
+          <AIAnalysisCard>
+            {d.ebitdar >= 400
+              ? `Strong month with ${margin}% EBITDAR margin. Revenue growth outpacing expense growth. Agency labor remains the primary cost pressure at 67% over budget.`
+              : `EBITDAR margin of ${margin}% is below the 10% target. Primary drivers: labor costs ${(parseFloat(avgLaborPct) - 46).toFixed(1)}pts above target and agency spend 67% over budget.`}
+          </AIAnalysisCard>
         </div>
       ),
       actions: <ActionButton label="Close" variant="ghost" />,

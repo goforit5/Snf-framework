@@ -1,6 +1,54 @@
 import { useState, useMemo } from 'react';
-import { ArrowUpRight, ArrowDownRight, Minus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Minus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Search, Bot } from 'lucide-react';
 import { StatCard } from './Widgets';
+
+/* ─── AI Analysis Card ─── */
+export function AIAnalysisCard({ title = 'AI Analysis', children, icon: Icon = Bot, variant = 'blue' }) {
+  const variantMap = {
+    blue: { bg: 'bg-blue-50/50', border: 'border-blue-100', header: 'text-blue-600', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+    green: { bg: 'bg-green-50/50', border: 'border-green-100', header: 'text-green-600', iconBg: 'bg-green-100', iconColor: 'text-green-600' },
+    amber: { bg: 'bg-amber-50/50', border: 'border-amber-100', header: 'text-amber-600', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+    red: { bg: 'bg-red-50/50', border: 'border-red-100', header: 'text-red-600', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
+    purple: { bg: 'bg-purple-50/50', border: 'border-purple-100', header: 'text-purple-600', iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
+  };
+  const v = variantMap[variant] || variantMap.blue;
+
+  return (
+    <div className={`${v.bg} rounded-xl p-3 border ${v.border}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <div className={`w-6 h-6 rounded-lg ${v.iconBg} flex items-center justify-center`}>
+          <Icon size={13} className={v.iconColor} />
+        </div>
+        <p className={`text-[10px] font-semibold ${v.header} uppercase tracking-wider`}>{title}</p>
+      </div>
+      <div className="text-sm text-gray-700 leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+/* ─── Health Score Card ─── */
+export function HealthScoreCard({ score, label = 'Health Score', size = 'md', showBar = false }) {
+  const color = score >= 80 ? 'text-green-600' : score >= 70 ? 'text-amber-600' : 'text-red-600';
+  const barBg = score >= 80 ? 'bg-green-500' : score >= 70 ? 'bg-amber-500' : 'bg-red-500';
+  const sizeClasses = {
+    sm: 'text-xl',
+    md: 'text-3xl',
+    lg: 'text-4xl',
+  };
+  const textSize = sizeClasses[size] || sizeClasses.md;
+
+  return (
+    <div>
+      <span className={`${textSize} font-bold ${color}`}>{score}</span>
+      {label && <p className="text-[10px] text-gray-400 uppercase tracking-wider">{label}</p>}
+      {showBar && (
+        <div className="h-2 bg-gray-100 rounded-full overflow-hidden mt-1.5">
+          <div className={`h-full rounded-full ${barBg} transition-all`} style={{ width: `${score}%` }} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ─── Stat Grid ─── */
 export function StatGrid({ stats = [], columns = 5 }) {

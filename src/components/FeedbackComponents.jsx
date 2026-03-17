@@ -2,6 +2,37 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { ToastContext } from './FeedbackUtils';
 
+/* ─── Alert Callout ─── */
+export function AlertCallout({ type = 'info', title, children, onDismiss, icon: CustomIcon }) {
+  const typeConfig = {
+    critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', iconColor: 'text-red-500', Icon: AlertCircle },
+    warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', iconColor: 'text-amber-500', Icon: AlertTriangle },
+    success: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', iconColor: 'text-green-500', Icon: CheckCircle2 },
+    info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', iconColor: 'text-blue-500', Icon: Info },
+  };
+  const config = typeConfig[type] || typeConfig.info;
+  const DisplayIcon = CustomIcon || config.Icon;
+
+  return (
+    <div className={`${config.bg} border ${config.border} rounded-xl p-4 flex items-start gap-3`} role="alert">
+      <DisplayIcon size={16} className={`${config.iconColor} flex-shrink-0 mt-0.5`} aria-hidden="true" />
+      <div className="flex-1 min-w-0">
+        {title && <p className={`text-sm font-semibold ${config.text} mb-0.5`}>{title}</p>}
+        <div className="text-sm text-gray-700 leading-relaxed">{children}</div>
+      </div>
+      {onDismiss && (
+        <button
+          onClick={onDismiss}
+          aria-label="Dismiss alert"
+          className="p-0.5 rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
+        >
+          <X size={14} className="text-gray-400" aria-hidden="true" />
+        </button>
+      )}
+    </div>
+  );
+}
+
 /* ─── Slide Out Panel ─── */
 export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }) {
   const widthClasses = {
