@@ -1,11 +1,55 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AlertTriangle, CheckCircle2, Clock, TrendingUp, TrendingDown, Bot, User, ChevronRight, ArrowUpRight, ArrowDownRight, X } from 'lucide-react';
 import { ModalContext } from './WidgetUtils';
+
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function useFocusTrap(containerRef, isActive) {
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const focusableElements = () => Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(el => el.offsetParent !== null);
+
+    // Auto-focus first focusable element
+    const elements = focusableElements();
+    if (elements.length > 0) {
+      elements[0].focus();
+    }
+
+    function handleKeyDown(e) {
+      if (e.key !== 'Tab') return;
+      const els = focusableElements();
+      if (els.length === 0) return;
+
+      const first = els[0];
+      const last = els[els.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => container.removeEventListener('keydown', handleKeyDown);
+  }, [containerRef, isActive]);
+}
 
 /* ─── Modal System ─── */
 export function ModalProvider({ children }) {
   const [modal, setModal] = useState(null);
   const close = useCallback(() => setModal(null), []);
+  const modalRef = useRef(null);
+
+  useFocusTrap(modalRef, !!modal);
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') close(); };
@@ -20,6 +64,7 @@ export function ModalProvider({ children }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-enter" role="dialog" aria-modal="true" aria-labelledby="modal-title" onClick={close}>
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
+            ref={modalRef}
             className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4"
             onClick={e => e.stopPropagation()}
           >

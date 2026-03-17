@@ -228,10 +228,11 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
         <div className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
           <div className="p-2">
             <div className="relative">
-              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />
               <input
                 type="text"
                 placeholder="Search facilities..."
+                aria-label="Search facilities"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-8 pr-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
