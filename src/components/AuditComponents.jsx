@@ -150,40 +150,78 @@ function groupByTrace(entries) {
 
 export function AuditTimeline({ entries = [], groupBy = 'time' }) {
   const [expandedId, setExpandedId] = useState(null);
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+  const [highlightedId, setHighlightedId] = useState(null);
 
   const groups = groupBy === 'trace' ? groupByTrace(entries) : groupByTime(entries);
 
+  const toggleGroup = (label) => {
+    setCollapsedGroups(prev => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const handleDotClick = (e, entryId) => {
+    e.stopPropagation();
+    setExpandedId(expandedId === entryId ? null : entryId);
+    setHighlightedId(entryId);
+    // Scroll to the entry
+    const el = document.getElementById('audit-entry-' + entryId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Clear highlight after animation
+    setTimeout(() => setHighlightedId(null), 1500);
+  };
+
   return (
     <div className="space-y-6">
-      {groups.map(([label, items]) => (
-        <div key={label}>
-          <div className="flex items-center gap-3 mb-3">
-            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">{label}</h4>
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-[10px] text-gray-400 tabular-nums">{items.length}</span>
+      {groups.map(([label, items]) => {
+        const isCollapsed = !!collapsedGroups[label];
+        return (
+          <div key={label}>
+            <button
+              onClick={() => toggleGroup(label)}
+              className="flex items-center gap-3 mb-3 w-full group cursor-pointer"
+              aria-expanded={!isCollapsed}
+            >
+              {isCollapsed
+                ? <ChevronRight size={13} className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" />
+                : <ChevronDown size={13} className="text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0" />
+              }
+              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider group-hover:text-gray-600 transition-colors">{label}</h4>
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-[10px] text-gray-400 tabular-nums">{items.length}</span>
+            </button>
+            {!isCollapsed && (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-[17px] top-3 bottom-3 w-px bg-gray-200" />
+                <div className="space-y-2 relative">
+                  {items.map((entry) => {
+                    const aConfig = actorTypeConfig[entry.actorType] || actorTypeConfig.agent;
+                    const isHighlighted = highlightedId === entry.id;
+                    return (
+                      <div key={entry.id} id={'audit-entry-' + entry.id} className={'relative pl-10 transition-all duration-500' + (isHighlighted ? ' ring-2 ring-blue-300 rounded-xl' : '')}>
+                        {/* Timeline dot — clickable */}
+                        <div
+                          onClick={(e) => handleDotClick(e, entry.id)}
+                          className={`absolute left-[13px] top-4 w-2.5 h-2.5 rounded-full ${aConfig.dot} ring-2 ring-white cursor-pointer hover:ring-blue-300 hover:scale-125 transition-all duration-200`}
+                          title={'Jump to ' + (entry.actor || entry.actorName || 'entry')}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDotClick(e, entry.id); } }}
+                        />
+                        <AuditEntry
+                          entry={entry}
+                          isExpanded={expandedId === entry.id}
+                          onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-[17px] top-3 bottom-3 w-px bg-gray-200" />
-            <div className="space-y-2 relative">
-              {items.map((entry) => {
-                const aConfig = actorTypeConfig[entry.actorType] || actorTypeConfig.agent;
-                return (
-                  <div key={entry.id} className="relative pl-10">
-                    {/* Timeline dot */}
-                    <div className={`absolute left-[13px] top-4 w-2.5 h-2.5 rounded-full ${aConfig.dot} ring-2 ring-white`} />
-                    <AuditEntry
-                      entry={entry}
-                      isExpanded={expandedId === entry.id}
-                      onToggle={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
