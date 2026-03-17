@@ -536,9 +536,10 @@ export default function Layout({ children }) {
           <aside className="relative w-64 bg-white border-r border-gray-200 shadow-xl">
             <button
               onClick={() => setMobileMenuOpen(false)}
+              aria-label="Close menu"
               className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors z-10"
             >
-              <X size={20} className="text-gray-500" />
+              <X size={20} className="text-gray-500" aria-hidden="true" />
             </button>
             {sidebarContent(true)}
           </aside>

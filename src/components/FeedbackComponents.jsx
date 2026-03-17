@@ -2,6 +2,55 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { ToastContext } from './FeedbackUtils';
 
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function useFocusTrap(containerRef, isActive) {
+  const previousFocusRef = useRef(null);
+
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+
+    previousFocusRef.current = document.activeElement;
+
+    const container = containerRef.current;
+    const focusableElements = () => Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(el => el.offsetParent !== null);
+
+    const elements = focusableElements();
+    if (elements.length > 0) {
+      elements[0].focus();
+    }
+
+    function handleKeyDown(e) {
+      if (e.key !== 'Tab') return;
+      const els = focusableElements();
+      if (els.length === 0) return;
+
+      const first = els[0];
+      const last = els[els.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => {
+      container.removeEventListener('keydown', handleKeyDown);
+      if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, [containerRef, isActive]);
+}
+
 /* ─── Alert Callout ─── */
 export function AlertCallout({ type = 'info', title, children, onDismiss, icon: CustomIcon }) {
   const typeConfig = {
@@ -41,6 +90,9 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
     xl: 'max-w-[800px]',
   };
 
+  const panelRef = useRef(null);
+  useFocusTrap(panelRef, isOpen);
+
   useEffect(() => {
     function handleKey(e) {
       if (e.key === 'Escape' && isOpen) onClose?.();
@@ -58,6 +110,7 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
         onClick={onClose}
       />
       <div
+        ref={panelRef}
         className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white shadow-2xl flex flex-col slide-in-right`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
@@ -196,6 +249,9 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
   const config = variantConfig[variant] || variantConfig.info;
   const VIcon = config.icon;
 
+  const confirmRef = useRef(null);
+  useFocusTrap(confirmRef, isOpen);
+
   useEffect(() => {
     function handleKey(e) {
       if (e.key === 'Escape' && isOpen) onCancel?.();
@@ -210,6 +266,7 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title" onClick={onCancel}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
+        ref={confirmRef}
         className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
@@ -302,9 +359,10 @@ export function BulkActionBar({ selectedCount, actions = [], onClear }) {
           <div className="w-px h-5 bg-gray-600" />
           <button
             onClick={onClear}
+            aria-label="Clear selection"
             className="p-1 rounded-full hover:bg-white/10 transition-colors"
           >
-            <X size={14} className="text-gray-400" />
+            <X size={14} className="text-gray-400" aria-hidden="true" />
           </button>
         </>
       )}
