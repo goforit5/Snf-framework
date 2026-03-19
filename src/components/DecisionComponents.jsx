@@ -201,9 +201,9 @@ export function DecisionCard({
         </div>
       </div>
 
-      {/* Expanded view — animated */}
+      {/* Expanded view — animated, scrollable for dense briefings */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 card-expand">
+        <div className="px-4 pb-4 border-t border-gray-100 card-expand max-h-[420px] overflow-y-auto">
           <div className="pt-3 space-y-3">
             {description && (
               <p className="text-sm text-gray-600 leading-relaxed">{description}</p>

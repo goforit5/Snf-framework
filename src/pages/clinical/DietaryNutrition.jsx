@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { dietaryLogs, weightTrends, dietarySummary } from '../../data/clinical/dietaryLogs';
 import { residents } from '../../data/entities/residents';
 
@@ -78,6 +79,7 @@ const dietColumns = [
 ];
 
 export default function DietaryNutrition() {
+  const { decisions: dietaryDecisions, approve, escalate } = useDecisionQueue(decisions);
   return (
     <div className="p-6">
       <PageHeader
@@ -93,11 +95,11 @@ export default function DietaryNutrition() {
 
       <div className="mb-6">
         <DecisionQueue
-          decisions={decisions}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          decisions={dietaryDecisions}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Dietary Decisions"
-          badge={decisions.length}
+          badge={dietaryDecisions.length}
         />
       </div>
 

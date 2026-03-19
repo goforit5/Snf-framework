@@ -22,40 +22,57 @@ Andrew is pitching Barry Port on a consulting engagement to deploy agentic AI ac
 - **Key concern**: Barry worries about AI safety, HIPAA, compliance, legal risk. The platform addresses this with human-in-the-loop approval, complete audit trails, role-based access, read-only defaults, governance levels, and kill switches.
 - **Security architecture**: AWS Bedrock for in-VPC processing (BAA-covered, SOC 2, HITRUST). PHI never leaves Ensign's cloud. No new attack surface.
 
+## Current State (as of 2026-03-18)
+
+**65 of 69 pages have functional DecisionQueue** with `useDecisionQueue` hook. Every DecisionCard is a self-contained analyst briefing — agents pre-pull all data from PCC, Workday, CMS, GL systems. Humans never open another application. The 4 pages without DecisionQueue are intentional: AgentWorkLedger, AuditTrail (monitoring views), ComingSoon (placeholder), Settings (config).
+
+**3 oversized pages decomposed** into sub-components:
+- MorningStandup: 658 → 139 lines (5 sub-components in `src/components/standup/`)
+- AgentWorkLedger: 727 → 197 lines (5 sub-components in `src/components/agent-ledger/`)
+- AuditTrail: 582 → 274 lines (3 sub-components in `src/components/audit/`)
+
+**Live site**: https://goforit5.github.io/Snf-framework/
+
+### First-Principles Design Philosophy
+- **Agents run all SaaS** — humans interact ONLY through this framework, never PCC/Workday/SharePoint directly
+- **Self-contained decisions** — every DecisionCard has ALL the data (resident names, room numbers, dollar amounts, system sources)
+- **Definitive recommendations** — not "consider reviewing" but "Approve this: here's exactly what will happen"
+- **Quantified impact** — always dollars, days, risk probability, or regulatory citations
+- **Story-driven descriptions** — reads like a briefing from your smartest analyst
+- **Confidence = conviction** — 95%+ just approve, 80-94% edge case, <80% needs human judgment
+
 ## Project Structure
 
 ```
 Snf_Framework/
 ├── public/
-│   └── presentation.html    # 11-slide pitch deck for Barry (self-contained HTML)
+│   └── presentation.html       # 11-slide pitch deck for Barry (self-contained HTML)
 ├── src/
-│   ├── App.jsx              # Router — all pages
+│   ├── App.jsx                  # Router — all 69 pages
 │   ├── components/
-│   │   ├── Layout.jsx       # Sidebar navigation + shell
-│   │   └── Widgets.jsx      # Shared UI components, modal system
-│   ├── data/
-│   │   ├── complianceData.js # CMS F-tag data, compliance rules
-│   │   └── mockData.js       # Simulated facility/agent/financial data
-│   └── pages/               # Each page = one agentic command module
-│       ├── CommandCenter.jsx        # Main dashboard — agent status, alerts
-│       ├── ExecutiveDashboard.jsx   # C-suite metrics view
-│       ├── ClinicalCommand.jsx      # Clinical ops — care plans, documentation
-│       ├── ClinicalCompliance.jsx   # Compliance scoring, F-tag monitoring
-│       ├── SurveyReadiness.jsx      # CMS survey prep
-│       ├── AuditLibrary.jsx         # Audit findings library
-│       ├── AuditTrail.jsx           # Agent action audit log
-│       ├── FinanceCommand.jsx       # Financial operations
-│       ├── APOperations.jsx         # Accounts payable
-│       ├── InvoiceExceptions.jsx    # Invoice exception queue
-│       ├── MonthlyClose.jsx         # Month-end close process
-│       ├── PayrollCommand.jsx       # Payroll operations
-│       ├── MAPipeline.jsx           # M&A deal pipeline
-│       ├── FacilityAdmin.jsx        # Per-facility administration
-│       ├── MorningStandup.jsx       # Daily standup briefing
-│       ├── AgentWorkLedger.jsx      # Agent task tracking
-│       └── ExceptionQueue.jsx       # Cross-functional exception handling
-├── dist/                    # Built output (deployed to gh-pages)
-├── .github/                 # GitHub Actions for gh-pages deployment
+│   │   ├── Layout.jsx           # Sidebar navigation + shell
+│   │   ├── Widgets.jsx          # Shared UI: Card, PageHeader, Modal, badges
+│   │   ├── DecisionComponents.jsx # DecisionQueue, DecisionCard, GovernanceBadge
+│   │   ├── AgentComponents.jsx  # AgentSummaryBar, AgentActivityFeed, AgentCard
+│   │   ├── DataComponents.jsx   # StatGrid, DataTable, HealthScoreCard, AIAnalysisCard
+│   │   ├── standup/             # MorningStandup sub-components (CEO/CFO/DON/Admin/Regional)
+│   │   ├── agent-ledger/        # AgentWorkLedger sub-components (5 tab panels)
+│   │   └── audit/               # AuditTrail sub-components (filters, export, timeline)
+│   ├── hooks/
+│   │   └── useDecisionQueue.js  # HITL state: approve/override/escalate/defer
+│   ├── data/                    # Domain-scoped mock data files
+│   └── pages/                   # 69 page files across 8 nav sections
+│       ├── CommandCenter.jsx    # Gold standard exemplar page
+│       ├── admissions/          # Census, referrals, payer mix, pre-admission, marketing
+│       ├── clinical/            # Infection control, pharmacy, therapy, dietary, records
+│       ├── legal/               # Contracts, compliance, litigation, regulatory, real estate
+│       ├── operations/          # Environmental, transportation, IT, supply chain, life safety
+│       ├── quality/             # Outcomes, patient safety, risk, grievances
+│       ├── revenue/             # Billing, AR, treasury, budgets, contracts, PDPM
+│       ├── strategic/           # M&A, market intel, investor relations, board, govt affairs
+│       └── workforce/           # Recruiting, scheduling, credentialing, benefits, training
+├── dist/                        # Built output (deployed to gh-pages)
+├── .github/                     # GitHub Actions for gh-pages deployment
 ├── vite.config.js
 └── package.json
 ```
@@ -114,7 +131,8 @@ npm run preview  # preview built output
 | **Implementation Playbook** | `docs/planning/Implementation_Playbook.md` | Build sequence (4 waves), agent deployment prompts, per-page quality checklist |
 
 ### Key Architecture Decisions
-- **55 total pages**: 17 existing (enhanced) + 38 new, organized into 8 nav sections
+- **69 pages implemented**: organized into 8 nav sections (clinical, finance, workforce, admissions, quality, legal, operations, strategic)
+- **65 pages with functional DecisionQueue**: all wired via `useDecisionQueue` hook
 - **DRY components**: Pages target 150-250 lines using shared component library
 - **No new dependencies**: Built entirely with existing React + Tailwind + Recharts + Lucide
 - **Modular data**: `src/data/` organized by domain with cross-referenced entity IDs
@@ -124,9 +142,24 @@ npm run preview  # preview built output
 
 - Mock data only — no live API connections in this demo. Real integrations happen in the AEOS platform (separate repo).
 - All monetary values displayed in dollars (demo), stored in cents in production.
-- Apple HIG design language — dark mode, clean typography, minimal chrome.
+- Apple HIG design language — clean typography, minimal chrome.
 - Each page is a self-contained module demonstrating one agentic capability.
 - **DRY**: Never duplicate UI patterns — use shared components from `src/components/`.
-- **Standard Command Page template**: Every page has PageHeader, AgentSummaryBar, StatGrid, DecisionQueue, AgentActivityFeed (see Design System doc §4.1).
+- **Standard Command Page template**: Every page has PageHeader, AgentSummaryBar, StatGrid, DecisionQueue (see Design System doc §4.1).
 - **Semantic colors only**: Red = critical, Amber = high, Green = agent-handled, Blue = informational, Violet = processing.
 - **<10 second rule**: Every human action (approve, reject, escalate) must be completable in under 10 seconds.
+- **First-principles decisions**: Every DecisionCard must be self-contained — agent pre-pulls ALL data from source systems. No "see PCC record" references. The human never opens another application.
+
+## Known UI Issues & Next Steps
+
+### Open Issues
+1. **DecisionCard expanded content density** — Some first-principles briefings have rich evidence that requires scrolling. Fixed with `max-h-[420px] overflow-y-auto` on expanded view, but some very long descriptions may still need progressive disclosure (show summary, expand for full detail).
+2. **Chart containers on narrow viewports** — Recharts `ResponsiveContainer` inside flex layouts can clip titles. Fixed with `min-w-0 overflow-hidden` on Card content div. Monitor on smaller screens.
+3. **ComingSoon placeholder** — `src/pages/ComingSoon.jsx` is still a 16-line placeholder.
+
+### Demo Polish Remaining
+- Visual QA pass on all 65 DecisionQueue pages at 1280px and 1920px widths
+- AgentActivityFeed used on only ~5 pages — could add to more command pages for "agents are working" feel
+- Notification center integration with DecisionQueue (approved/escalated items could show as notifications)
+- Dark mode support (currently light mode only)
+- Mobile responsive refinement (tablet portrait is primary concern for facility admins)

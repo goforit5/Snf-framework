@@ -179,9 +179,9 @@ export function Card({ title, children, className = '', action, badge, onClick }
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
     >
       {title && (
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between min-w-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <h3 className="text-sm font-semibold text-gray-900 truncate">{title}</h3>
             {badge && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">{badge}</span>
             )}
@@ -189,7 +189,7 @@ export function Card({ title, children, className = '', action, badge, onClick }
           {action}
         </div>
       )}
-      <div className="p-6">{children}</div>
+      <div className="p-6 min-w-0 overflow-hidden">{children}</div>
     </div>
   );
 }
