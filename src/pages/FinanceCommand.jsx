@@ -2,7 +2,6 @@ import { DollarSign, AlertTriangle, Clock, Wallet, CreditCard, Building2, CheckC
 import { financeData } from '../data/mockData';
 import { PageHeader, Card, ActionButton, ProgressBar, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { useToast } from '../components/FeedbackUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
@@ -16,16 +15,9 @@ const financeDecisions = [
 
 export default function FinanceCommand() {
   const { open } = useModal();
-  const { toast } = useToast();
   const { summary, variance } = financeData;
   const _totalVariance = variance.reduce((sum, v) => sum + v.variance, 0);
-  const { decisions: finDecisions, approve: finApprove, escalate: finEscalate } = useDecisionQueue(financeDecisions, {
-    onAction: ({ action, decision }) => {
-      const messages = { approved: 'Approved', overridden: 'Overridden', escalated: 'Escalated', deferred: 'Deferred' };
-      const types = { approved: 'success', overridden: 'info', escalated: 'info', deferred: 'info' };
-      toast({ message: `${messages[action]}: ${decision.title}`, type: types[action] });
-    }
-  });
+  const { decisions: finDecisions, approve: finApprove, escalate: finEscalate } = useDecisionQueue(financeDecisions);
 
   const stats = [
     { label: 'Cash Position', value: `$${(summary.cash / 1000000).toFixed(1)}M`, icon: Wallet, color: 'emerald', change: '+$180K vs prior month', changeType: 'positive' },

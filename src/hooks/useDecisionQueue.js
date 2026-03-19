@@ -1,6 +1,15 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useContext } from 'react';
+import { ToastContext } from '../components/FeedbackUtils';
+
+const TOAST_MESSAGES = {
+  approved: { label: 'Approved', type: 'success' },
+  overridden: { label: 'Overridden', type: 'info' },
+  escalated: { label: 'Escalated', type: 'info' },
+  deferred: { label: 'Deferred', type: 'info' },
+};
 
 export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
+  const toastCtx = useContext(ToastContext);
   const [decisions, setDecisions] = useState(() =>
     initialDecisions.map(d => ({ ...d, _status: 'pending' }))
   );
@@ -17,14 +26,22 @@ export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
     return decisions.find(d => d.id === id);
   }, [decisions]);
 
+  const notify = useCallback((action, decision) => {
+    if (onAction && decision) onAction({ id: decision.id, action, decision });
+    if (toastCtx && decision) {
+      const cfg = TOAST_MESSAGES[action] || TOAST_MESSAGES.approved;
+      toastCtx.toast({ message: `${cfg.label}: ${decision.title}`, type: cfg.type });
+    }
+  }, [onAction, toastCtx]);
+
   const approve = useCallback((id) => {
     const decision = findDecision(id);
     setDecisions(prev =>
       prev.map(d => d.id === id ? { ...d, _status: 'approved' } : d)
     );
     logAction(id, 'approved');
-    if (onAction && decision) onAction({ id, action: 'approved', decision });
-  }, [logAction, findDecision, onAction]);
+    notify('approved', decision);
+  }, [logAction, findDecision, notify]);
 
   const override = useCallback((id, reason) => {
     const decision = findDecision(id);
@@ -32,8 +49,8 @@ export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
       prev.map(d => d.id === id ? { ...d, _status: 'overridden', _overrideReason: reason } : d)
     );
     logAction(id, 'overridden', { reason });
-    if (onAction && decision) onAction({ id, action: 'overridden', decision });
-  }, [logAction, findDecision, onAction]);
+    notify('overridden', decision);
+  }, [logAction, findDecision, notify]);
 
   const escalate = useCallback((id) => {
     const decision = findDecision(id);
@@ -41,8 +58,8 @@ export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
       prev.map(d => d.id === id ? { ...d, _status: 'escalated' } : d)
     );
     logAction(id, 'escalated');
-    if (onAction && decision) onAction({ id, action: 'escalated', decision });
-  }, [logAction, findDecision, onAction]);
+    notify('escalated', decision);
+  }, [logAction, findDecision, notify]);
 
   const defer = useCallback((id) => {
     const decision = findDecision(id);
@@ -50,8 +67,8 @@ export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
       prev.map(d => d.id === id ? { ...d, _status: 'deferred' } : d)
     );
     logAction(id, 'deferred');
-    if (onAction && decision) onAction({ id, action: 'deferred', decision });
-  }, [logAction, findDecision, onAction]);
+    notify('deferred', decision);
+  }, [logAction, findDecision, notify]);
 
   const pending = useMemo(
     () => decisions.filter(d => d._status === 'pending'),

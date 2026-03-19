@@ -2,7 +2,6 @@ import { AlertTriangle, Activity, Shield, Heart, Brain, FileWarning, ClipboardLi
 import { clinicalData } from '../data/mockData';
 import { PageHeader, Card, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { useToast } from '../components/FeedbackUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
@@ -38,15 +37,8 @@ const docExceptions = [
 
 export default function ClinicalCommand() {
   const { open } = useModal();
-  const { toast } = useToast();
   const { metrics, highRiskResidents } = clinicalData;
-  const { decisions: interventionDecisions, approve, escalate } = useDecisionQueue(interventions, {
-    onAction: ({ action, decision }) => {
-      const messages = { approved: 'Approved', overridden: 'Overridden', escalated: 'Escalated', deferred: 'Deferred' };
-      const types = { approved: 'success', overridden: 'info', escalated: 'info', deferred: 'info' };
-      toast({ message: `${messages[action]}: ${decision.title}`, type: types[action] });
-    }
-  });
+  const { decisions: interventionDecisions, approve, escalate } = useDecisionQueue(interventions);
 
   const stats = [
     { label: 'Falls (30d)', value: metrics.falls, icon: AlertTriangle, color: 'red', change: '+2 vs prior', changeType: 'negative' },
