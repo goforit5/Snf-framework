@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ModalProvider } from './components/Widgets';
 import { AuthProvider } from './providers/AuthProvider';
 import { ScopeProvider } from './providers/ScopeProvider';
@@ -8,6 +8,9 @@ import { NotificationProvider } from './providers/NotificationProvider';
 import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
 import Layout from './components/Layout';
 import ComingSoon from './pages/ComingSoon';
+
+/* ─── Presentation (renders outside Layout) ─── */
+const Presentation = lazy(() => import('./pages/Presentation'));
 
 /* ─── Platform (existing pages) ─── */
 const CommandCenter = lazy(() => import('./pages/CommandCenter'));
@@ -94,20 +97,24 @@ const BoardGovernance = lazy(() => import('./pages/strategic/BoardGovernance'));
 const InvestorRelations = lazy(() => import('./pages/strategic/InvestorRelations'));
 const GovernmentAffairs = lazy(() => import('./pages/strategic/GovernmentAffairs'));
 
-export default function App() {
+function AppRoutes() {
+  const location = useLocation();
+  const isPresentation = location.pathname === '/presentation';
+
+  if (isPresentation) {
+    return (
+      <Suspense fallback={<PageSkeleton />}>
+        <Presentation />
+      </Suspense>
+    );
+  }
+
   return (
-    <Router>
-      <AuthProvider>
-        <ScopeProvider>
-          <AgentProvider>
-            <NotificationProvider>
-              <ModalProvider>
-                <ToastProvider>
-                  <Layout>
-                    <Suspense fallback={<PageSkeleton />}>
-                      <Routes>
-                        {/* Platform */}
-                        <Route path="/" element={<CommandCenter />} />
+    <Layout>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes>
+          {/* Platform */}
+          <Route path="/" element={<CommandCenter />} />
                         <Route path="/dashboard" element={<ExecutiveDashboard />} />
                         <Route path="/exceptions" element={<ExceptionQueue />} />
                         <Route path="/agents" element={<AgentOperations />} />
@@ -193,9 +200,22 @@ export default function App() {
                         <Route path="/strategic/board" element={<BoardGovernance />} />
                         <Route path="/strategic/investor-relations" element={<InvestorRelations />} />
                         <Route path="/strategic/government-affairs" element={<GovernmentAffairs />} />
-                      </Routes>
-                    </Suspense>
-                  </Layout>
+        </Routes>
+      </Suspense>
+    </Layout>
+  );
+}
+
+export default function App() {
+  return (
+    <Router>
+      <AuthProvider>
+        <ScopeProvider>
+          <AgentProvider>
+            <NotificationProvider>
+              <ModalProvider>
+                <ToastProvider>
+                  <AppRoutes />
                 </ToastProvider>
               </ModalProvider>
             </NotificationProvider>

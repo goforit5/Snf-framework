@@ -620,6 +620,17 @@ export default function Layout({ children }) {
 
       {/* Notification Center */}
       <NotificationCenter isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+
+      {/* Back to Presentation pill — shown when navigated from presentation */}
+      {typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fromPresentation') && (
+        <Link
+          to="/presentation"
+          onClick={() => sessionStorage.removeItem('fromPresentation')}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-gray-900 text-white text-xs font-semibold shadow-lg hover:bg-gray-800 transition-colors"
+        >
+          <ChevronLeft size={14} /> Back to Presentation
+        </Link>
+      )}
     </div>
   );
 }
