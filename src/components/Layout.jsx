@@ -161,9 +161,9 @@ const NAV_SECTIONS = [
     icon: Play,
     items: [
       { path: '/presentation', label: 'Presentation', icon: Play },
-      { path: '/demo/frameworks', label: 'Decision Frameworks', icon: Target },
-      { path: '/demo/ai-readiness', label: 'Ensign AI Readiness', icon: Building },
       { path: '/demo/ai-landscape', label: 'AI Landscape', icon: Globe },
+      { path: '/demo/ai-readiness', label: 'Ensign AI Readiness', icon: Building },
+      { path: '/demo/frameworks', label: 'Decision Frameworks', icon: Target },
     ],
   },
 ];
