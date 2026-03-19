@@ -153,6 +153,7 @@ const NAV_SECTIONS = [
       { path: '/strategic/board', label: 'Board Governance', icon: Landmark },
       { path: '/strategic/investor-relations', label: 'Investor Relations', icon: LineChart },
       { path: '/strategic/government-affairs', label: 'Government Affairs', icon: Flag },
+      { path: '/strategic/frameworks', label: 'Decision Frameworks', icon: Target },
     ],
   },
 ];

@@ -96,6 +96,7 @@ const MarketIntelligence = lazy(() => import('./pages/strategic/MarketIntelligen
 const BoardGovernance = lazy(() => import('./pages/strategic/BoardGovernance'));
 const InvestorRelations = lazy(() => import('./pages/strategic/InvestorRelations'));
 const GovernmentAffairs = lazy(() => import('./pages/strategic/GovernmentAffairs'));
+const StrategicFrameworks = lazy(() => import('./pages/strategic/StrategicFrameworks'));
 
 function AppRoutes() {
   const location = useLocation();
@@ -200,6 +201,7 @@ function AppRoutes() {
                         <Route path="/strategic/board" element={<BoardGovernance />} />
                         <Route path="/strategic/investor-relations" element={<InvestorRelations />} />
                         <Route path="/strategic/government-affairs" element={<GovernmentAffairs />} />
+                        <Route path="/strategic/frameworks" element={<StrategicFrameworks />} />
         </Routes>
       </Suspense>
     </Layout>

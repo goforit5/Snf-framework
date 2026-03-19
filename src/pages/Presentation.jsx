@@ -682,7 +682,7 @@ function WhyAndrewSlide() {
       <div className="space-y-3 mb-6">
         {[
           { icon: '★', text: '13 years SNF operations + 5 years public accounting & internal controls — I know the clinical workflows, survey process, and documentation from the inside. Financial processes, audit methodology, and internal controls from Big 4 training.' },
-          { icon: '☷', text: 'Full-stack AI architecture — Anthropic, OpenAI, AWS Bedrock, Azure. Production agentic systems including a PCC replacement, voice-based clinical app, and Workday replacement — all running for pennies per operation.' },
+          { icon: '☷', text: 'Full-stack AI architecture — Anthropic, OpenAI, AWS Bedrock, Azure. Production agentic systems including a clinical audit platform built on PCC, a voice-based clinical app, and enterprise dashboards — all running for pennies per operation.' },
           { icon: '◃', text: 'Every integration layer — PCC, Workday, Microsoft 365, SharePoint, Azure, AWS, internal servers. I connect all of them into a single agentic layer.' },
           { icon: '⚙', text: 'Already built, not just pitched — The compliance engine, the clinical app, the financial dashboards. This isn\'t a PowerPoint and a timeline. The prototypes work. I just need your data.' },
         ].map((item, i) => (
@@ -695,9 +695,9 @@ function WhyAndrewSlide() {
       <div className="reveal stagger-7 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-5 text-center shadow-sm">
         <p className="text-sm text-gray-700 font-medium">One person + AI agents replaces what normally costs <span className="number-accent font-bold">$1.5M–$2.5M</span> in MBB consulting fees</p>
         <p className="text-xs text-gray-500 mt-1">McKinsey, Bain, BCG frameworks — same rigor, same-day delivery, plus implementation</p>
-        <p className="text-[10px] text-gray-400 mt-2">
-          <a href="https://slideworks.io/resources" target="_blank" rel="noopener" className="underline hover:text-gray-600">McKinsey fee benchmarks</a> · <a href="https://www.bcg.com/publications/2025/the-widening-ai-value-gap" target="_blank" rel="noopener" className="underline hover:text-gray-600">BCG AI Value Gap</a>
-        </p>
+        <a href="#/strategic/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-2 transition-colors">
+          <ExternalLink className="w-3 h-3" /> View all 8 frameworks applied to Ensign
+        </a>
       </div>
     </div>
   );
@@ -796,6 +796,9 @@ function AskSlide() {
         <div className="flex justify-center gap-4 mt-2">
           <DetailTrigger label="Full ROI breakdown" onClick={() => setDetail('roi')} />
           <DetailTrigger label="8 consulting frameworks applied" onClick={() => setDetail('frameworks')} />
+          <a href="#/strategic/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-1 transition-colors">
+            <ExternalLink className="w-3 h-3" /> Full framework analysis
+          </a>
         </div>
         <p className="text-xs text-gray-400 mt-2">Let's schedule a technical deep-dive this week.</p>
       </div>
