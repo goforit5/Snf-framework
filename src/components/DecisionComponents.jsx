@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { CheckCircle2, XCircle, ArrowUp, Clock, ChevronDown, ChevronRight, Bot, FileText, Shield, Zap, AlertTriangle, Maximize2, Database, Globe, Activity } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowUp, Clock, ChevronDown, ChevronRight, Bot, FileText, Shield, Zap, AlertTriangle, Maximize2, Database, Globe, Activity, ExternalLink } from 'lucide-react';
 import { useModal } from './WidgetUtils';
 
 /* ─── Governance Badge ─── */
@@ -70,6 +70,30 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
   );
 }
 
+/* ─── Source System Config ─── */
+const systemConfig = {
+  PCC: { label: 'PointClickCare', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
+  Workday: { label: 'Workday', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+  'Microsoft 365': { label: 'Microsoft 365', color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-100' },
+  SharePoint: { label: 'SharePoint', color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100' },
+  CMS: { label: 'CMS.gov', color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-100' },
+  GL: { label: 'General Ledger', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
+  PDPM: { label: 'PDPM Calculator', color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-100' },
+  MDS: { label: 'MDS 3.0', color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-100' },
+};
+
+function inferSourceSystem(label) {
+  const l = (label || '').toLowerCase();
+  if (l.includes('incident') || l.includes('medication') || l.includes('assessment') || l.includes('resident') || l.includes('care plan') || l.includes('mds') || l.includes('clinical')) return 'PCC';
+  if (l.includes('license') || l.includes('payroll') || l.includes('timecard') || l.includes('employee') || l.includes('hr ') || l.includes('credential') || l.includes('schedule')) return 'Workday';
+  if (l.includes('contract') || l.includes('invoice') || l.includes('po ') || l.includes('vendor') || l.includes('gl ') || l.includes('ledger')) return 'GL';
+  if (l.includes('cms') || l.includes('f-tag') || l.includes('survey') || l.includes('regulation') || l.includes('federal')) return 'CMS';
+  if (l.includes('email') || l.includes('teams') || l.includes('calendar')) return 'Microsoft 365';
+  if (l.includes('document') || l.includes('policy doc') || l.includes('sharepoint')) return 'SharePoint';
+  if (l.includes('pdpm') || l.includes('rug') || l.includes('case-mix')) return 'PDPM';
+  return null;
+}
+
 /* ─── Decision Detail Modal Content ─── */
 function DecisionDetailModal({
   title, description, facility, priority, agent, confidence,
@@ -77,6 +101,8 @@ function DecisionDetailModal({
   agentReasoning, policies = [], sourceSystems = [], timeline = [],
   onApprove, onOverride, onEscalate, onDefer, closeModal,
 }) {
+  const [timelineOpen, setTimelineOpen] = useState(false);
+
   const badgeColor = {
     critical: 'bg-red-50 text-red-700 border-red-200',
     high: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -85,9 +111,9 @@ function DecisionDetailModal({
   }[priority?.toLowerCase()] || 'bg-blue-50 text-blue-700 border-blue-200';
 
   const confidencePct = confidence != null ? (confidence * 100).toFixed(0) : null;
-  const confidenceColor = confidence >= 0.95 ? 'text-green-600' : confidence >= 0.8 ? 'text-amber-600' : 'text-red-600';
+  const confidenceColor = confidence >= 0.9 ? 'text-green-600' : confidence >= 0.75 ? 'text-amber-600' : 'text-red-600';
+  const confidenceBarColor = confidence >= 0.9 ? 'bg-green-500' : confidence >= 0.75 ? 'bg-amber-500' : 'bg-red-500';
 
-  // Generate default timeline if none provided
   const displayTimeline = timeline.length > 0 ? timeline : [
     { time: '6 min ago', event: 'Agent detected anomaly across source systems' },
     { time: '5 min ago', event: 'Cross-referenced policies and compliance requirements' },
@@ -96,23 +122,33 @@ function DecisionDetailModal({
     { time: 'Now', event: 'Awaiting human decision' },
   ];
 
-  // Generate default source systems if none provided
   const displaySystems = sourceSystems.length > 0 ? sourceSystems : ['PCC', 'Workday'];
+
+  // Deduplicate: if agentReasoning matches recommendation, clear it to avoid repetition
+  const analysisText = agentReasoning && agentReasoning !== recommendation
+    ? agentReasoning
+    : null;
 
   const handleAction = (action) => {
     closeModal?.();
     action?.();
   };
 
+  // Enrich evidence with inferred source systems
+  const enrichedEvidence = evidence.map((item) => ({
+    ...item,
+    _system: item.source || inferSourceSystem(item.label),
+  }));
+
   return (
-    <div className="space-y-6">
-      {/* Header with badges */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="-mx-6 -mb-6">
+      {/* Header bar */}
+      <div className="px-6 pb-4 flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {facility && (
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{facility}</p>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">{facility}</p>
           )}
-          <div className="flex items-center gap-2 flex-wrap mt-1">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
               {priority}
             </span>
@@ -124,144 +160,169 @@ function DecisionDetailModal({
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Confidence</p>
             <p className={`text-2xl font-bold tabular-nums ${confidenceColor}`}>{confidencePct}%</p>
             <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1">
-              <div
-                className={`h-full rounded-full transition-all ${confidence >= 0.95 ? 'bg-green-500' : confidence >= 0.8 ? 'bg-amber-500' : 'bg-red-500'}`}
-                style={{ width: `${confidence * 100}%` }}
-              />
+              <div className={`h-full rounded-full transition-all ${confidenceBarColor}`} style={{ width: `${confidence * 100}%` }} />
             </div>
           </div>
         )}
       </div>
 
-      {/* Description */}
-      {description && (
-        <div>
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Situation</p>
-          <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
-        </div>
-      )}
-
-      {/* Agent Analysis */}
-      <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-            <Bot size={16} className="text-blue-600" />
+      {/* Scrollable content area */}
+      <div className="px-6 space-y-5 pb-24 max-h-[calc(85vh-220px)] overflow-y-auto scrollbar-thin">
+        {/* Situation */}
+        {description && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Situation</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <p className="text-xs font-semibold text-blue-700">{agent || 'AI Agent'}</p>
-              <span className="text-[10px] text-blue-500 font-medium">Analysis</span>
+        )}
+
+        {/* Agent Analysis — only shows if reasoning differs from recommendation */}
+        {analysisText && (
+          <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <Bot size={16} className="text-blue-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <p className="text-xs font-semibold text-blue-700">{agent || 'AI Agent'}</p>
+                  <span className="text-[10px] text-blue-500 font-medium">Analysis</span>
+                </div>
+                <p className="text-xs text-gray-700 leading-relaxed">{analysisText}</p>
+              </div>
             </div>
-            <p className="text-xs text-gray-700 leading-relaxed">
-              {agentReasoning || recommendation || 'Agent analysis completed. See evidence and recommendation below.'}
-            </p>
           </div>
-        </div>
-      </div>
+        )}
 
-      {/* Recommendation */}
-      {recommendation && (
-        <div className="bg-green-50/50 rounded-xl p-4 border border-green-100">
-          <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-2">Recommendation</p>
-          <p className="text-sm text-gray-700 leading-relaxed font-medium">{recommendation}</p>
-          {impact && (
-            <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-100">
-              <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
-              <div>
-                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Impact: </span>
-                <span className="text-xs text-gray-700">{impact}</span>
+        {/* Recommendation */}
+        {recommendation && (
+          <div className="bg-green-50/50 rounded-xl p-4 border border-green-100">
+            <div className="flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 size={16} className="text-green-600" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-1.5">Recommendation</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{recommendation}</p>
+              </div>
+            </div>
+            {impact && (
+              <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-100 ml-11">
+                <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-gray-600"><span className="font-semibold text-gray-700">If unresolved:</span> {impact}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Evidence Chain — clickable items */}
+        {enrichedEvidence.length > 0 && (
+          <div>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2.5">Evidence Chain</p>
+            <div className="space-y-1.5">
+              {enrichedEvidence.map((item, i) => {
+                const sys = item._system ? systemConfig[item._system] : null;
+                return (
+                  <button
+                    key={i}
+                    className="w-full flex items-center gap-3 bg-gray-50 rounded-xl p-3 border border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-200 text-left group"
+                    onClick={() => {
+                      /* In production: deep-link to source record. In demo: visual feedback */
+                    }}
+                  >
+                    <div className="w-6 h-6 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-gray-400 tabular-nums">{i + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-700 truncate">{item.label}</p>
+                      {item.detail && <p className="text-[11px] text-gray-500 mt-0.5 truncate">{item.detail}</p>}
+                    </div>
+                    {sys ? (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${sys.bg} ${sys.color} ${sys.border} border flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity`}>
+                        <ExternalLink size={9} />
+                        {item._system}
+                      </span>
+                    ) : (
+                      <ExternalLink size={11} className="text-gray-300 group-hover:text-gray-500 flex-shrink-0 transition-colors" />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Policies + Data Sources — compact row */}
+        <div className="flex flex-wrap gap-6">
+          {policies.length > 0 && (
+            <div className="flex-1 min-w-[200px]">
+              <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Policies Verified</p>
+              <div className="flex flex-wrap gap-1.5">
+                {policies.map((policy, i) => (
+                  <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 border border-green-100 text-[10px] text-green-700 font-medium">
+                    <Shield size={9} className="text-green-500" />
+                    {policy}
+                  </span>
+                ))}
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Evidence Chain */}
-      {evidence.length > 0 && (
-        <div>
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Evidence Chain</p>
-          <div className="space-y-2">
-            {evidence.map((item, i) => (
-              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3 border border-gray-100">
-                <div className="w-6 h-6 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-[10px] font-bold text-gray-400 tabular-nums">{i + 1}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-700">{item.label}</p>
-                  {item.detail && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.detail}</p>}
-                  {item.source && (
-                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-blue-600 font-medium">
-                      <Database size={9} />
-                      {item.source}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="flex-1 min-w-[200px]">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Data Sources</p>
+            <div className="flex flex-wrap gap-1.5">
+              {displaySystems.map((system, i) => {
+                const sys = systemConfig[system];
+                return (
+                  <span key={i} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-semibold ${sys ? `${sys.bg} ${sys.color} ${sys.border}` : 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                    <Globe size={10} />
+                    {sys ? sys.label : system}
+                  </span>
+                );
+              })}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Policies Checked */}
-      {policies.length > 0 && (
+        {/* Timeline — collapsed by default */}
         <div>
-          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Policies Verified</p>
-          <div className="flex flex-wrap gap-1.5">
-            {policies.map((policy, i) => (
-              <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 border border-green-100 text-[10px] text-green-700 font-medium">
-                <Shield size={10} className="text-green-500" />
-                {policy}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Timeline */}
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Decision Timeline</p>
-        <div className="relative pl-6">
-          <div className="absolute left-[9px] top-1 bottom-1 w-px bg-gray-200" />
-          {displayTimeline.map((entry, i) => {
-            const isLast = i === displayTimeline.length - 1;
-            return (
-              <div key={i} className="relative flex items-start gap-3 pb-3 last:pb-0">
-                <div className={`absolute left-[-15px] w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${isLast ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'}`}>
-                  {isLast ? (
-                    <Activity size={8} className="text-blue-500" />
-                  ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-xs ${isLast ? 'font-semibold text-blue-700' : 'text-gray-700'}`}>{entry.event}</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">{entry.time}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Source Systems */}
-      <div>
-        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Data Sources</p>
-        <div className="flex flex-wrap gap-2">
-          {displaySystems.map((system, i) => (
-            <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700">
-              <Globe size={11} className="text-gray-400" />
-              {system}
+          <button
+            onClick={() => setTimelineOpen(!timelineOpen)}
+            className="flex items-center gap-2 text-[10px] font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600 transition-colors"
+          >
+            {timelineOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+            Agent Timeline
+            <span className="text-gray-300 font-normal normal-case">
+              {displayTimeline.length} steps &middot; {displayTimeline[0]?.time || ''}
             </span>
-          ))}
+          </button>
+          {timelineOpen && (
+            <div className="mt-3 ml-1 relative pl-7">
+              <div className="absolute left-[11px] top-1 bottom-1 w-px bg-gray-200" />
+              {displayTimeline.map((entry, i) => {
+                const isLast = i === displayTimeline.length - 1;
+                return (
+                  <div key={i} className="relative flex items-start gap-3 pb-4 last:pb-0">
+                    <div className={`absolute left-[-18px] w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${isLast ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'}`}>
+                      {isLast ? <Activity size={8} className="text-blue-500" /> : <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs leading-relaxed ${isLast ? 'font-semibold text-blue-700' : 'text-gray-600'}`}>{entry.event}</p>
+                      <p className="text-[10px] text-gray-400 mt-0.5">{entry.time}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 pt-4 border-t border-gray-100" role="group" aria-label="Decision actions">
+      {/* Sticky action bar */}
+      <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-white/95 backdrop-blur-sm border-t border-gray-100 flex items-center gap-2 rounded-b-2xl" role="group" aria-label="Decision actions">
         {onApprove && (
           <button
             onClick={() => handleAction(onApprove)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white shadow-sm transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <CheckCircle2 size={14} />
             Approve
@@ -293,6 +354,13 @@ function DecisionDetailModal({
             <Clock size={14} />
             Defer
           </button>
+        )}
+        <div className="flex-1" />
+        {agent && (
+          <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
+            <Bot size={11} />
+            <span>{agent}</span>
+          </div>
         )}
       </div>
     </div>
@@ -349,6 +417,7 @@ export function DecisionCard({
     if (!modal) return;
     modal.open({
       title,
+      maxWidth: 'max-w-3xl',
       content: (
         <DecisionDetailModal
           title={title}

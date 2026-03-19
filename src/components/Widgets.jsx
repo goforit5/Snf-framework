@@ -65,7 +65,7 @@ export function ModalProvider({ children }) {
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
             ref={modalRef}
-            className="relative bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4"
+            className={`relative bg-white rounded-2xl shadow-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4 ${modal.maxWidth || 'max-w-2xl'}`}
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
