@@ -24,18 +24,51 @@ export default function TrainingEducation() {
   ];
 
   const overdueItems = training.filter(t => t.status === 'overdue');
-  const decisionData = overdueItems.map((t, i) => ({
-    id: `trn-dec-${i}`,
-    title: `${t.staffName} — ${t.courseName} overdue`,
+  const staticDecisions = [
+    {
+      id: 'trn-dec-critical-1',
+      title: 'Heritage Oaks — 4 CNAs overdue on Bloodborne Pathogens (OSHA mandatory)',
+      facility: facilityNames.f4,
+      priority: 'critical', agent: 'Training Agent', confidence: 0.96, governanceLevel: 3,
+      description: 'Four CNAs at Heritage Oaks (Maria Santos, Andre Williams, Keisha Brown, Tanya Reed) have not completed annual OSHA Bloodborne Pathogens training, due February 28. This is a federal OSHA requirement — not optional. Heritage Oaks had a needlestick incident on February 25 (Keisha Brown, WC claim #wc-003), making this training even more critical. All 4 staff members work direct patient care shifts and handle sharps daily. The e-learning module is 45 minutes and can be completed on any shift with supervisor approval.',
+      recommendation: 'Mandate completion within 48 hours. Notify DON Patricia Alvarez to schedule during upcoming shifts. If not completed by March 21: suspend from clinical duties per OSHA compliance policy 4.2.1. Cost of 48-hour coverage if suspended: $2,240 (4 CNAs x 2 shifts x $280/agency shift).',
+      impact: 'OSHA citation risk: $15,625 per violation (serious), $156,259 per violation (willful/repeat). With 4 untrained staff handling sharps post-needlestick incident, this is a willful violation exposure. Last OSHA inspection: July 2025.',
+      evidence: [{ label: 'Workday LMS', detail: '4 CNAs: Santos, Williams, Brown, Reed — Bloodborne Pathogens due 2/28, 0% completion' }, { label: 'Incident correlation', detail: 'Brown had needlestick 2/25 (WC claim #wc-003) — training was already overdue at time of injury' }, { label: 'OSHA 29 CFR 1910.1030', detail: 'Annual training required for all employees with occupational exposure to blood' }],
+    },
+    {
+      id: 'trn-dec-critical-2',
+      title: 'Enterprise-wide — 7 staff overdue on HIPAA Privacy & Security refresher',
+      facility: 'Multiple',
+      priority: 'high', agent: 'Training Agent', confidence: 0.93, governanceLevel: 2,
+      description: 'Annual HIPAA Privacy & Security training was due March 1 for all staff. 7 employees across 4 facilities have not completed: Heritage Oaks (3), Desert Springs (2), Meadowbrook (1), Pacific Gardens (1). The 3 Heritage Oaks staff are the same CNAs who are also overdue on Bloodborne Pathogens — indicating a pattern of training non-compliance at that facility. One Desert Springs employee (front desk coordinator Diane Reeves) handles PHI daily including insurance verifications and family inquiries.',
+      recommendation: 'Send final automated reminder via Workday mobile notification (82% open rate vs 34% email). For Diane Reeves at Desert Springs: immediate supervisor meeting required — she handles PHI in every interaction. If not completed by March 21: restrict EHR access per HIPAA compliance policy.',
+      impact: 'HIPAA violation penalties: $100-$50,000 per violation depending on negligence level. Untrained staff accessing PHI creates "reasonable cause" tier exposure ($1,000-$50,000 per incident). OCR audit would flag incomplete training records.',
+      evidence: [{ label: 'Workday LMS report', detail: '7 of 534 employees (1.3%) overdue — 98.7% completion rate' }, { label: 'PHI access audit', detail: 'Diane Reeves: 47 PHI access events in last 7 days while training overdue' }, { label: 'Heritage Oaks pattern', detail: '3 staff overdue on both HIPAA and Bloodborne Pathogens — training compliance issue at facility level' }],
+    },
+    {
+      id: 'trn-dec-medium-1',
+      title: 'Abuse Prevention & Reporting — 2 new hires at 30-day deadline',
+      facility: facilityNames.f8,
+      priority: 'high', agent: 'Training Agent', confidence: 0.91, governanceLevel: 2,
+      description: 'Two new-hire CNAs at Desert Springs (Jason Morales, started 2/15, and Brittany Cole, started 2/18) have not completed the mandatory Abuse Prevention & Reporting training. CMS requires completion within 30 days of hire — deadlines are March 17 and March 20 respectively. Jason\'s deadline is tomorrow. Both have completed orientation and all other required modules. The Abuse Prevention module requires in-person competency demonstration with the DON, which has not been scheduled.',
+      recommendation: 'Schedule DON competency check for Jason Morales tomorrow (March 18) and Brittany Cole by March 20. Both have completed the e-learning portion — only the in-person demonstration is missing. If DON is unavailable, the ADON or Staff Development Coordinator can conduct per CMS guidelines.',
+      impact: 'CMS F-tag 0600 (free from abuse) requires documented training within 30 days. If state survey occurs before completion: Immediate Jeopardy finding possible, $3,050-$10,000/day CMP. Jason hits 30-day deadline tomorrow.',
+      evidence: [{ label: 'Workday onboarding tracker', detail: 'Morales: 14 of 15 modules complete, missing Abuse Prevention competency check' }, { label: 'CMS requirement', detail: 'F-0600: Abuse training within 30 days of hire, includes hands-on competency demonstration' }, { label: 'DON availability', detail: 'Desert Springs DON Karen Mitchell available Mar 18 PM and Mar 20 AM' }],
+    },
+  ];
+  const dynamicDecisions = overdueItems.slice(0, 2).map((t, i) => ({
+    id: `trn-dec-dyn-${i}`,
+    title: `${t.staffName} — ${t.courseName} overdue since ${t.requiredDate}`,
     facility: facilityNames[t.facilityId] || t.facilityId,
     priority: new Date(t.requiredDate) < new Date('2026-03-01') ? 'critical' : 'high',
     agent: 'Training Agent',
     confidence: 0.92,
     governanceLevel: 2,
-    description: `Required training "${t.courseName}" was due ${t.requiredDate}. Staff member has not completed. This is a survey-critical compliance item.`,
-    recommendation: `Send final notice with 48-hour deadline. If not completed, escalate to facility administrator for mandatory scheduling. Consider suspending clinical duties until complete.`,
-    impact: `Compliance gap — CMS survey finding risk`,
+    description: `Required training "${t.courseName}" was due ${t.requiredDate} and remains incomplete. ${t.staffName} has been notified twice via email (Workday LMS automated reminders). This is a survey-critical compliance item — CMS surveyors check training records for all clinical staff.`,
+    recommendation: `Send final notice with 48-hour completion deadline. If not completed by March 21, escalate to facility administrator for mandatory scheduling during next shift. Suspend from clinical duties if still incomplete after 72 hours per compliance policy.`,
+    impact: `Compliance gap creates CMS survey finding risk. F-tag citation probability increases with each day of non-compliance. Agency coverage cost if suspended: $280/shift.`,
   }));
+  const decisionData = [...staticDecisions, ...dynamicDecisions];
 
   const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 

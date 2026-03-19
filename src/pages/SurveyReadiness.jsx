@@ -3,7 +3,7 @@ import { surveyData } from '../data/mockData';
 import { PageHeader, Card, PriorityBadge, ActionButton, ClickableRow, ProgressBar, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
-import { StatGrid, DataTable } from '../components/DataComponents';
+import { DataTable } from '../components/DataComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { DecisionQueue } from '../components/DecisionComponents';
 
@@ -190,7 +190,7 @@ export default function SurveyReadiness() {
               <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                 <div className="flex items-start gap-3">
                   <div className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${a.deadline === 'Today' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-amber-50 text-amber-600 border border-amber-200'}`}>{i + 1}</div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 font-medium mb-1">{a.action}</p>
                     <div className="flex items-center gap-3 text-[11px] text-gray-500">
                       <span>Owner: <span className="text-gray-700">{a.owner}</span></span>

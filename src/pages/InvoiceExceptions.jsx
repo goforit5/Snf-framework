@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, FileText, DollarSign, Bot, Shield, CheckCircle2, XCircle, HelpCircle, PenLine, Tag, Scale, BarChart3 } from 'lucide-react';
+import { AlertTriangle, FileText, DollarSign, Bot, CheckCircle2, XCircle, HelpCircle, PenLine, Tag, Scale, BarChart3 } from 'lucide-react';
 import { invoiceExceptions } from '../data/mockData';
 import { PageHeader, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';

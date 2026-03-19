@@ -1,7 +1,8 @@
-import { Building2, AlertTriangle, Bot, DollarSign, Clock, ShieldAlert, Users, CheckCircle2, ArrowRight, Zap, ChevronRight } from 'lucide-react';
+import { Building2, AlertTriangle, Bot, DollarSign, Clock, ShieldAlert, Users, CheckCircle2, ArrowRight, Zap } from 'lucide-react';
 import { facilities, exceptions, agentActivity, surveyData } from '../data/mockData';
 import { PageHeader, Card, FacilityCard, PriorityBadge, ActionButton, AgentHumanSplit, ClickableRow, SectionLabel, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
+import { useToast } from '../components/FeedbackUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, HealthScoreCard } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
@@ -34,7 +35,14 @@ const doTheseFirstData = [
 
 export default function CommandCenter() {
   const { open } = useModal();
-  const { decisions, approve, escalate } = useDecisionQueue(doTheseFirstData);
+  const { toast } = useToast();
+  const { decisions, approve, escalate } = useDecisionQueue(doTheseFirstData, {
+    onAction: ({ action, decision }) => {
+      const messages = { approved: 'Approved', overridden: 'Overridden', escalated: 'Escalated', deferred: 'Deferred' };
+      const types = { approved: 'success', overridden: 'info', escalated: 'info', deferred: 'info' };
+      toast({ message: `${messages[action]}: ${decision.title}`, type: types[action] });
+    }
+  });
 
   const totalCensus = facilities.reduce((sum, f) => sum + f.census, 0);
   const totalBeds = facilities.reduce((sum, f) => sum + f.beds, 0);

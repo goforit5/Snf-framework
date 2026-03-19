@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Loader2, Clock, AlertTriangle, Bot, Calendar, Lock, FileText, User } from 'lucide-react';
+import { CheckCircle2, Circle, Loader2, Clock, Bot, Calendar, Lock, FileText, User } from 'lucide-react';
 import { financeData } from '../data/mockData';
 import { PageHeader, Card, ActorBadge, ActionButton, ProgressBar, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';

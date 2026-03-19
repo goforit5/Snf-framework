@@ -1,5 +1,5 @@
-import { AlertTriangle, FileWarning, Users, Clock, Shield, Scale } from 'lucide-react';
-import { PageHeader, Card, PriorityBadge, StatusBadge } from '../../components/Widgets';
+import { AlertTriangle, FileWarning, Users, Clock, Scale } from 'lucide-react';
+import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
@@ -91,7 +91,7 @@ export default function EmployeeRelations() {
             <div className="space-y-3">
               {disciplinaryActions.map((da) => (
                 <div key={da.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">{da.employee}</p>
                     <p className="text-xs text-gray-500">{da.facility} — {da.reason}</p>
                   </div>
@@ -108,7 +108,7 @@ export default function EmployeeRelations() {
             <div className="space-y-3">
               {grievances.map((gr) => (
                 <div key={gr.id} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">{gr.employee}</p>
                     <p className="text-xs text-gray-500">{gr.subject}</p>
                   </div>

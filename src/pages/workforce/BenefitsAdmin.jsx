@@ -118,7 +118,7 @@ export default function BenefitsAdmin() {
           <div className="space-y-3">
             {recentChanges.map((change, i) => (
               <div key={i} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900">{change.employee}</p>
                   <p className="text-xs text-gray-500">{change.type} — {change.plan}</p>
                 </div>

@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Shield, ExternalLink, CheckCircle2, FileText, Bot, User, GitBranch, Clock, BarChart3 } from 'lucide-react';
+import { Shield, CheckCircle2, Bot, User, GitBranch, Clock, BarChart3 } from 'lucide-react';
 import { auditLog, traceIds } from '../data/agents/auditLog';
-import { PageHeader, Card, ActorBadge, ConfidenceBar, ActionButton, AgentHumanSplit } from '../components/Widgets';
+import { PageHeader, Card, AgentHumanSplit } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';

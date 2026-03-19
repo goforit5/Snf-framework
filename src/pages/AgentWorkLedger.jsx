@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Zap, Timer, Shield, AlertTriangle, Activity, Database, BarChart3, GitBranch, Bot, User, CheckCircle2, Eye, ArrowRight } from 'lucide-react';
 import { agentActivity, agentRegistry, agentById, auditLog, getTraceChain, agentPerformance, detectAnomalies } from '../data/agents';
-import { PageHeader, Card, ConfidenceBar, AgentHumanSplit, ActionButton, SectionLabel } from '../components/Widgets';
+import { PageHeader, ConfidenceBar, AgentHumanSplit, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';

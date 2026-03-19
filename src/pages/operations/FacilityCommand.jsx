@@ -1,11 +1,11 @@
-import { Building2, Users, Wrench, Package, Shield, Leaf, AlertTriangle } from 'lucide-react';
+import { Building2, Users, Wrench, Package, Shield, Leaf } from 'lucide-react';
 import { facilities } from '../../data/entities/facilities';
 import { workOrders, maintenanceSummary } from '../../data/operations/maintenance';
 import { supplySummary } from '../../data/operations/supplyChain';
 import { lifeSafetySummary } from '../../data/operations/lifeSafety';
-import { PageHeader, FacilityCard } from '../../components/Widgets';
+import { PageHeader, FacilityCard, Card } from '../../components/Widgets';
 import { useModal } from '../../components/WidgetUtils';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -23,6 +23,14 @@ const criticalSupplies = supplySummary.critical;
 const avgOccupancy = Math.round(facilities.reduce((s, f) => s + f.occupancy, 0) / facilities.length * 10) / 10;
 const safetyCompliance = Math.round(((lifeSafetySummary.completed) / lifeSafetySummary.total) * 100);
 const envScore = 93;
+
+const recentFacilityActivity = [
+  { id: 'fc-act-1', agentName: 'Supply Chain Agent', action: 'detected 5 items below reorder point at Las Vegas Desert Springs — emergency PO drafted', status: 'completed', confidence: 0.94, timestamp: '2026-03-19T08:15:00Z', timeSaved: '1.2 hrs', costImpact: '$4,280 emergency restock', policiesChecked: ['Supply Chain Policy 3.1', 'Emergency Procurement'] },
+  { id: 'fc-act-2', agentName: 'Maintenance Agent', action: 'flagged generator auto-start failure at Tucson Desert Bloom — repair ticket created', status: 'completed', confidence: 0.91, timestamp: '2026-03-19T07:30:00Z', timeSaved: '35 min', costImpact: 'Life safety compliance preserved', policiesChecked: ['Emergency Backup Power Policy'] },
+  { id: 'fc-act-3', agentName: 'Life Safety Agent', action: 'scanning fire drill compliance across all 8 facilities — Las Vegas 10 days overdue', status: 'completed', confidence: 0.97, timestamp: '2026-03-19T06:45:00Z', timeSaved: '50 min', policiesChecked: ['CMS Fire Safety F-Tags', 'Life Safety Code'] },
+  { id: 'fc-act-4', agentName: 'Environmental Agent', action: 'verifying pest control follow-up visit scheduled for Las Vegas kitchen today', status: 'in-progress', confidence: 0.88, timestamp: '2026-03-19T08:40:00Z', timeSaved: '20 min', policiesChecked: ['Health Department Standards'] },
+  { id: 'fc-act-5', agentName: 'Maintenance Agent', action: 'cross-referenced vendor COI database — ABC Electric expired March 1, flagged for renewal', status: 'completed', confidence: 0.95, timestamp: '2026-03-19T07:00:00Z', timeSaved: '40 min', costImpact: '$480/day fire watch avoided', policiesChecked: ['Vendor Compliance Policy 2.4'] },
+];
 
 export default function FacilityCommand() {
   const { open } = useModal();
@@ -80,6 +88,12 @@ export default function FacilityCommand() {
 
       <div className="mb-6">
         <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Cross-Facility Operations Decisions" badge={decisions.length} />
+      </div>
+
+      <div className="mb-6">
+        <Card title="Recent Agent Activity" badge="Live">
+          <AgentActivityFeed activities={recentFacilityActivity} maxItems={5} />
+        </Card>
       </div>
 
       <div className="mb-2">

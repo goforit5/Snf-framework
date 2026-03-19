@@ -1,4 +1,4 @@
-import { Users, Clock, AlertTriangle, DollarSign, UserCheck, FileWarning, Bot, CheckCircle2, TrendingUp, ArrowUpRight, Shield, Briefcase, CalendarClock, ChevronRight } from 'lucide-react';
+import { Users, Clock, AlertTriangle, DollarSign, FileWarning, Bot, CheckCircle2, TrendingUp, ArrowUpRight, Briefcase, ChevronRight } from 'lucide-react';
 import { payrollData } from '../data/mockData';
 import { PageHeader, Card, PriorityBadge, ActionButton, AgentHumanSplit, SectionLabel, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';

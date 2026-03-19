@@ -1,6 +1,6 @@
 import { FileText, Clock, DollarSign, RefreshCw, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { contractLifecycle, contractLifecycleSummary } from '../../data/legal/contractLifecycle';
-import { PageHeader, StatusBadge } from '../../components/Widgets';
+import { PageHeader } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

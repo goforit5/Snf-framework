@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
-import { CheckCircle2, XCircle, ArrowUp, Clock, ChevronDown, ChevronRight, Bot, FileText, Shield, Zap, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowUp, Clock, ChevronDown, ChevronRight, Bot, FileText, Shield, Zap, AlertTriangle, Maximize2, Database, Globe, Activity } from 'lucide-react';
+import { useModal } from './WidgetUtils';
 
 /* ─── Governance Badge ─── */
 const governanceLevels = {
@@ -69,6 +70,235 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
   );
 }
 
+/* ─── Decision Detail Modal Content ─── */
+function DecisionDetailModal({
+  title, description, facility, priority, agent, confidence,
+  recommendation, evidence = [], impact, governanceLevel,
+  agentReasoning, policies = [], sourceSystems = [], timeline = [],
+  onApprove, onOverride, onEscalate, onDefer, closeModal,
+}) {
+  const badgeColor = {
+    critical: 'bg-red-50 text-red-700 border-red-200',
+    high: 'bg-amber-50 text-amber-700 border-amber-200',
+    medium: 'bg-blue-50 text-blue-700 border-blue-200',
+    low: 'bg-gray-50 text-gray-600 border-gray-200',
+  }[priority?.toLowerCase()] || 'bg-blue-50 text-blue-700 border-blue-200';
+
+  const confidencePct = confidence != null ? (confidence * 100).toFixed(0) : null;
+  const confidenceColor = confidence >= 0.95 ? 'text-green-600' : confidence >= 0.8 ? 'text-amber-600' : 'text-red-600';
+
+  // Generate default timeline if none provided
+  const displayTimeline = timeline.length > 0 ? timeline : [
+    { time: '6 min ago', event: 'Agent detected anomaly across source systems' },
+    { time: '5 min ago', event: 'Cross-referenced policies and compliance requirements' },
+    { time: '4 min ago', event: 'Completed impact analysis and risk assessment' },
+    { time: '3 min ago', event: 'Generated recommendation with supporting evidence' },
+    { time: 'Now', event: 'Awaiting human decision' },
+  ];
+
+  // Generate default source systems if none provided
+  const displaySystems = sourceSystems.length > 0 ? sourceSystems : ['PCC', 'Workday'];
+
+  const handleAction = (action) => {
+    closeModal?.();
+    action?.();
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header with badges */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          {facility && (
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">{facility}</p>
+          )}
+          <div className="flex items-center gap-2 flex-wrap mt-1">
+            <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
+              {priority}
+            </span>
+            {governanceLevel != null && <GovernanceBadge level={governanceLevel} />}
+          </div>
+        </div>
+        {confidencePct != null && (
+          <div className="text-right flex-shrink-0">
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Confidence</p>
+            <p className={`text-2xl font-bold tabular-nums ${confidenceColor}`}>{confidencePct}%</p>
+            <div className="w-20 h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1">
+              <div
+                className={`h-full rounded-full transition-all ${confidence >= 0.95 ? 'bg-green-500' : confidence >= 0.8 ? 'bg-amber-500' : 'bg-red-500'}`}
+                style={{ width: `${confidence * 100}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Description */}
+      {description && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Situation</p>
+          <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
+        </div>
+      )}
+
+      {/* Agent Analysis */}
+      <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+        <div className="flex items-start gap-3">
+          <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <Bot size={16} className="text-blue-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-xs font-semibold text-blue-700">{agent || 'AI Agent'}</p>
+              <span className="text-[10px] text-blue-500 font-medium">Analysis</span>
+            </div>
+            <p className="text-xs text-gray-700 leading-relaxed">
+              {agentReasoning || recommendation || 'Agent analysis completed. See evidence and recommendation below.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Recommendation */}
+      {recommendation && (
+        <div className="bg-green-50/50 rounded-xl p-4 border border-green-100">
+          <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-2">Recommendation</p>
+          <p className="text-sm text-gray-700 leading-relaxed font-medium">{recommendation}</p>
+          {impact && (
+            <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-100">
+              <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Impact: </span>
+                <span className="text-xs text-gray-700">{impact}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Evidence Chain */}
+      {evidence.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Evidence Chain</p>
+          <div className="space-y-2">
+            {evidence.map((item, i) => (
+              <div key={i} className="flex items-start gap-3 bg-gray-50 rounded-xl p-3 border border-gray-100">
+                <div className="w-6 h-6 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-gray-400 tabular-nums">{i + 1}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-700">{item.label}</p>
+                  {item.detail && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{item.detail}</p>}
+                  {item.source && (
+                    <span className="inline-flex items-center gap-1 mt-1 text-[10px] text-blue-600 font-medium">
+                      <Database size={9} />
+                      {item.source}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Policies Checked */}
+      {policies.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Policies Verified</p>
+          <div className="flex flex-wrap gap-1.5">
+            {policies.map((policy, i) => (
+              <span key={i} className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 border border-green-100 text-[10px] text-green-700 font-medium">
+                <Shield size={10} className="text-green-500" />
+                {policy}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Timeline */}
+      <div>
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Decision Timeline</p>
+        <div className="relative pl-6">
+          <div className="absolute left-[9px] top-1 bottom-1 w-px bg-gray-200" />
+          {displayTimeline.map((entry, i) => {
+            const isLast = i === displayTimeline.length - 1;
+            return (
+              <div key={i} className="relative flex items-start gap-3 pb-3 last:pb-0">
+                <div className={`absolute left-[-15px] w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${isLast ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'}`}>
+                  {isLast ? (
+                    <Activity size={8} className="text-blue-500" />
+                  ) : (
+                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-xs ${isLast ? 'font-semibold text-blue-700' : 'text-gray-700'}`}>{entry.event}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">{entry.time}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Source Systems */}
+      <div>
+        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Data Sources</p>
+        <div className="flex flex-wrap gap-2">
+          {displaySystems.map((system, i) => (
+            <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gray-50 border border-gray-200 text-xs font-medium text-gray-700">
+              <Globe size={11} className="text-gray-400" />
+              {system}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex items-center gap-2 pt-4 border-t border-gray-100" role="group" aria-label="Decision actions">
+        {onApprove && (
+          <button
+            onClick={() => handleAction(onApprove)}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+          >
+            <CheckCircle2 size={14} />
+            Approve
+          </button>
+        )}
+        {onOverride && (
+          <button
+            onClick={() => handleAction(onOverride)}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+          >
+            <XCircle size={14} />
+            Override
+          </button>
+        )}
+        {onEscalate && (
+          <button
+            onClick={() => handleAction(onEscalate)}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+          >
+            <ArrowUp size={14} />
+            Escalate
+          </button>
+        )}
+        {onDefer && (
+          <button
+            onClick={() => handleAction(onDefer)}
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+          >
+            <Clock size={14} />
+            Defer
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Decision Card ─── */
 const priorityBorders = {
   critical: 'border-l-red-500',
@@ -96,6 +326,10 @@ export function DecisionCard({
   evidence = [],
   impact,
   governanceLevel,
+  agentReasoning,
+  policies = [],
+  sourceSystems = [],
+  timeline = [],
   onApprove,
   onOverride,
   onEscalate,
@@ -108,6 +342,38 @@ export function DecisionCard({
   const cardRef = useRef(null);
   const [flashClass, setFlashClass] = useState('');
   const [dismissing, setDismissing] = useState(false);
+  const modal = useModal();
+
+  const openDetailModal = useCallback((e) => {
+    if (e) e.stopPropagation();
+    if (!modal) return;
+    modal.open({
+      title,
+      content: (
+        <DecisionDetailModal
+          title={title}
+          description={description}
+          facility={facility}
+          priority={priority}
+          agent={agent}
+          confidence={confidence}
+          recommendation={recommendation}
+          evidence={evidence}
+          impact={impact}
+          governanceLevel={governanceLevel}
+          agentReasoning={agentReasoning}
+          policies={policies}
+          sourceSystems={sourceSystems}
+          timeline={timeline}
+          onApprove={onApprove}
+          onOverride={onOverride}
+          onEscalate={onEscalate}
+          onDefer={onDefer}
+          closeModal={() => modal.close()}
+        />
+      ),
+    });
+  }, [modal, title, description, facility, priority, agent, confidence, recommendation, evidence, impact, governanceLevel, agentReasoning, policies, sourceSystems, timeline, onApprove, onOverride, onEscalate, onDefer]);
 
   const handleApprove = useCallback((e) => {
     if (e) e.stopPropagation();
@@ -133,7 +399,7 @@ export function DecisionCard({
       className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${borderColor} transition-all duration-200 hover:shadow-md ${flashClass} ${dismissing ? 'card-dismiss' : ''}`}
     >
       {/* Collapsed view — always visible */}
-      <div className="px-4 py-3 flex items-center gap-3">
+      <div className="px-4 py-3 flex items-center gap-2 lg:gap-3">
         {number != null && (
           <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0 tabular-nums">
             {number}
@@ -147,20 +413,20 @@ export function DecisionCard({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.(); } }}
         >
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-sm font-semibold text-gray-900 truncate">{title}</h4>
-            {facility && <span className="text-[10px] text-gray-400 font-medium">{facility}</span>}
+            <h4 className="text-sm font-semibold text-gray-900 truncate max-w-[200px] xl:max-w-none">{title}</h4>
+            {facility && <span className="text-[10px] text-gray-400 font-medium hidden sm:inline">{facility}</span>}
           </div>
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 lg:gap-2 flex-shrink-0">
           <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeColor}`}>
             {priority}
           </span>
           {confidence != null && (
-            <span className="text-[10px] font-mono font-medium text-gray-500 tabular-nums">
+            <span className="text-[10px] font-mono font-medium text-gray-500 tabular-nums hidden sm:inline">
               {(confidence * 100).toFixed(0)}%
             </span>
           )}
-          {governanceLevel != null && <GovernanceBadge level={governanceLevel} />}
+          {governanceLevel != null && <span className="hidden md:inline"><GovernanceBadge level={governanceLevel} /></span>}
           <div className="flex items-center gap-1 ml-1" role="group" aria-label="Decision actions">
             {onApprove && (
               <button
@@ -174,7 +440,7 @@ export function DecisionCard({
             {onOverride && (
               <button
                 onClick={handleDismissAction(onOverride)}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97]"
+                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] hidden lg:block"
                 aria-label={`Override: ${title}`}
               >
                 Override
@@ -238,6 +504,14 @@ export function DecisionCard({
               </div>
             )}
             <EvidencePanel evidence={evidence} />
+            {/* View Full Detail button — opens Level 3 modal */}
+            <button
+              onClick={openDetailModal}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all duration-200 active:scale-[0.97]"
+            >
+              <Maximize2 size={11} />
+              View Full Detail
+            </button>
             {/* Action buttons repeated in expanded view for accessibility */}
             <div className="flex items-center gap-2 pt-2 border-t border-gray-100" role="group" aria-label="Decision actions">
               {onApprove && (
@@ -335,6 +609,10 @@ export function DecisionQueue({
             evidence={decision.evidence}
             impact={decision.impact}
             governanceLevel={decision.governanceLevel}
+            agentReasoning={decision.agentReasoning}
+            policies={decision.policies}
+            sourceSystems={decision.sourceSystems}
+            timeline={decision.timeline}
             onApprove={onApprove ? () => onApprove(decision.id) : undefined}
             onOverride={onOverride ? () => onOverride(decision.id) : undefined}
             onEscalate={onEscalate ? () => onEscalate(decision.id) : undefined}

@@ -3,7 +3,7 @@ import { maData } from '../data/mockData';
 import { PageHeader, Card, StatusBadge, ConfidenceBar, ActionButton, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
-import { StatGrid, DataTable } from '../components/DataComponents';
+import { StatGrid } from '../components/DataComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { DecisionQueue } from '../components/DecisionComponents';
 

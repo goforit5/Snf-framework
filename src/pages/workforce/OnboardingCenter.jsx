@@ -108,7 +108,7 @@ export default function OnboardingCenter() {
               {onboardingSummary.blockedItems.map((b, i) => (
                 <div key={i} className="flex items-center gap-3 py-2 px-3 bg-red-50 rounded-xl border border-red-100">
                   <AlertTriangle size={14} className="text-red-600 flex-shrink-0" />
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">{b.staffName}</p>
                     <p className="text-xs text-gray-500">{b.item} — blocked {b.daysBlocked} days</p>
                   </div>

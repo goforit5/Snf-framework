@@ -1,7 +1,7 @@
 import { Globe, Building2, Users, TrendingUp, ArrowUpRight, MapPin, BarChart3 } from 'lucide-react';
 import { competitors, marketRates, referralTrends, demographicData } from '../../data/strategic/marketIntel';
 import { PageHeader, Card, SectionLabel } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -57,6 +57,14 @@ const demoColumns = [
   { key: 'snfBedsPerThousand', label: 'SNF Beds/1K 65+', render: (v) => <span className="font-mono tabular-nums">{v}</span> },
 ];
 
+const recentMarketActivity = [
+  { id: 'mi-act-1', agentName: 'Market Intelligence Agent', action: 'detected Sabra REIT 8-K filing — acquisition of 3 Phoenix SNFs from Desert Crest Healthcare for $45M', status: 'completed', confidence: 0.97, timestamp: '2026-03-19T06:00:00Z', timeSaved: '4 hrs', costImpact: 'Competitive threat — Sabra now 7 facilities in Phoenix', policiesChecked: ['M&A Intelligence Protocol', 'SEC Filing Monitor'] },
+  { id: 'mi-act-2', agentName: 'Referral Analytics Agent', action: 'analyzed Banner Health discharge pattern shift — SNF referrals up 15% in February, Ensign capture rate down 6pts', status: 'completed', confidence: 0.90, timestamp: '2026-03-19T07:15:00Z', timeSaved: '2.5 hrs', costImpact: '$7.3M/yr revenue opportunity identified', policiesChecked: ['Referral Source Analysis Protocol'] },
+  { id: 'mi-act-3', agentName: 'Demographic Agent', action: 'scanning Census ACS 2025 data for underserved SNF markets — American Fork, UT flagged as top opportunity', status: 'completed', confidence: 0.85, timestamp: '2026-03-19T05:30:00Z', timeSaved: '3 hrs', policiesChecked: ['Market Entry Criteria', 'Demographic Analysis Model'] },
+  { id: 'mi-act-4', agentName: 'Rate Intelligence Agent', action: 'updating competitive rate benchmarks across 6 states — Nevada private rates increased 4.2% QoQ', status: 'in-progress', confidence: 0.88, timestamp: '2026-03-19T08:30:00Z', timeSaved: '1.5 hrs', policiesChecked: ['Rate Benchmarking Policy'] },
+  { id: 'mi-act-5', agentName: 'Market Intelligence Agent', action: 'compiled quarterly competitor occupancy report from CMS Provider Database — industry avg 82.1%', status: 'completed', confidence: 0.93, timestamp: '2026-03-19T06:45:00Z', timeSaved: '2 hrs', policiesChecked: ['Competitive Analysis Framework'] },
+];
+
 export default function MarketIntelligence() {
   const { decisions, approve, escalate } = useDecisionQueue(marketDecisions);
 
@@ -81,6 +89,10 @@ export default function MarketIntelligence() {
       <div className="mb-6">
         <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Market Intelligence Decisions" badge={decisions.length} />
       </div>
+
+      <Card title="Recent Agent Activity" badge="Live" className="mb-6">
+        <AgentActivityFeed activities={recentMarketActivity} maxItems={5} />
+      </Card>
 
       <SectionLabel>Competitive Landscape</SectionLabel>
       <Card title="Competitor Facilities" className="mb-6">

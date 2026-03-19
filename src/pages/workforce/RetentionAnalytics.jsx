@@ -1,4 +1,4 @@
-import { TrendingDown, Clock, Users, UserMinus, MessageSquare, DollarSign } from 'lucide-react';
+import { TrendingDown, Clock, Users, UserMinus, MessageSquare } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import { PageHeader, Card, SectionLabel } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
@@ -122,7 +122,7 @@ export default function RetentionAnalytics() {
           <div className="space-y-2.5">
             {exitReasons.slice(0, 6).map((r) => (
               <div key={r.reason} className="flex items-center gap-3">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-gray-700">{r.reason}</span>
                     <span className="text-xs font-mono font-semibold text-gray-500">{r.pct}%</span>

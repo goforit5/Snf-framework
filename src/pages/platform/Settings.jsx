@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Settings as SettingsIcon, Bot, Shield, Users, Globe, RotateCcw, Zap, Info, ChevronDown, ChevronRight, Save, Bell, BellOff, Mail, Check } from 'lucide-react';
+import { Bot, Shield, Users, Globe, RotateCcw, Zap, ChevronDown, ChevronRight, Save, Bell, BellOff, Mail, Check } from 'lucide-react';
 import { PageHeader, Card, ActionButton, SectionLabel } from '../../components/Widgets';
 import { StatGrid } from '../../components/DataComponents';
 import { GovernanceBadge } from '../../components/DecisionComponents';

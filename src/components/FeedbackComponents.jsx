@@ -382,7 +382,7 @@ export function PageSkeleton() {
       {/* Agent summary bar skeleton */}
       <div className="h-12 bg-gray-100 rounded-2xl" />
       {/* Stat cards skeleton */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4 space-y-3">
             <div className="flex justify-between">

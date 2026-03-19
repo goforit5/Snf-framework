@@ -52,7 +52,7 @@ export default function AnomalyDetectionTab({ anomalies }) {
 
       <div className="mt-8">
         <SectionLabel>Fleet Health Overview</SectionLabel>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-3">
           {agentRegistry.map(agent => {
             const agentAnomalies = anomalies.filter(a => a.agentId === agent.id);
             const hasCritical = agentAnomalies.some(a => a.anomalies.some(x => x.severity === 'critical'));

@@ -1,7 +1,7 @@
-import { Calendar, FileText, BarChart3, AlertTriangle, CheckCircle2, Users, Clock } from 'lucide-react';
+import { Calendar, FileText, AlertTriangle, CheckCircle2, Users, Clock } from 'lucide-react';
 import { upcomingMeetings, resolutions, committeeReports, kpiDashboard } from '../../data/strategic/boardData';
 import { PageHeader, Card, SectionLabel, StatusBadge, ProgressBar } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -34,6 +34,14 @@ const meetingColumns = [
   { key: 'agenda', label: 'Agenda Items', render: (v) => <span className="font-mono tabular-nums">{v.length}</span> },
 ];
 
+const recentBoardActivity = [
+  { id: 'bd-act-1', agentName: 'Enterprise Orchestrator', action: 'compiled Q1 financial summary for board package — revenue 102.2% of budget, EBITDAR 110%', status: 'completed', confidence: 0.96, timestamp: '2026-03-19T06:00:00Z', timeSaved: '8 hrs', costImpact: 'Board prep time reduced 75%', policiesChecked: ['Board Reporting Standards', 'Financial Disclosure Policy'] },
+  { id: 'bd-act-2', agentName: 'M&A Diligence Agent', action: 'drafted M&A pipeline update for board — 3 active targets with risk summaries and LOI recommendations', status: 'completed', confidence: 0.95, timestamp: '2026-03-19T07:00:00Z', timeSaved: '5 hrs', policiesChecked: ['M&A Board Authorization Policy'] },
+  { id: 'bd-act-3', agentName: 'Quality Oversight Agent', action: 'preparing Las Vegas facility turnaround plan with 90-day milestones for Quality Committee review', status: 'in-progress', confidence: 0.88, timestamp: '2026-03-19T08:00:00Z', timeSaved: '3 hrs', costImpact: 'Compliance score 68 requires board action', policiesChecked: ['Quality Committee Charter', 'Facility Remediation Protocol'] },
+  { id: 'bd-act-4', agentName: 'Enterprise Orchestrator', action: 'aggregated 4 committee reports into unified board briefing — Finance, Quality, Compliance, Workforce', status: 'completed', confidence: 0.93, timestamp: '2026-03-19T05:30:00Z', timeSaved: '6 hrs', policiesChecked: ['Committee Reporting Requirements'] },
+  { id: 'bd-act-5', agentName: 'Governance Agent', action: 'verified 3 open board resolutions on track — annual compliance certification due April 30', status: 'completed', confidence: 0.97, timestamp: '2026-03-19T07:30:00Z', timeSaved: '1.5 hrs', policiesChecked: ['Board Resolution Tracking Policy'] },
+];
+
 export default function BoardGovernance() {
   const { decisions, approve, escalate } = useDecisionQueue(boardDecisions);
 
@@ -64,6 +72,10 @@ export default function BoardGovernance() {
           onEscalate={escalate}
         />
       </div>
+
+      <Card title="Recent Agent Activity" badge="Live" className="mb-6">
+        <AgentActivityFeed activities={recentBoardActivity} maxItems={5} />
+      </Card>
 
       <SectionLabel>Upcoming Meetings</SectionLabel>
       <Card title="Meeting Schedule" className="mb-6">

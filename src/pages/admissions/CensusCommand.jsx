@@ -3,7 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { censusByFacility, censusSummary, referralPipeline } from '../../data/operations/census';
 import { facilities, facilityMap } from '../../data/entities/facilities';
 import { PageHeader, Card } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -14,6 +14,14 @@ const CENSUS_DECISIONS = [
   { id: 'cd-1', title: 'Tucson Desert Bloom below 86% occupancy target', facility: 'Tucson Desert Bloom', priority: 'high', confidence: 0.88, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Activate marketing blitz — increase referral outreach to Banner UMC Tucson and Tucson Medical Center. Historical data shows 4-6 week lag from outreach to admissions.', impact: 'Projected $42K/month revenue gap at current census vs. target' },
   { id: 'cd-2', title: 'Sacramento Valley Medicaid mix at 39% — above 35% threshold', facility: 'Sacramento Valley', priority: 'medium', confidence: 0.91, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Prioritize Medicare A and managed care referrals for next 2 weeks. Current pipeline has 1 Medicare A referral pending — expedite clinical screening.', impact: 'Payer mix imbalance reducing average daily rate by ~$18/patient day' },
   { id: 'cd-3', title: 'Las Vegas Desert Springs at 94% — nearing overflow', facility: 'Las Vegas Desert Springs', priority: 'medium', confidence: 0.85, agent: 'census-forecast', governanceLevel: 1, recommendation: 'Prepare overflow protocol. Review 3 pending discharges for acceleration. Coordinate with Salt Lake Mountain View for transfer capacity.', impact: 'Risk of referral decline if no beds available within 48 hours' },
+];
+
+const recentCensusActivity = [
+  { id: 'cs-act-1', agentName: 'Census Forecast Agent', action: 'projected Tucson Desert Bloom dropping to 82% occupancy by April 1 without intervention', status: 'completed', confidence: 0.88, timestamp: '2026-03-19T08:00:00Z', timeSaved: '1.5 hrs', costImpact: '$42K/month revenue gap projected', policiesChecked: ['Occupancy Threshold Policy'] },
+  { id: 'cs-act-2', agentName: 'Referral Agent', action: 'auto-screened 6 new referrals from Banner Health — 4 meet clinical criteria, 2 need physician review', status: 'completed', confidence: 0.93, timestamp: '2026-03-19T07:45:00Z', timeSaved: '55 min', policiesChecked: ['Admission Criteria 2.1', 'Clinical Screening Protocol'] },
+  { id: 'cs-act-3', agentName: 'Payer Mix Agent', action: 'flagged Sacramento Valley Medicaid mix at 39% — above 35% threshold, prioritizing Medicare A referrals', status: 'completed', confidence: 0.91, timestamp: '2026-03-19T07:15:00Z', timeSaved: '30 min', costImpact: '$18/day ADR reduction identified', policiesChecked: ['Payer Mix Policy 3.2'] },
+  { id: 'cs-act-4', agentName: 'Discharge Planning Agent', action: 'reviewing 3 pending discharges at Las Vegas for potential acceleration — capacity at 94%', status: 'in-progress', confidence: 0.85, timestamp: '2026-03-19T08:30:00Z', timeSaved: '40 min', policiesChecked: ['Discharge Planning Protocol'] },
+  { id: 'cs-act-5', agentName: 'Census Forecast Agent', action: 'updated 30-day census projections for all 8 facilities using PCC admission/discharge trends', status: 'completed', confidence: 0.90, timestamp: '2026-03-19T06:00:00Z', timeSaved: '2 hrs', policiesChecked: ['Forecasting Model v3.1'] },
 ];
 
 export default function CensusCommand() {
@@ -78,6 +86,10 @@ export default function CensusCommand() {
           badge={decisions.length}
         />
       </div>
+
+      <Card title="Recent Agent Activity" badge="Live" className="mb-6">
+        <AgentActivityFeed activities={recentCensusActivity} maxItems={5} />
+      </Card>
 
       <Card title="Occupancy by Facility" className="mb-6">
         <div style={{ height: 220 }}>

@@ -1,6 +1,6 @@
-import { Users, Briefcase, TrendingDown, Clock, GraduationCap, CalendarClock, AlertTriangle, Shield, UserMinus, DollarSign } from 'lucide-react';
-import { PageHeader, Card, SectionLabel, AgentHumanSplit } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { Users, Briefcase, TrendingDown, Clock, GraduationCap, CalendarClock } from 'lucide-react';
+import { PageHeader, Card, AgentHumanSplit } from '../../components/Widgets';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -59,6 +59,14 @@ export default function WorkforceCommand() {
 
   const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
+  const recentActivity = [
+    { id: 'wf-act-1', agentName: 'Staffing Agent', action: 'flagged overtime threshold breach at Meadowbrook — 3 CNAs over 48hrs this week', status: 'completed', confidence: 0.96, timestamp: '2026-03-19T08:30:00Z', timeSaved: '45 min', costImpact: '$2,400 excess labor identified', policiesChecked: ['OT Policy 4.2', 'CBA Section 12'] },
+    { id: 'wf-act-2', agentName: 'Credentialing Agent', action: 'verified 12 RN license renewals against state board databases — all current except Sarah Mitchell', status: 'completed', confidence: 0.99, timestamp: '2026-03-19T07:45:00Z', timeSaved: '2.1 hrs', costImpact: 'Compliance risk mitigated', policiesChecked: ['Credentialing Policy 2.1'] },
+    { id: 'wf-act-3', agentName: 'Recruiting Agent', action: 'screened 8 CNA applications for Heritage Oaks — 3 meet qualifications, scheduled interviews', status: 'completed', confidence: 0.91, timestamp: '2026-03-19T07:15:00Z', timeSaved: '1.5 hrs', policiesChecked: ['Hiring Standards 3.1', 'Background Check Policy'] },
+    { id: 'wf-act-4', agentName: 'Retention Agent', action: 'analyzing exit interview patterns at Heritage Oaks — scheduling burnout trend detected', status: 'in-progress', confidence: 0.87, timestamp: '2026-03-19T08:50:00Z', timeSaved: '30 min', policiesChecked: ['Retention Policy 5.3'] },
+    { id: 'wf-act-5', agentName: 'Training Agent', action: 'sent automated OSHA compliance reminders to 5 overdue employees with 48-hour deadline', status: 'completed', confidence: 0.95, timestamp: '2026-03-19T06:30:00Z', timeSaved: '25 min', costImpact: 'Survey citation risk reduced', policiesChecked: ['Training Compliance 1.4'] },
+  ];
+
   return (
     <div className="p-6">
       <PageHeader
@@ -97,6 +105,10 @@ export default function WorkforceCommand() {
         </div>
 
         <div className="space-y-6">
+          <Card title="Recent Agent Activity" badge="Live">
+            <AgentActivityFeed activities={recentActivity} maxItems={5} />
+          </Card>
+
           <Card title="Workforce Risk Heatmap">
             <div className="space-y-3">
               {[

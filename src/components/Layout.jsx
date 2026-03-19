@@ -327,7 +327,7 @@ function AgentPulse() {
 
 /* ─── Responsive Breakpoint Constants ─── */
 const BREAKPOINT_MOBILE = 768;
-const BREAKPOINT_TABLET = 1024;
+const BREAKPOINT_TABLET = 1280;
 
 function useResponsiveMode() {
   const [mode, setMode] = useState(() => {

@@ -1,12 +1,20 @@
-import { Scale, FileText, AlertTriangle, Shield, Building2, Gavel, Clock, CheckCircle2 } from 'lucide-react';
+import { FileText, AlertTriangle, Shield, Building2, Gavel, Clock, CheckCircle2 } from 'lucide-react';
 import { contractLifecycle, contractLifecycleSummary } from '../../data/legal/contractLifecycle';
 import { litigation, litigationSummary } from '../../data/legal/litigation';
 import { regulatoryFilings, regulatorySummary } from '../../data/legal/regulatoryData';
-import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { PageHeader, Card } from '../../components/Widgets';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
+
+const recentLegalActivity = [
+  { id: 'lg-act-1', agentName: 'Contract Agent', action: 'identified 3 vendor contracts expiring within 90 days — auto-renewal terms reviewed for opt-out windows', status: 'completed', confidence: 0.92, timestamp: '2026-03-19T07:30:00Z', timeSaved: '2.5 hrs', costImpact: '$1.2M in renewals flagged', policiesChecked: ['Contract Renewal Policy 2.3', 'Procurement Standards'] },
+  { id: 'lg-act-2', agentName: 'Litigation Agent', action: 'pulled case docket updates for Johnson v. Heritage Oaks — motion to dismiss hearing set April 8', status: 'completed', confidence: 0.95, timestamp: '2026-03-19T06:45:00Z', timeSaved: '1.8 hrs', policiesChecked: ['Litigation Management Protocol'] },
+  { id: 'lg-act-3', agentName: 'Regulatory Agent', action: 'monitoring CMS comment period for staffing rule — drafted 12-page comment letter for review', status: 'in-progress', confidence: 0.88, timestamp: '2026-03-19T08:15:00Z', timeSaved: '6 hrs', costImpact: 'Regulatory compliance preserved', policiesChecked: ['Federal Rulemaking Response Policy'] },
+  { id: 'lg-act-4', agentName: 'Compliance Agent', action: 'completed quarterly corporate compliance audit — score improved from 85% to 87%', status: 'completed', confidence: 0.96, timestamp: '2026-03-19T05:00:00Z', timeSaved: '4 hrs', policiesChecked: ['Corporate Compliance Program', 'OIG Guidelines'] },
+  { id: 'lg-act-5', agentName: 'Contract Agent', action: 'analyzing Orkin pest control contract terms against service delivery — 2 SLA breaches identified', status: 'completed', confidence: 0.90, timestamp: '2026-03-19T07:00:00Z', timeSaved: '45 min', costImpact: '$3,200 credit opportunity', policiesChecked: ['Vendor SLA Enforcement Policy'] },
+];
 
 export default function LegalCommand() {
   const complianceScore = 87;
@@ -123,6 +131,12 @@ export default function LegalCommand() {
               );
             })}
           </div>
+        </Card>
+      </div>
+
+      <div className="mb-6">
+        <Card title="Recent Agent Activity" badge="Live">
+          <AgentActivityFeed activities={recentLegalActivity} maxItems={5} />
         </Card>
       </div>
     </div>

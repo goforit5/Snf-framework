@@ -1,4 +1,4 @@
-import { ClipboardCheck, ShieldCheck, XCircle, Stethoscope, FileSearch, Clock } from 'lucide-react';
+import { ClipboardCheck, ShieldCheck, XCircle, Stethoscope, FileSearch } from 'lucide-react';
 import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';

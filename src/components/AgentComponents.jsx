@@ -14,7 +14,7 @@ export function AgentSummaryBar({ agentName, summary, itemsProcessed, exceptions
           {' — '}
           {summary}
         </p>
-        <div className="flex items-center gap-4 flex-shrink-0">
+        <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0 flex-wrap">
           {itemsProcessed != null && (
             <div className="flex items-center gap-1.5">
               <Zap size={12} className="text-blue-500" />

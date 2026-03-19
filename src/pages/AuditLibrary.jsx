@@ -4,7 +4,7 @@ import { auditCategories, auditTypes, complianceFindings } from '../data/complia
 import { PageHeader, ActionButton, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
-import { StatGrid, DataTable } from '../components/DataComponents';
+import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { QuickFilter, SearchInput } from '../components/FilterComponents';
@@ -221,7 +221,7 @@ export default function AuditLibrary() {
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="flex-1"><SearchInput placeholder="Search audits by name or F-tag..." value={search} onChange={setSearch} /></div>
+        <div className="flex-1 min-w-0"><SearchInput placeholder="Search audits by name or F-tag..." value={search} onChange={setSearch} /></div>
       </div>
       <div className="mb-8"><QuickFilter filters={filters} active={activeCategories} onChange={setActiveCategories} /></div>
 

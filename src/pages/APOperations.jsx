@@ -1,4 +1,4 @@
-import { Receipt, CheckCircle2, AlertTriangle, Clock, DollarSign, FileText, Bot, ArrowRight, Package, ShieldCheck, XCircle } from 'lucide-react';
+import { Receipt, CheckCircle2, AlertTriangle, Clock, DollarSign, FileText, Bot, ArrowRight, Package, XCircle } from 'lucide-react';
 import { apData } from '../data/mockData';
 import { PageHeader, Card, StatusBadge, ConfidenceBar, ActionButton, AgentHumanSplit, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';

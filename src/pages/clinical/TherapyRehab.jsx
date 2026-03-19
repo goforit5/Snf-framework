@@ -1,4 +1,4 @@
-import { Activity, Clock, TrendingUp, ShieldCheck, AlertTriangle, Users } from 'lucide-react';
+import { Activity, Clock, TrendingUp, AlertTriangle, Users } from 'lucide-react';
 import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';

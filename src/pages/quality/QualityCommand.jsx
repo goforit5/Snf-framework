@@ -1,9 +1,9 @@
-import { Star, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Activity, BarChart3 } from 'lucide-react';
+import { Star, TrendingUp, TrendingDown, Activity, BarChart3 } from 'lucide-react';
 import { starRatings, qualityMeasures, qualitySummary } from '../../data/compliance/qualityMetrics';
 import { facilityName } from '../../data/helpers';
 import { PageHeader, Card, ActionButton } from '../../components/Widgets';
 import { useModal } from '../../components/WidgetUtils';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -47,6 +47,14 @@ const ratingColumns = [
   { key: 'staffing', label: 'Staffing' },
   { key: 'quality', label: 'Quality' },
   { key: 'fireInspection', label: 'Fire Inspection', render: (v) => <span className={v === 'No deficiencies' ? 'text-green-600' : 'text-red-600'}>{v}</span> },
+];
+
+const recentQualityActivity = [
+  { id: 'qa-act-1', agentName: 'Quality Measures Agent', action: 'identified Heritage Oaks rehospitalization rate trending 18.2% — 6.2 pts above benchmark', status: 'completed', confidence: 0.94, timestamp: '2026-03-19T05:00:00Z', timeSaved: '3.5 hrs', costImpact: 'Potential $85K readmission penalties', policiesChecked: ['CMS QRP Requirements', 'SNF VBP Program'] },
+  { id: 'qa-act-2', agentName: 'Infection Control Agent', action: 'analyzed 90-day UTI trends across all facilities — Pacific Gardens showing 2.1x increase', status: 'completed', confidence: 0.92, timestamp: '2026-03-19T06:15:00Z', timeSaved: '1.8 hrs', policiesChecked: ['Infection Prevention Protocol 4.1'] },
+  { id: 'qa-act-3', agentName: 'Survey Readiness Agent', action: 'running mock survey checklist at Las Vegas Desert Springs — 12 of 42 items need remediation', status: 'in-progress', confidence: 0.87, timestamp: '2026-03-19T08:00:00Z', timeSaved: '4 hrs', policiesChecked: ['CMS Survey Protocol', 'State Operations Manual'] },
+  { id: 'qa-act-4', agentName: 'Quality Measures Agent', action: 'generated quarterly QM comparison report for all 8 facilities against national benchmarks', status: 'completed', confidence: 0.96, timestamp: '2026-03-19T05:30:00Z', timeSaved: '2.5 hrs', policiesChecked: ['CMS Five-Star Quality Rating System'] },
+  { id: 'qa-act-5', agentName: 'Fall Prevention Agent', action: 'cross-referenced fall incident reports with staffing levels — correlation found on night shifts below 3.2 HPRD', status: 'completed', confidence: 0.89, timestamp: '2026-03-19T07:00:00Z', timeSaved: '1.2 hrs', costImpact: 'Fall reduction opportunity identified', policiesChecked: ['Fall Prevention Program', 'Staffing Adequacy Policy'] },
 ];
 
 export default function QualityCommand() {
@@ -94,6 +102,10 @@ export default function QualityCommand() {
           onEscalate={escalate}
         />
       </div>
+
+      <Card title="Recent Agent Activity" badge="Live" className="mb-6">
+        <AgentActivityFeed activities={recentQualityActivity} maxItems={5} />
+      </Card>
 
       <Card title="Star Ratings by Facility" badge={`${starRatings.length} facilities`}>
         <DataTable columns={ratingColumns} data={starRatings} sortable searchable />

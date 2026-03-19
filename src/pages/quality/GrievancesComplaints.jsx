@@ -1,4 +1,4 @@
-import { MessageSquare, Clock, Users, UserCheck, AlertTriangle, ThumbsUp } from 'lucide-react';
+import { MessageSquare, Clock, Users, UserCheck, ThumbsUp } from 'lucide-react';
 import { grievances, grievanceSummary } from '../../data/compliance/grievances';
 import { facilityName, formatDate } from '../../data/helpers';
 import { PageHeader, Card, ActionButton } from '../../components/Widgets';

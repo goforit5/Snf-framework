@@ -1,4 +1,4 @@
-import { Shield, FileText, Clock, AlertTriangle, CheckCircle2, Building2 } from 'lucide-react';
+import { Shield, FileText, Clock, AlertTriangle, Building2 } from 'lucide-react';
 import { regulatoryFilings, regulatorySummary } from '../../data/legal/regulatoryData';
 import { PageHeader } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';

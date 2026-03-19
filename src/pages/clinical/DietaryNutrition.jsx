@@ -1,5 +1,5 @@
 import { Apple, TrendingDown, Pill, ClipboardList, AlertTriangle, Activity } from 'lucide-react';
-import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
+import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';

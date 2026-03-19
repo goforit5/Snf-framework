@@ -1,6 +1,6 @@
-import { Landmark, MapPin, FileText, AlertTriangle, Calendar, DollarSign } from 'lucide-react';
+import { Landmark, MapPin, FileText, Calendar, DollarSign } from 'lucide-react';
 import { PageHeader, Card, SectionLabel } from '../../components/Widgets';
-import { AgentSummaryBar } from '../../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
 import { useDecisionQueue } from '../../hooks/useDecisionQueue';
@@ -69,6 +69,14 @@ const cmsColumns = [
   { key: 'impact', label: 'Impact', render: (v) => <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${impactColor(v)}`}>{v}</span> },
 ];
 
+const recentGovActivity = [
+  { id: 'ga-act-1', agentName: 'Legislative Tracking Agent', action: 'detected AZ HB 2341 moved to committee hearing March 22 — 4.1 HPRD mandate would cost $2.8M/yr', status: 'completed', confidence: 0.95, timestamp: '2026-03-19T06:30:00Z', timeSaved: '2 hrs', costImpact: '$2.8M annual cost exposure', policiesChecked: ['Legislative Monitoring Protocol', 'State Affairs Policy'] },
+  { id: 'ga-act-2', agentName: 'Federal Affairs Agent', action: 'drafted 12-page comment letter on CMS-3442-P minimum staffing rule — comment period closes April 15', status: 'completed', confidence: 0.91, timestamp: '2026-03-19T05:00:00Z', timeSaved: '8 hrs', costImpact: 'Federal mandate mitigation', policiesChecked: ['Federal Rulemaking Response Policy', 'CMS Engagement Protocol'] },
+  { id: 'ga-act-3', agentName: 'Legislative Tracking Agent', action: 'monitoring CA SB 892 floor vote — 8.5% Medi-Cal rate increase expected April 2', status: 'in-progress', confidence: 0.93, timestamp: '2026-03-19T08:00:00Z', timeSaved: '45 min', costImpact: '+$4.2M annual revenue if passed', policiesChecked: ['State Medicaid Rate Tracking'] },
+  { id: 'ga-act-4', agentName: 'Advocacy Agent', action: 'compiled YTD advocacy meeting log — 14 meetings with state legislators and CMS officials', status: 'completed', confidence: 0.97, timestamp: '2026-03-19T07:15:00Z', timeSaved: '1.5 hrs', policiesChecked: ['Government Relations Reporting'] },
+  { id: 'ga-act-5', agentName: 'Legislative Tracking Agent', action: 'scanned UT HB 789 Medicaid carve-out bill — floor vote imminent, favorable impact on rate predictability', status: 'completed', confidence: 0.89, timestamp: '2026-03-19T07:45:00Z', timeSaved: '1 hr', costImpact: 'Rate stability improvement', policiesChecked: ['Medicaid Policy Analysis Framework'] },
+];
+
 export default function GovernmentAffairs() {
   const { decisions, approve, escalate } = useDecisionQueue(legislativeDecisions);
 
@@ -99,6 +107,10 @@ export default function GovernmentAffairs() {
           onEscalate={escalate}
         />
       </div>
+
+      <Card title="Recent Agent Activity" badge="Live" className="mb-6">
+        <AgentActivityFeed activities={recentGovActivity} maxItems={5} />
+      </Card>
 
       <SectionLabel>Active State Legislation</SectionLabel>
       <Card title="Legislative Tracker" badge={`${legislation.length} bills`} className="mb-6">
