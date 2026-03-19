@@ -10,7 +10,7 @@ import {
   Award, ShieldAlert, HeartPulse, MessageSquare, Target,
   Scale, FileSignature, Gavel, FileCheck, Home,
   Building, Globe, Landmark, LineChart, Flag,
-  Menu, X, ChevronDown, ChevronRight, Bot, Search, Bell
+  Menu, X, ChevronDown, ChevronRight, Bot, Search, Bell, Play
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useScopeContext } from '../hooks/useScopeContext';
@@ -504,6 +504,17 @@ export default function Layout({ children }) {
           );
         })}
       </nav>
+
+      {/* Presentation link */}
+      {full ? (
+        <Link to="/presentation" className="mx-3 mb-1 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+          <Play size={12} /> Presentation
+        </Link>
+      ) : (
+        <Link to="/presentation" title="Presentation" className="flex justify-center mb-1 py-2 text-gray-400 hover:text-blue-600 transition-colors">
+          <Play size={14} />
+        </Link>
+      )}
 
       {/* User */}
       <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100`}>
