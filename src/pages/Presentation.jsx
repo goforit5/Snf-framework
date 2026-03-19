@@ -220,13 +220,53 @@ function SaaspocalypseSlide() {
   return (
     <>
     <DetailDrawer isOpen={detail === 'timeline'} onClose={() => setDetail(null)} title="SaaSpocalypse — Full 60-Day Timeline">
-      <p><strong className="text-gray-900">November 2025:</strong> Claude Opus 4.6 reaches 80.9% on SWE-bench Verified. AI transitions from "copilot" to "pilot."</p>
-      <p><strong className="text-gray-900">Q3-Q4 2025:</strong> SaaS growth rates decline every quarter since 2021 peak. AI budgets up 100%+, overall IT budgets up ~8%. Jason Lemkin: "That's not growth. That's harvesting."</p>
-      <p><strong className="text-gray-900">January 29, 2026:</strong> Worst single day for software stocks since COVID crash. ServiceNow -11% despite beating earnings 9th consecutive quarter. Microsoft loses $360B in one day.</p>
-      <p><strong className="text-gray-900">Early February:</strong> Anthropic releases Claude Cowork plugins — 11 specialized agents replicating complex SaaS functionality. No coding required.</p>
-      <p><strong className="text-gray-900">February 5:</strong> SemiAnalysis: Claude Code authors 4% of all GitHub public commits (~135K/day), equivalent to 4 million full-time developers. Projected 20%+ by end of 2026.</p>
-      <p><strong className="text-gray-900">February 5-6:</strong> $1 trillion in market cap erased in 7 days (Forrester). Atlassian seat count declined for FIRST TIME ever. Forward multiples collapsed from 39x to 21x.</p>
-      <p className="text-gray-400 text-xs">Sources: <a href="https://www.cnbc.com/2026/02/06/ai-anthropic-tools-saas-software-stocks-selloff.html" target="_blank" rel="noopener" className="underline hover:text-gray-600">CNBC</a>, <a href="https://techcrunch.com/2026/03/01/saas-in-saas-out-heres-whats-driving-the-saaspocalypse/" target="_blank" rel="noopener" className="underline hover:text-gray-600">TechCrunch</a>, <a href="https://www.bloomberg.com/news/articles/2026-02-04/what-s-behind-the-saaspocalypse-plunge-in-software-stocks" target="_blank" rel="noopener" className="underline hover:text-gray-600">Bloomberg</a>, Forrester, SemiAnalysis</p>
+      <p><strong className="text-gray-900">November 2025:</strong> Claude Opus 4.6 reaches 80.9% on SWE-bench Verified. AI transitions from "copilot" to "pilot." The capability exists — the market hasn't priced it in yet.</p>
+      <p><strong className="text-gray-900">Q3-Q4 2025:</strong> SaaS growth rates decline every quarter since 2021 peak. AI budgets up 100%+, overall IT budgets up ~8%. Jason Lemkin (SaaStr): "That's not growth. That's harvesting. And harvesting gets a different multiple than growth."</p>
+      <p><strong className="text-gray-900">January 29, 2026:</strong> Worst single day for software stocks since COVID crash. ServiceNow -11% despite beating earnings 9th consecutive quarter. Microsoft loses $360B in one day. No single catalyst — institutional investors begin coordinated repricing.</p>
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3 my-2">
+        <p><strong className="text-red-700">Late January / Early February 2026 — THE CATALYST:</strong> Anthropic announces <strong className="text-gray-900">Claude Cowork plugins</strong> — 11 specialized AI agents that replicate entire SaaS workflows out of the box:</p>
+        <ul className="list-disc ml-5 mt-2 space-y-0.5 text-gray-700">
+          <li>Legal documentation &amp; contract review (replaces LegalZoom, contract management)</li>
+          <li>Financial analysis &amp; forecasting (replaces FP&amp;A tools)</li>
+          <li>Customer service automation (replaces ServiceNow, Zendesk)</li>
+          <li>Sales process management (replaces Salesforce workflows)</li>
+          <li>Research &amp; competitive intelligence (replaces Gartner, consulting)</li>
+          <li>Plus 6 more specialized workflows</li>
+        </ul>
+        <p className="mt-2 text-gray-700">Each plugin proves that <strong className="text-gray-900">AI agents can now replicate complex SaaS functionality without writing code</strong>. This is the moment Wall Street recognized that per-seat SaaS is structurally threatened — not by better software, but by a completely different model.</p>
+      </div>
+      <p><strong className="text-gray-900">February 5, 2026:</strong> SemiAnalysis publishes "Claude Code is the Inflection Point" — Claude Code now authors 4% of all GitHub public commits (~135K/day), equivalent to 4 million full-time developers. Projected 20%+ by end of 2026. Same day: Ensign Q4 earnings call where Barry calls AI "the buzzword of the day."</p>
+      <p><strong className="text-gray-900">February 5-6:</strong> $1 trillion in market cap erased in 7 trading days (Forrester). Atlassian enterprise seat count declines for the FIRST TIME ever. Forward multiples collapse from 39x to 21x — a structural repricing, not a correction.</p>
+      <p><strong className="text-gray-900">Late February:</strong> Total sector losses reach $1-2 trillion. Software ETF (IGV) down 23% YTD — bear market. Deutsche Bank: 21% multiple compression. Goldman Sachs: software at 22x forward earnings, less than half the decade average.</p>
+      <p className="text-gray-400 text-xs mt-3">Sources: <a href="https://www.cnbc.com/2026/02/06/ai-anthropic-tools-saas-software-stocks-selloff.html" target="_blank" rel="noopener" className="underline hover:text-gray-600">CNBC</a>, <a href="https://techcrunch.com/2026/03/01/saas-in-saas-out-heres-whats-driving-the-saaspocalypse/" target="_blank" rel="noopener" className="underline hover:text-gray-600">TechCrunch</a>, <a href="https://www.bloomberg.com/news/articles/2026-02-04/what-s-behind-the-saaspocalypse-plunge-in-software-stocks" target="_blank" rel="noopener" className="underline hover:text-gray-600">Bloomberg</a>, Forrester, SemiAnalysis</p>
+    </DetailDrawer>
+    <DetailDrawer isOpen={detail === 'plugins'} onClose={() => setDetail(null)} title="Claude Cowork Plugins — The Catalyst">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+        <p className="font-bold text-gray-900 mb-2">Why This Was the Trigger</p>
+        <p>Before the plugins, AI replacing SaaS was theoretical. The Cowork plugins made it <strong className="text-gray-900">tangible and immediate</strong> — anyone could see an AI agent doing what Salesforce, ServiceNow, or LegalZoom charges thousands per month for.</p>
+      </div>
+      <p className="font-semibold text-gray-900 mb-2">The 11 Cowork Plugins:</p>
+      <div className="space-y-2">
+        {[
+          ['Legal Documentation', 'Contract review, clause analysis, legal research — replaces $500-2,000/mo legal SaaS tools'],
+          ['Financial Analysis', 'Forecasting, variance analysis, financial modeling — replaces FP&A platforms'],
+          ['Customer Service', 'Ticket resolution, escalation routing, knowledge base — replaces ServiceNow, Zendesk'],
+          ['Sales Process', 'Pipeline management, lead scoring, outreach — replaces Salesforce workflows'],
+          ['Research & Intel', 'Competitive analysis, market research, report generation — replaces Gartner subscriptions'],
+          ['HR & Recruiting', 'Resume screening, interview scheduling, onboarding — replaces HR SaaS tools'],
+          ['Project Management', 'Task tracking, sprint planning, resource allocation — replaces Asana, Monday.com'],
+          ['Marketing', 'Content creation, campaign analysis, SEO — replaces marketing automation'],
+          ['Data Analysis', 'SQL queries, visualization, reporting — replaces BI platforms'],
+          ['IT Operations', 'Incident response, system monitoring, documentation — replaces ITSM tools'],
+          ['Compliance', 'Policy review, audit preparation, regulatory monitoring — replaces GRC platforms'],
+        ].map(([name, desc]) => (
+          <div key={name} className="bg-white rounded-lg border border-gray-200 p-3">
+            <p className="text-sm"><strong className="text-gray-900">{name}</strong> — {desc}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-gray-600">The market reaction was immediate because the plugins answered the question investors had been asking: <strong className="text-gray-900">"Can AI actually replace SaaS workflows?"</strong> The answer was yes — and it was free to try, today, not on a vendor roadmap for 2027.</p>
+      <p className="mt-2 text-gray-600">Forrester's analysis identified 4 reasons for the crash: (1) AI won't need SaaS vendors, (2) per-seat model becomes obsolete, (3) vibe coding erodes software moats, (4) SaaS sprawl creates consolidation pressure. The Cowork plugins were the proof point for all four.</p>
     </DetailDrawer>
     <DetailDrawer isOpen={detail === 'stocks'} onClose={() => setDetail(null)} title="Full Stock Impact — All Major SaaS Companies">
       <table className="w-full text-sm">
@@ -255,7 +295,7 @@ function SaaspocalypseSlide() {
       <h2 className="reveal stagger-2 text-[2.6rem] font-bold tracking-[-0.02em] text-gray-900 text-center mb-8">Wall Street figured it out <span className="text-red-500">in one day</span></h2>
       <div className="reveal stagger-3 text-center mb-8">
         <span className="text-[5rem] font-extrabold tracking-[-0.03em] number-danger leading-none">$2T</span>
-        <p className="text-gray-500 text-sm mt-2">wiped from SaaS market cap — triggered by AI agent capabilities becoming undeniable</p>
+        <p className="text-gray-500 text-sm mt-2">wiped from SaaS market cap — triggered by Anthropic's <span className="font-semibold text-gray-900">Claude Cowork plugins</span> proving AI agents can replace SaaS workflows</p>
       </div>
       <div className="grid grid-cols-4 gap-4 mb-8">
         {[
@@ -279,6 +319,7 @@ function SaaspocalypseSlide() {
           <a href="https://www.inc.com/brian-contreras/deutsche-bank-saaspocalypse-software-stocks-trade-discount/91315100" target="_blank" rel="noopener" className="underline hover:text-gray-600">Deutsche Bank/Inc</a> · <a href="https://www.cnbc.com/2026/02/06/ai-anthropic-tools-saas-software-stocks-selloff.html" target="_blank" rel="noopener" className="underline hover:text-gray-600">CNBC</a> · <a href="https://techcrunch.com/2026/03/01/saas-in-saas-out-heres-whats-driving-the-saaspocalypse/" target="_blank" rel="noopener" className="underline hover:text-gray-600">TechCrunch</a> · <a href="https://www.bloomberg.com/news/articles/2026-02-04/what-s-behind-the-saaspocalypse-plunge-in-software-stocks" target="_blank" rel="noopener" className="underline hover:text-gray-600">Bloomberg</a>
         </p>
         <div className="flex justify-center gap-4 mt-3">
+          <DetailTrigger label="Claude Cowork plugins — the catalyst" onClick={() => setDetail('plugins')} />
           <DetailTrigger label="Full 60-day timeline" onClick={() => setDetail('timeline')} />
           <DetailTrigger label="All stock impacts" onClick={() => setDetail('stocks')} />
         </div>
