@@ -1,8 +1,10 @@
 import { TrendingDown, Clock, Users, UserMinus, MessageSquare, DollarSign } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Line, ComposedChart } from 'recharts';
-import { PageHeader, Card } from '../../components/Widgets';
+import { PageHeader, Card, SectionLabel } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
+import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { turnoverByFacility, turnoverByRole, exitReasons, retentionMetrics } from '../../data/workforce/retention';
 
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
@@ -16,8 +18,36 @@ const trendData = [
   { month: 'Mar', turnover: 42, industry: 53 },
 ];
 
+const retentionDecisions = [
+  {
+    id: 'ret-1', title: 'Sarah Chen (RN) resignation — counter-offer window closing in 18 hours',
+    description: 'Sarah Chen submitted her resignation yesterday at Heritage Oaks. She is a 6-year charge nurse, one of only 3 on staff, and currently mentors 4 new-grad RNs. Workday shows her base is $38.50/hr — 12% below the $43.75 market median for charge nurses in this metro. Her last performance review (January) scored 4.8/5.0. She told her DON she received an offer from a hospital system at $44/hr with sign-on bonus. The 48-hour exit interview policy window closes tomorrow at 5 PM.',
+    facility: 'Heritage Oaks SNF', priority: 'Critical', agent: 'Retention Agent', confidence: 0.94, governanceLevel: 3,
+    recommendation: 'Approve counter-offer: raise to $44/hr ($5.50 increase) + $3K retention bonus. Total annual cost increase: $11,440. Replacement cost: $8,200 recruiting + $14,600 productivity loss during 90-day ramp + $6,800 overtime coverage = $29,600. Net savings: $18,160. Schedule exit interview today.',
+    impact: 'If lost: $29,600 replacement cost, 4 new-grad mentees reassigned (2 at 60-day mark — high attrition risk), charge nurse coverage gap requires $52/hr agency RN',
+    evidence: [{ label: 'Workday compensation', detail: 'Current $38.50/hr, market median $43.75/hr, 12% gap' }, { label: 'Performance history', detail: '4.8/5.0 review (Jan 2026), zero call-outs in 18 months' }, { label: 'Replacement cost model', detail: '$29,600 total (recruiting $8.2K + ramp $14.6K + coverage $6.8K)' }],
+  },
+  {
+    id: 'ret-2', title: 'Heritage Oaks CNA crisis — 67% annualized turnover, 5 exits in 60 days',
+    description: 'Heritage Oaks has lost 5 CNAs in 60 days: Keisha Brown (better pay, went to hospital), Andre Williams (scheduling conflicts with school), Maria Lopez (childcare issues with rotating shifts), Tanya Reed (moved out of area), and Deshawn Harris (no-call no-show, terminated). Exit interviews reveal a pattern: 3 of 5 cited inflexible scheduling and chronic understaffing. Remaining 12 CNAs are working mandatory overtime averaging 8.3 hours/week. Workday pulse survey from March 1 shows Heritage Oaks CNA satisfaction at 2.1/5.0 — lowest in the enterprise.',
+    facility: 'Heritage Oaks SNF', priority: 'High', agent: 'Retention Agent', confidence: 0.91, governanceLevel: 3,
+    recommendation: 'Approve emergency retention plan: (1) Implement self-scheduling pilot for CNAs effective April 1, (2) Add $2.50/hr shift differential for evenings/nights, (3) Schedule stay interviews with all 12 remaining CNAs this week. Estimated cost: $78K/year. Current agency spend: $47K in last 60 days ($282K annualized). Net savings: $204K/year.',
+    impact: 'Without intervention: projected 4 more CNA separations within 30 days (predictive model, 82% confidence). Agency costs already $47K in 60 days vs $11K same period last year — 327% increase',
+    evidence: [{ label: 'Workday separations', detail: '5 CNAs in 60 days — Brown, Williams, Lopez, Reed, Harris' }, { label: 'Exit interview themes', detail: '60% cite scheduling, 40% cite understaffing, 40% cite pay (overlap)' }, { label: 'Agency spend (AP)', detail: '$47,200 last 60 days vs $11,100 prior year same period' }, { label: 'Pulse survey', detail: 'CNA satisfaction 2.1/5.0 (enterprise avg 3.4/5.0)' }],
+  },
+  {
+    id: 'ret-3', title: 'Approve $40K retention bonus — 8 night-shift CNAs across 3 facilities',
+    description: 'Night-shift CNA vacancy rate hit 31% across Sunrise (3 of 8 open), Meadowbrook (2 of 7 open), and Bayview (2 of 9 open). Remaining night-shift CNAs are burning out — average overtime is 11.2 hours/week. Workday shows 3 of the 8 targeted CNAs have updated their LinkedIn profiles in the past 2 weeks (flight risk signal). Each CNA would receive $5K contingent on a 6-month commitment, paid in two installments ($2.5K at signing, $2.5K at 6 months).',
+    facility: 'Multiple', priority: 'High', agent: 'Retention Agent', confidence: 0.88, governanceLevel: 4,
+    recommendation: 'Approve $40K retention bonus package ($5K x 8 CNAs). ROI: each night-shift CNA replacement costs $8,125 (recruiting + training + 90-day agency coverage at $48/hr). Losing 4 = $32,500 + $88K agency coverage during vacancy. Total risk: $120K. Investment: $40K. ROI: 3.0x.',
+    impact: 'Without bonuses: predictive model projects 4 of 8 leave within 30 days. $120K in replacement + agency costs. Night-shift patient-to-CNA ratio would exceed 1:12 (state minimum 1:10) — regulatory citation risk',
+    evidence: [{ label: 'Workday overtime data', detail: 'Night-shift CNA avg 11.2 hrs/week OT (burnout threshold: 8 hrs)' }, { label: 'LinkedIn activity', detail: '3 of 8 targeted CNAs updated profiles in past 14 days' }, { label: 'Staffing ratio projection', detail: 'Without intervention: 1:12.4 ratio vs 1:10 state minimum' }, { label: 'Cost model', detail: '$40K investment vs $120K projected loss = 3.0x ROI' }],
+  },
+];
+
 export default function RetentionAnalytics() {
   const riskFacilities = turnoverByFacility.filter(f => f.trend === 'worsening').length;
+  const { decisions, approve, escalate } = useDecisionQueue(retentionDecisions);
 
   const stats = [
     { label: 'Turnover Rate', value: `${retentionMetrics.enterpriseAvgTurnover}%`, icon: TrendingDown, color: 'amber', change: `Industry: ${retentionMetrics.industryAvgTurnover}%`, changeType: 'positive' },
@@ -64,6 +94,11 @@ export default function RetentionAnalytics() {
       />
 
       <div className="mb-6"><StatGrid stats={stats} columns={5} /></div>
+
+      <div className="mb-6">
+        <SectionLabel>Retention Decisions</SectionLabel>
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Retention Actions Needed" badge={decisions.length} />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <Card title="Turnover Trend — 6 Month">

@@ -3,6 +3,7 @@ import { PageHeader, Card, PriorityBadge, StatusBadge } from '../../components/W
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const investigations = [
   { id: 'inv-001', employee: 'Marcus Johnson', facility: 'Pacific Gardens SNF', type: 'Workplace harassment', status: 'in-progress', openedDate: '2026-03-01', priority: 'high', assignedTo: 'HR Director', daysOpen: 14 },
@@ -34,28 +35,33 @@ export default function EmployeeRelations() {
     { label: 'Avg Resolution Days', value: `${avgResolution}d`, icon: Clock, color: 'cyan' },
   ];
 
-  const decisions = [
+  const erDecisionData = [
     {
-      id: 'er-1', title: 'HIPAA breach investigation — Tanya Moore chart access', facility: 'Desert Springs SNF',
-      priority: 'critical', agent: 'HR Compliance Agent', confidence: 0.96, governanceLevel: 4,
-      description: 'Audit log shows Tanya Moore accessed 3 patient charts she is not assigned to. Pattern suggests intentional browsing. HIPAA breach protocol triggered.',
-      recommendation: 'Suspend chart access immediately. Schedule formal investigation meeting within 48 hours. Notify Privacy Officer. Document for potential OCR reporting if confirmed.',
-      impact: 'Potential HIPAA violation — federal reporting required if confirmed',
-      evidence: [{ label: 'PCC Audit Log', detail: '3 unauthorized chart accesses on 3/9' }, { label: 'Assignment records', detail: 'None of the 3 patients assigned to Tanya' }],
+      id: 'er-1', title: 'HIPAA breach — Tanya Moore accessed 3 unassigned patient charts', facility: 'Desert Springs SNF',
+      priority: 'critical', agent: 'Employee Relations Agent', confidence: 0.96, governanceLevel: 4,
+      description: 'Tanya Moore (CNA, 2 years tenure, Desert Springs) accessed 3 patient charts on March 9 between 2:14 AM and 2:31 AM — none of these patients are on her assignment sheet. PCC audit log shows she viewed demographics, diagnosis, and medication tabs for all 3. The patients are in Wing B; Tanya is assigned to Wing D. There is no clinical reason for this access. Her access pattern matches intentional browsing — 17 minutes across 3 charts with no documentation entered. She has no prior HIPAA incidents.',
+      recommendation: 'Approve immediate response protocol: (1) Suspend Tanya\'s PCC chart access effective now — she can still clock in for non-clinical duties, (2) Schedule formal investigation meeting within 48 hours with HR Director and Privacy Officer present, (3) Issue Breach Risk Assessment per 45 CFR 164.402. If breach confirmed: OCR notification required within 60 days, affected patients notified within 60 days.',
+      impact: 'If confirmed breach: mandatory OCR reporting, patient notification (3 individuals), potential $50K-$250K civil penalty per violation tier. Investigation must determine if PHI was shared externally. Reputational risk to Desert Springs — last CMS survey scored 4 stars',
+      evidence: [{ label: 'PCC audit log', detail: 'Chart access: Patient #4412 (2:14 AM), #4389 (2:22 AM), #4401 (2:31 AM) — demographics, diagnosis, meds viewed' }, { label: 'Assignment sheet (3/9)', detail: 'Tanya assigned Wing D rooms 401-412. Accessed patients in Wing B rooms 208, 211, 215' }, { label: 'Access history', detail: 'No prior unauthorized access in 2 years of employment' }, { label: 'HIPAA Breach Assessment (45 CFR 164.402)', detail: 'Required when unauthorized access to PHI is detected — must determine if exception applies' }],
     },
     {
-      id: 'er-2', title: 'Workplace harassment investigation — 14 days open', facility: 'Pacific Gardens SNF',
-      priority: 'high', agent: 'HR Compliance Agent', confidence: 0.88, governanceLevel: 3,
-      description: 'Harassment complaint filed by CNA against charge nurse. Investigation opened March 1 — approaching 15-day policy deadline for preliminary findings.',
-      recommendation: 'Schedule remaining witness interviews this week. Preliminary findings report due by March 17 per policy.',
+      id: 'er-2', title: 'Harassment investigation approaching 15-day deadline — 2 witnesses remaining', facility: 'Pacific Gardens SNF',
+      priority: 'high', agent: 'Employee Relations Agent', confidence: 0.88, governanceLevel: 3,
+      description: 'CNA Alicia Reyes filed a harassment complaint on March 1 against charge nurse David Kim, alleging repeated inappropriate comments during shift handoffs. Investigation opened same day. 3 of 5 identified witnesses have been interviewed — all 3 corroborate that David made comments about Alicia\'s appearance on at least 2 occasions. 2 witnesses remain: night-shift CNA Maria Gonzalez (on PTO until March 18) and dietary aide James Wright (available this week). Policy 7.3.1 requires preliminary findings within 15 days — deadline is March 16, which is tomorrow.',
+      recommendation: 'Approve deadline extension to March 21 (5 days) per policy 7.3.1(b) exception clause — 2 material witnesses unavailable. Interview James Wright by March 19. Interview Maria Gonzalez on March 18 (her return date). Current evidence strongly supports the complaint — 3 of 3 witnesses corroborate. Preliminary finding draft in progress.',
+      impact: 'Missing the 15-day deadline without documented extension violates Ensign HR policy 7.3.1. If complaint escalates to EEOC, procedural compliance is critical to defense. Similar case at Heritage Oaks in 2024 resulted in $38K settlement partly due to delayed investigation',
+      evidence: [{ label: 'Witness interviews (3 of 5)', detail: 'All 3 corroborate inappropriate comments about appearance, 2+ occasions observed' }, { label: 'Complainant statement', detail: 'Filed 3/1, describes 4 incidents between Jan-Feb 2026 during shift handoffs' }, { label: 'Policy 7.3.1', detail: '15-day preliminary findings deadline, 5-day extension permitted with documented cause' }, { label: 'David Kim personnel file', detail: 'No prior complaints in 3 years, last performance review 3.8/5.0' }],
     },
     {
-      id: 'er-3', title: 'Demetrius Jackson — final warning, recommend PIP', facility: 'Desert Springs SNF',
-      priority: 'high', agent: 'HR Compliance Agent', confidence: 0.91, governanceLevel: 3,
-      description: 'No-call no-show on March 8. This is the 3rd attendance incident in 60 days. Final warning issued. Pattern suggests disengagement.',
-      recommendation: 'Place on 30-day Performance Improvement Plan. Schedule stay interview to understand root cause. If pattern continues, proceed with separation.',
+      id: 'er-3', title: 'Demetrius Jackson — 3rd attendance violation in 60 days, PIP or separation', facility: 'Desert Springs SNF',
+      priority: 'high', agent: 'Employee Relations Agent', confidence: 0.91, governanceLevel: 3,
+      description: 'Demetrius Jackson (CNA, 18 months tenure, Desert Springs) had a no-call no-show on March 8. This is his 3rd attendance violation in 60 days: late arrival Jan 15 (verbal warning), called out without coverage Jan 28 (written warning), and now NCNS March 8 (final warning issued). His Workday performance scores were strong through September (3.9/5.0) but dropped to 2.4/5.0 in his December review. His manager notes he has been "withdrawn and less engaged" since November. He is a single father — may be dealing with personal issues.',
+      recommendation: 'Approve 30-day Performance Improvement Plan with clear attendance requirements: zero unexcused absences, on-time arrival for all scheduled shifts. Schedule stay interview within 48 hours to understand root cause — performance decline correlates with personal circumstances, not skill deficit. Offer EAP referral. If PIP requirements not met after 30 days, proceed with separation with full documentation.',
+      impact: 'Separation without PIP creates wrongful termination risk — pattern suggests personal hardship, not willful misconduct. Replacement cost: $4,100 (recruiting + training). Keeping him on PIP with EAP support: $0 direct cost, potential recovery of a previously strong performer',
+      evidence: [{ label: 'Attendance record (Workday)', detail: 'Jan 15: late 47 min (verbal). Jan 28: called out, no coverage (written). Mar 8: NCNS (final warning)' }, { label: 'Performance trend', detail: 'Sep 2025: 3.9/5.0. Dec 2025: 2.4/5.0. Decline began ~November' }, { label: 'Manager notes', detail: '"Withdrawn since November, previously one of our most reliable CNAs"' }, { label: 'Progressive discipline policy 3.4', detail: 'Final warning triggers PIP or separation — PIP recommended when pattern suggests recoverable cause' }],
     },
   ];
+  const { decisions, approve, escalate } = useDecisionQueue(erDecisionData);
 
   return (
     <div className="p-6">
@@ -78,7 +84,7 @@ export default function EmployeeRelations() {
       <div className="mb-6"><StatGrid stats={stats} columns={5} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DecisionQueue decisions={decisions} onApprove={() => {}} onEscalate={() => {}} title="Investigations Needing Action" badge={decisions.length} />
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Investigations Needing Action" badge={decisions.length} />
 
         <div className="space-y-6">
           <Card title="Recent Disciplinary Actions" badge={`${disciplinaryActions.length}`}>

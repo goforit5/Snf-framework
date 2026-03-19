@@ -5,6 +5,8 @@ import { PageHeader, PriorityBadge, ConfidenceBar, ActionButton, EmptyAgentBadge
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
+import { DecisionQueue } from '../components/DecisionComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { QuickFilter } from '../components/FilterComponents';
 import { EmptyState } from '../components/FeedbackComponents';
 
@@ -40,10 +42,70 @@ const exceptionDetails = {
   e8: { analysis: 'Three residents at Bayview show weight loss exceeding 5% in 30 days without documented intervention plans.', evidence: ['Weight logs for 3 residents (5.1%, 6.8%, 7.2% loss)', 'Missing dietary consult documentation'], policy: 'Weight loss exceeding 5% in 30 days requires immediate dietary consult.', recommendation: 'Order immediate dietary consults for all 3 residents.' },
 };
 
+const CRITICAL_DECISIONS = [
+  {
+    id: 'dq-e2', title: 'Sysco contract violation — 18% price increase vs 5% cap',
+    description: 'Sysco raised paper goods pricing 18% on March 1 across Heritage Oaks, Meadowbrook, Pacific Gardens, and Bayview. Contract #2024-0156 Section 4.2 caps annual escalation at 5% with 60-day advance notice. No notice was given. At current volume, the overage costs $49,200/year across 4 facilities. Sysco\'s regional rep (Mark Torres) has not responded to the auto-generated inquiry sent March 3.',
+    facility: 'Enterprise (4 facilities)', priority: 'Critical',
+    agent: 'AP Audit Agent', confidence: 0.96, governanceLevel: 3,
+    recommendation: 'Approve formal pricing dispute citing Contract #2024-0156 Section 4.2. Agent will auto-generate dispute letter, freeze Sysco payments above 5% threshold, and escalate to Sysco VP of Accounts if no response within 5 business days.',
+    impact: 'If not disputed within 10 business days (deadline: March 14): $49,200/year overpayment becomes contractually accepted. Dispute window closes permanently.',
+    evidence: [
+      { label: 'Contract #2024-0156 Section 4.2 — 5% max annual escalation, 60-day notice required' },
+      { label: 'March invoices: 18% increase on paper goods SKUs (42 line items across 4 facilities)' },
+      { label: '12-month pricing history — no prior increases since contract start' },
+      { label: 'No advance notice received — Sysco violated notification clause' },
+    ],
+  },
+  {
+    id: 'dq-e3', title: 'Margaret Chen — 3rd fall, mandatory care conference within 24 hrs',
+    description: 'Margaret Chen, 84, Room 214B, fell at 6:22 AM today — her 3rd fall in 30 days. PCC shows: Braden score 14 (moderate risk), MMSE 17 (moderate cognitive decline), current meds include Ambien 5mg, Gabapentin 300mg, and Lisinopril 10mg — all flagged as fall-risk contributors. Current interventions (bed alarm + non-slip socks) have failed to prevent recurrence. Daughter Jennifer Chen (POA, phone: 702-555-0147) has not been notified of today\'s fall. Pattern: all 3 falls occurred between 5-7 AM, bathroom-related.',
+    facility: 'Heritage Oaks', priority: 'Critical',
+    agent: 'Clinical Safety Agent', confidence: 0.94, governanceLevel: 3,
+    recommendation: 'Approve enhanced fall prevention protocol: add hourly rounding 10PM-7AM, low bed positioning, hip protectors, and 1:1 aide overnight. Request physician review of Ambien (primary contributor per CDC fall-risk guidelines). Agent will schedule IDT care conference for 2 PM today, notify daughter Jennifer, and update PCC care plan automatically.',
+    impact: 'Without protocol change: 78% probability of 4th fall within 14 days (based on 3-fall recurrence model). F-689 citation risk during state survey window (opens March 20). Similar cases in CMS database resulted in $22,500 average fine.',
+    evidence: [
+      { label: 'PCC Fall History — IR-2026-089 (3/15, 6:22AM), IR-2026-067 (2/24, 5:45AM), IR-2026-042 (2/10, 6:10AM)' },
+      { label: 'PCC Medications — Ambien 5mg QHS, Gabapentin 300mg TID, Lisinopril 10mg daily (all fall-risk per Beers Criteria)' },
+      { label: 'PCC Cognitive Assessment — MMSE 17/30, Braden 14/23, Fall Risk Score 92/100' },
+      { label: 'Current interventions: bed alarm (active), non-slip socks (in use) — insufficient per 3-fall threshold' },
+    ],
+  },
+  {
+    id: 'dq-e7', title: 'ABC Electric COI expired — $45K in active work orders on hold',
+    description: 'ABC Electric\'s Certificate of Insurance expired March 1. They have 3 active work orders totaling $45,000, including the critical B-wing fire alarm panel repair ($18,500). Auto-notification was sent March 2 — no response. Their COI broker (Gallagher Insurance, contact: Lisa Park, 480-555-0312) confirmed renewal is in progress but not yet issued. Without ABC Electric, the fire alarm repair requires a new vendor with 5-7 day lead time, extending the $480/day fire watch.',
+    facility: 'Sunrise Senior Living', priority: 'Critical',
+    agent: 'Vendor Compliance Agent', confidence: 0.87, governanceLevel: 4,
+    recommendation: 'Approve 72-hour emergency COI waiver for fire alarm repair only (WO-2026-018, $18,500). Hold WO-2026-024 and WO-2026-031 until full COI renewal. Agent will notify ABC Electric of conditional approval and set 72-hour auto-expiry on waiver.',
+    impact: 'Each day without repair: $480 fire watch cost + unresolved Life Safety Code violation for 24 residents in B-wing. If repair delayed to alternate vendor: additional $2,880-$3,360 in fire watch costs + 5-7 day exposure. State fire marshal notification required at day 7.',
+    evidence: [
+      { label: 'COI-2025-0234 — expired March 1, 2026. GL coverage: $2M, Workers Comp: lapsed' },
+      { label: 'Active work orders: WO-2026-018 ($18,500 fire alarm), WO-2026-024 ($14,200 HVAC), WO-2026-031 ($12,300 electrical)' },
+      { label: 'Gallagher Insurance confirmed renewal in progress — ETA 3-5 business days' },
+      { label: 'Fire watch log: 5 consecutive days at $480/day = $2,400 spent to date' },
+    ],
+  },
+  {
+    id: 'dq-e8', title: 'Bayview — 3 residents with significant weight loss, no dietary consults',
+    description: 'PCC weight tracking flagged 3 residents at Bayview with weight loss exceeding 5% in 30 days: Helen Rodriguez (Room 108, 7.2% loss, 142→132 lbs), James Park (Room 215, 6.8% loss, 168→157 lbs), and Dorothy Williams (Room 303, 5.1% loss, 125→119 lbs). None have documented dietary consult orders. Helen\'s loss correlates with new Metformin prescription started February 12. James has documented decreased appetite in nursing notes but no intervention. Dorothy\'s loss is unexplained — no medication changes, no documented illness.',
+    facility: 'Bayview', priority: 'High',
+    agent: 'Clinical Monitoring Agent', confidence: 0.92, governanceLevel: 2,
+    recommendation: 'Approve immediate dietary consult orders for all 3 residents. Agent will auto-generate PCC orders, notify dietary department, and flag for physician review. Priority: Dorothy Williams (unexplained loss requires workup) > Helen Rodriguez (medication correlation) > James Park (appetite decline).',
+    impact: 'Unaddressed weight loss >5% triggers F-692 Nutrition citation. With state survey window open, all 3 are high-visibility findings. CMS database shows F-692 average fine of $18,750. Additionally, unexplained weight loss in Dorothy Williams may indicate underlying condition requiring urgent medical evaluation.',
+    evidence: [
+      { label: 'PCC Weight Logs — Helen Rodriguez: 142→132 lbs (7.2% in 28 days), no dietary consult on file' },
+      { label: 'PCC Weight Logs — James Park: 168→157 lbs (6.8% in 30 days), nursing notes cite "decreased appetite" x3 weeks' },
+      { label: 'PCC Weight Logs — Dorothy Williams: 125→119 lbs (5.1% in 26 days), no medication changes, no documented illness' },
+      { label: 'PCC Medication Review — Helen\'s Metformin 500mg BID started 2/12 (known GI/appetite side effect)' },
+    ],
+  },
+];
+
 export default function ExceptionQueue() {
   const { open } = useModal();
   const [activeFilters, setActiveFilters] = useState(['All']);
   const [selectedIds, setSelectedIds] = useState([]);
+  const criticalQueue = useDecisionQueue(CRITICAL_DECISIONS);
 
   const activeFilter = activeFilters.length === 0 || activeFilters.includes('All') ? 'All' : activeFilters[0];
   const filtered = activeFilter === 'All' ? exceptions : exceptions.filter(e => e.type === activeFilter);
@@ -153,6 +215,19 @@ export default function ExceptionQueue() {
       <div className="mb-6">
         <StatGrid stats={summaryStats} columns={4} />
       </div>
+
+      {criticalQueue.stats.pending > 0 && (
+        <div className="mb-6">
+          <DecisionQueue
+            decisions={criticalQueue.decisions}
+            onApprove={criticalQueue.approve}
+            onOverride={criticalQueue.override}
+            onEscalate={criticalQueue.escalate}
+            title="Critical Exceptions — Decide Now"
+            badge={criticalQueue.stats.pending}
+          />
+        </div>
+      )}
 
       {safeToApprove > 0 && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-between">

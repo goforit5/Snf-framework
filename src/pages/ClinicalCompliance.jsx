@@ -6,6 +6,8 @@ import {
 import { PageHeader, Card, ActionButton, ClickableRow, ConfidenceBar, AgentHumanSplit, SectionLabel, ProgressBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
+import { DecisionQueue } from '../components/DecisionComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import {
   complianceTrends, agentMetrics,
   complianceFacilities, complianceFindings, complianceSummary, pccSyncData
@@ -15,11 +17,18 @@ const catNames = {
   clinical: 'Clinical Care', medication: 'Medication Mgmt', infection: 'Infection & Safety',
   documentation: 'Documentation', rights: 'Rights & Nutrition', devices: 'Devices & Catheters',
 };
+
+const complianceDecisions = [
+  { id: 'cc-1', title: 'F-689 Fall Prevention — Heritage Oaks', description: 'Margaret Chen (Room 204, Unit B) fell for the 3rd time in 30 days — last fall was March 12 at 2:15 AM during an unassisted bathroom trip. Her Braden score dropped to 14 (moderate risk). Current interventions (bed alarm + non-slip socks) are insufficient. Robert Williams (Room 118) fell once on March 8 from a wheelchair with brakes not locked. Family (daughter Jennifer Chen, POA) has not been notified of the most recent fall. Heritage Oaks survey window opens in 6 weeks.', facility: 'Heritage Oaks', priority: 'Critical', agent: 'Clinical Compliance Agent', confidence: 0.95, governanceLevel: 3, recommendation: 'Approve protocol change: add hourly rounding on Unit B, low beds for M. Chen and R. Williams, hip protectors for M. Chen, wheelchair brake checks for R. Williams. Agent will write updated fall risk assessments to PCC and schedule interdisciplinary care conference for March 20. Evidence supports 62% fall reduction with combined interventions.', impact: 'If not addressed: $47K average F-689 fine + Immediate Jeopardy risk given 3 falls in 30 days. CMS database shows 78% citation probability for facilities with this pattern. Heritage Oaks survey window opens April 28.', evidence: [{ label: 'PCC Fall Log', detail: 'M. Chen: falls on 2/18 (bathroom), 3/4 (hallway), 3/12 (bathroom). R. Williams: 3/8 (wheelchair)' }, { label: 'PCC Braden Score', detail: 'M. Chen: 14 (moderate risk), last assessed 3/13' }, { label: 'CMS F-689 Precedent', detail: '3+ falls in 30 days = 78% citation rate in comparable facilities' }] },
+  { id: 'cc-2', title: 'Care Plan Updates Overdue — 3 Residents', description: 'Three residents at Heritage Oaks had significant clinical changes but care plans were not updated within the required 72-hour window. Margaret Chen: 3 falls and Ambien added to regimen (care plan last updated Feb 28 — 18 days ago). Robert Williams: 7.2% weight loss and dietary supplement started (care plan last updated Feb 15 — 31 days ago). Dorothy Evans: new sacral wound Stage 2 identified March 10 (care plan last updated March 1 — 17 days ago). Agent has pre-populated draft care plan updates in PCC using recent nursing notes, lab results, and medication changes.', facility: 'Heritage Oaks', priority: 'High', agent: 'Clinical Compliance Agent', confidence: 0.92, governanceLevel: 2, recommendation: 'Approve agent-drafted care plan updates for all 3 residents. Agent writes updates to PCC immediately, then notifies DON Sarah Mitchell for co-signature by end of shift. Draft updates include: fall prevention interventions (Chen), nutritional monitoring plan (Williams), wound care protocol with weekly measurements (Evans).', impact: 'F-656/F-657 citation risk — documentation gaps are the #1 survey deficiency nationally ($22K avg fine per citation). All 3 residents have active clinical issues making this a high-probability finding during survey.', evidence: [{ label: 'PCC Care Plans', detail: 'M. Chen: last updated 2/28. R. Williams: last updated 2/15. D. Evans: last updated 3/1' }, { label: 'PCC Clinical Notes', detail: 'Agent extracted 14 relevant nursing notes, 3 lab results, 2 MD orders for draft updates' }, { label: 'CMS Requirement', detail: 'F-656: care plan must be updated within 72 hrs of significant change' }] },
+  { id: 'cc-3', title: 'Infection Control Policy — CDC March 2026 Update', description: 'CDC published updated respiratory infection isolation guidance on March 15, 2026, changing airborne precaution duration from 10 days to symptom-based criteria and adding rapid antigen testing requirements for de-isolation. All 8 Ensign facilities currently reference the superseded November 2024 CDC guidelines in their infection control policies. Agent compared current policy language against new guidance and identified 4 sections requiring revision. No active respiratory infection cases across facilities — this is a proactive compliance update.', facility: 'Enterprise-wide', priority: 'High', agent: 'Clinical Compliance Agent', confidence: 0.88, governanceLevel: 3, recommendation: 'Approve revised infection control policy (agent-drafted, 4 sections updated). Agent will route to Medical Director Dr. Patel for clinical review, then distribute to all 8 facility DONs with training acknowledgment tracking. Policy effective date: April 1, 2026 (allows 2-week staff training window).', impact: 'If not addressed: F-880 citation risk during survey — outdated infection control policies cited in 34% of recent CMS surveys. $28K average fine. Proactive update eliminates this exposure across all 8 facilities simultaneously.', evidence: [{ label: 'CDC Guidance', detail: 'Published 3/15/2026 — respiratory isolation now symptom-based, rapid antigen required for de-isolation' }, { label: 'Current Policy', detail: 'References Nov 2024 CDC guidelines — 4 sections outdated' }, { label: 'CMS F-880 Data', detail: 'Outdated infection control policies cited in 34% of 2025 surveys' }] },
+];
 const severityDotColor = { Critical: 'bg-red-500', High: 'bg-orange-400', Medium: 'bg-yellow-400', Low: 'bg-gray-300' };
 const statusDot = (score) => score >= 90 ? 'bg-green-500' : score >= 75 ? 'bg-orange-400' : 'bg-red-500';
 
 export default function ClinicalCompliance() {
   const { open, close } = useModal();
+  const { decisions: queuedDecisions, approve, escalate } = useDecisionQueue(complianceDecisions);
   const data = complianceSummary;
   const trends = complianceTrends;
   const months = trends.months;
@@ -188,6 +197,8 @@ export default function ClinicalCompliance() {
           ))}
         </div>
       </div>
+
+      <DecisionQueue decisions={queuedDecisions} onApprove={approve} onEscalate={escalate} title="Compliance Decisions" badge={queuedDecisions.length} />
 
       <div><SectionLabel>Needs Your Attention</SectionLabel>
         <div className="space-y-3">

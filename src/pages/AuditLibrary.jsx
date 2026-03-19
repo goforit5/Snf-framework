@@ -5,7 +5,54 @@ import { PageHeader, ActionButton, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
+import { DecisionQueue } from '../components/DecisionComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { QuickFilter, SearchInput } from '../components/FilterComponents';
+
+const AUDIT_DECISIONS = [
+  {
+    id: 'aud-1', title: 'F-689 Falls — 3 residents missing assessments, survey in 5 days',
+    description: 'The Q4 internal audit at Heritage Oaks flagged 3 residents with incomplete fall risk assessments: Margaret Chen (Room 214B, 3 falls in 30 days, no updated care plan since Feb 1), Robert Kim (Room 118A, 2 falls, Braden score not reassessed post-fall), and Anna Lopez (Room 305, 1 fall, no medication reconciliation completed). PCC shows all three have active fall-risk medications. State survey window opens March 20 — surveyors pull fall records first. Heritage Oaks was cited for F-689 in 2024 ($15,000 fine), making this a repeat deficiency risk.',
+    facility: 'Heritage Oaks', priority: 'Critical',
+    agent: 'Compliance Audit Engine', confidence: 0.91, governanceLevel: 3,
+    recommendation: 'Approve remediation plan: Agent will auto-generate fall risk reassessments in PCC for all 3 residents, create care plan update orders, schedule physician medication reviews, and assign DON Sarah Martinez to verify completion within 48 hours. Staff re-training module on fall documentation will auto-deploy to all CNAs by Friday.',
+    impact: 'If uncorrected before survey: F-689 repeat citation at Scope & Severity level G (pattern). 2024 Heritage Oaks F-689 fine was $15,000 — repeat deficiency typically doubles to $30,000+. CMS Civil Money Penalty calculator estimates $22,500-$45,000 range.',
+    evidence: [
+      { label: 'PCC — Margaret Chen: 3 falls (2/10, 2/24, 3/15), care plan last updated 2/1, no post-fall nursing assessment for 3/15 fall' },
+      { label: 'PCC — Robert Kim: 2 falls (1/28, 2/19), Braden score 16 from 1/15 (not reassessed post-fall per policy)' },
+      { label: 'PCC — Anna Lopez: 1 fall (3/2), on Trazodone 50mg + Gabapentin 300mg, no medication reconciliation documented' },
+      { label: 'CMS Survey History — Heritage Oaks cited F-689 on 4/12/2024, fine $15,000, POC accepted 5/1/2024' },
+    ],
+  },
+  {
+    id: 'aud-2', title: 'Infection control documentation gaps — 16 items before survey',
+    description: 'The pre-survey readiness scan at Pacific Gardens found 16 documentation gaps in infection control. PCC shows: 12 hand hygiene observation logs missing for February (required weekly per facility policy, only 2 of 4 weeks documented across 3 units), and 4 antibiotic stewardship reviews overdue (residents on >14-day antibiotic courses without 72-hour reassessment). Infection Preventionist Maria Santos has been on FMLA since February 15 — no coverage was assigned. Infection control is CMS\'s #1 focus area in 2026 survey guidance.',
+    facility: 'Pacific Gardens', priority: 'High',
+    agent: 'Compliance Audit Engine', confidence: 0.88, governanceLevel: 3,
+    recommendation: 'Approve documentation sprint: Agent will assign backup IP duties to Charge RN Lisa Wong (who completed IP certification in January), auto-generate hand hygiene observation templates in PCC for the 12 missing logs, and create antibiotic stewardship review orders for the 4 overdue residents. Target: all 16 items completed by Friday March 21.',
+    impact: 'CMS 2026 survey guidance lists infection control as Priority #1. Missing IP coverage during FMLA is an Immediate Jeopardy risk factor. F-880/F-881 citations average $28,000 per deficiency. 16 missing items suggest systemic failure — Scope & Severity level F or higher.',
+    evidence: [
+      { label: 'PCC Infection Control Module — 12 missing hand hygiene logs: A-wing (4), B-wing (4), C-wing (4) for weeks of 2/3, 2/10, 2/17, 2/24' },
+      { label: 'PCC Pharmacy — 4 residents on antibiotics >14 days without 72-hour stewardship review: Rm 204, 211, 308, 415' },
+      { label: 'Workday HR — Maria Santos (Infection Preventionist) FMLA start 2/15, no backup IP assigned per org chart' },
+      { label: 'CMS 2026 Survey Guidance — "Infection Prevention & Control remains the highest priority focus area"' },
+    ],
+  },
+  {
+    id: 'aud-3', title: 'Life Safety Code violation — approve emergency repair waiver',
+    description: 'B-wing fire alarm panel at Sunrise Senior Living has shown intermittent fault codes for 5 consecutive days. The panel covers 24 resident rooms and 3 common areas. ABC Electric (the only local vendor with Simplex 4100ES parts) cannot perform the repair because their COI expired March 1. Fire watch protocol is active — 2 staff members walking B-wing continuously, costing $480/day ($20/hr x 2 staff x 12 hrs). Maintenance Director Tom Reeves confirmed the fault is in Zone 3 (rooms 301-312), which would delay evacuation notification by approximately 45 seconds in a fire event.',
+    facility: 'Sunrise Senior Living', priority: 'Critical',
+    agent: 'Compliance Audit Engine', confidence: 0.85, governanceLevel: 4,
+    recommendation: 'Approve 72-hour emergency COI waiver limited to WO-2026-018 (fire alarm repair, $18,500) only. Agent will auto-notify ABC Electric of conditional approval, set 72-hour countdown with auto-revocation, and hold remaining work orders (WO-2026-024, WO-2026-031) until full COI renewal. If waiver is denied, approve alternate vendor engagement — next available (Desert Fire Protection) has 5-7 day lead time.',
+    impact: 'Current exposure: $480/day fire watch ($2,400 spent to date) + Life Safety Code K-tag violation. Day 7 triggers mandatory state fire marshal notification. 24 residents in affected zone with 45-second evacuation notification delay. Alternate vendor adds $2,880-$3,360 additional fire watch cost during lead time.',
+    evidence: [
+      { label: 'Fire Alarm System — Simplex 4100ES, Zone 3 fault: intermittent ground fault on SLC Loop 2, rooms 301-312' },
+      { label: 'Vendor Records — ABC Electric COI-2025-0234 expired 3/1/2026, renewal confirmed in progress by Gallagher Insurance' },
+      { label: 'Fire Watch Log — 5 days active, 2 staff x 12 hrs x $20/hr = $480/day, cumulative $2,400' },
+      { label: 'Alternate Vendor Quote — Desert Fire Protection: earliest availability 3/23, quoted $21,200 (14.6% premium)' },
+    ],
+  },
+];
 
 const months = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 const statusDot = (rate) => rate >= 90 ? 'bg-green-500' : rate >= 75 ? 'bg-orange-500' : 'bg-red-500';
@@ -128,6 +175,7 @@ export default function AuditLibrary() {
   const { open, close } = useModal();
   const [search, setSearch] = useState('');
   const [activeCategories, setActiveCategories] = useState([]);
+  const auditDecisions = useDecisionQueue(AUDIT_DECISIONS);
 
   const avgCompliance = Math.round(auditTypes.reduce((s, a) => s + a.complianceRate, 0) / auditTypes.length);
   const totalFindings = auditTypes.reduce((s, a) => s + a.findingsCount, 0);
@@ -160,6 +208,17 @@ export default function AuditLibrary() {
       <AgentSummaryBar agentName="Compliance Audit Engine" summary={`monitoring ${auditTypes.length} audit types across all facilities. ${totalFindings} active findings.`} itemsProcessed={658} exceptionsFound={totalFindings} timeSaved="68 hrs/wk" />
 
       <div className="mb-6"><StatGrid stats={stats} columns={4} /></div>
+
+      <div className="mb-8">
+        <DecisionQueue
+          decisions={auditDecisions.decisions}
+          onApprove={auditDecisions.approve}
+          onOverride={auditDecisions.override}
+          onEscalate={auditDecisions.escalate}
+          title="Audit Decisions Needed"
+          badge={auditDecisions.stats.pending}
+        />
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="flex-1"><SearchInput placeholder="Search audits by name or F-tag..." value={search} onChange={setSearch} /></div>
