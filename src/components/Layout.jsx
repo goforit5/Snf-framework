@@ -153,7 +153,17 @@ const NAV_SECTIONS = [
       { path: '/strategic/board', label: 'Board Governance', icon: Landmark },
       { path: '/strategic/investor-relations', label: 'Investor Relations', icon: LineChart },
       { path: '/strategic/government-affairs', label: 'Government Affairs', icon: Flag },
-      { path: '/strategic/frameworks', label: 'Decision Frameworks', icon: Target },
+    ],
+  },
+  {
+    key: 'demo',
+    title: 'Demo',
+    icon: Play,
+    items: [
+      { path: '/presentation', label: 'Presentation', icon: Play },
+      { path: '/demo/frameworks', label: 'Decision Frameworks', icon: Target },
+      { path: '/demo/ai-readiness', label: 'Ensign AI Readiness', icon: Building },
+      { path: '/demo/ai-landscape', label: 'AI Landscape', icon: Globe },
     ],
   },
 ];
@@ -505,17 +515,6 @@ export default function Layout({ children }) {
           );
         })}
       </nav>
-
-      {/* Presentation link */}
-      {full ? (
-        <Link to="/presentation" className="mx-3 mb-1 flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-          <Play size={12} /> Presentation
-        </Link>
-      ) : (
-        <Link to="/presentation" title="Presentation" className="flex justify-center mb-1 py-2 text-gray-400 hover:text-blue-600 transition-colors">
-          <Play size={14} />
-        </Link>
-      )}
 
       {/* User */}
       <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100`}>

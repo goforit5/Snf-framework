@@ -90,10 +90,10 @@ export const demoUserList = users;
 
 // Section visibility by role — controls sidebar nav filtering
 export const SECTION_VISIBILITY = {
-  ceo: ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality', 'legal', 'strategic'],
-  cfo: ['platform', 'revenue', 'legal', 'strategic'],
-  cmo: ['platform', 'clinical', 'quality', 'workforce'],
-  'regional-director': ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality'],
-  administrator: ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality'],
-  don: ['platform', 'clinical', 'workforce', 'quality'],
+  ceo: ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality', 'legal', 'strategic', 'demo'],
+  cfo: ['platform', 'revenue', 'legal', 'strategic', 'demo'],
+  cmo: ['platform', 'clinical', 'quality', 'workforce', 'demo'],
+  'regional-director': ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality', 'demo'],
+  administrator: ['platform', 'clinical', 'revenue', 'workforce', 'operations', 'admissions', 'quality', 'demo'],
+  don: ['platform', 'clinical', 'workforce', 'quality', 'demo'],
 };

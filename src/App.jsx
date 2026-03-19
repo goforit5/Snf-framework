@@ -96,7 +96,11 @@ const MarketIntelligence = lazy(() => import('./pages/strategic/MarketIntelligen
 const BoardGovernance = lazy(() => import('./pages/strategic/BoardGovernance'));
 const InvestorRelations = lazy(() => import('./pages/strategic/InvestorRelations'));
 const GovernmentAffairs = lazy(() => import('./pages/strategic/GovernmentAffairs'));
+
+/* ─── Demo ─── */
 const StrategicFrameworks = lazy(() => import('./pages/strategic/StrategicFrameworks'));
+const EnsignAIReadiness = lazy(() => import('./pages/demo/EnsignAIReadiness'));
+const AILandscape = lazy(() => import('./pages/demo/AILandscape'));
 
 function AppRoutes() {
   const location = useLocation();
@@ -201,6 +205,13 @@ function AppRoutes() {
                         <Route path="/strategic/board" element={<BoardGovernance />} />
                         <Route path="/strategic/investor-relations" element={<InvestorRelations />} />
                         <Route path="/strategic/government-affairs" element={<GovernmentAffairs />} />
+
+                        {/* Demo */}
+                        <Route path="/demo/frameworks" element={<StrategicFrameworks />} />
+                        <Route path="/demo/ai-readiness" element={<EnsignAIReadiness />} />
+                        <Route path="/demo/ai-landscape" element={<AILandscape />} />
+
+                        {/* Backward compat */}
                         <Route path="/strategic/frameworks" element={<StrategicFrameworks />} />
         </Routes>
       </Suspense>

@@ -695,7 +695,7 @@ function WhyAndrewSlide() {
       <div className="reveal stagger-7 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-5 text-center shadow-sm">
         <p className="text-sm text-gray-700 font-medium">One person + AI agents replaces what normally costs <span className="number-accent font-bold">$1.5M–$2.5M</span> in MBB consulting fees</p>
         <p className="text-xs text-gray-500 mt-1">McKinsey, Bain, BCG frameworks — same rigor, same-day delivery, plus implementation</p>
-        <a href="#/strategic/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-2 transition-colors">
+        <a href="#/demo/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-2 transition-colors">
           <ExternalLink className="w-3 h-3" /> View all 8 frameworks applied to Ensign
         </a>
       </div>
@@ -796,7 +796,7 @@ function AskSlide() {
         <div className="flex justify-center gap-4 mt-2">
           <DetailTrigger label="Full ROI breakdown" onClick={() => setDetail('roi')} />
           <DetailTrigger label="8 consulting frameworks applied" onClick={() => setDetail('frameworks')} />
-          <a href="#/strategic/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-1 transition-colors">
+          <a href="#/demo/frameworks" target="_blank" rel="noopener" className="inline-flex items-center gap-1 text-[11px] text-blue-500 hover:text-blue-700 font-medium mt-1 transition-colors">
             <ExternalLink className="w-3 h-3" /> Full framework analysis
           </a>
         </div>
