@@ -5,6 +5,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { budgetByFacility, budgetSummary } from '../../data/financial/budgetData';
 
 const budgetDecisions = [
@@ -38,6 +39,7 @@ const budgetDecisions = [
 ];
 
 export default function BudgetForecasting() {
+  const { decisions: budgetDecisionQueue, approve, escalate } = useDecisionQueue(budgetDecisions);
   const enterpriseDepts = useMemo(() => {
     const deptMap = {};
     budgetByFacility.forEach(f => {
@@ -112,11 +114,11 @@ export default function BudgetForecasting() {
 
       <div className="mb-6">
         <DecisionQueue
-          decisions={budgetDecisions}
+          decisions={budgetDecisionQueue}
           title="Budget Decisions"
-          badge={3}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          badge={budgetDecisionQueue.length}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

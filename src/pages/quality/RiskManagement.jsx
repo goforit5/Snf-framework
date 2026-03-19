@@ -6,6 +6,7 @@ import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const severityColor = (s) => {
   const colors = { critical: 'bg-red-50 text-red-700', high: 'bg-amber-50 text-amber-700', medium: 'bg-blue-50 text-blue-700', low: 'bg-gray-50 text-gray-600' };
@@ -39,7 +40,7 @@ const stats = [
 ];
 
 const openEvents = riskEvents.filter(e => e.status !== 'resolved');
-const decisions = openEvents.map((e, i) => ({
+const decisionData = openEvents.map((e, i) => ({
   id: e.id,
   number: i + 1,
   title: e.description,
@@ -65,8 +66,10 @@ const eventColumns = [
 
 export default function RiskManagement() {
   const { open } = useModal();
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const handleApprove = (id) => {
+    approve(id);
     const evt = riskEvents.find(e => e.id === id);
     open({
       title: `Risk Event: ${evt?.type.replace(/-/g, ' ')}`,
@@ -103,7 +106,7 @@ export default function RiskManagement() {
           title="Risk Events Needing Investigation"
           badge={decisions.length}
           onApprove={handleApprove}
-          onEscalate={() => {}}
+          onEscalate={escalate}
         />
       </div>
 

@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { ClipboardCheck, ShieldCheck, XCircle, Stethoscope, FileSearch, Clock } from 'lucide-react';
 import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const pendingScreenings = [
   { id: 'ps-001', patientName: 'Robert Williams', referralSource: 'Intermountain Medical', diagnosis: 'Knee replacement rehab', insurance: 'Medicare A', facility: 'Salt Lake Mountain View', screeningStatus: 'pending-clinical', receivedDate: '2026-03-15', acuityLevel: 'Medium', clinicalNotes: 'Post-op day 2. PT eval needed. Weight-bearing as tolerated.' },
@@ -20,7 +20,7 @@ export default function PreAdmissionScreening() {
   const pendingInsurance = pendingScreenings.filter(s => s.screeningStatus === 'pending-insurance');
   const pendingTour = pendingScreenings.filter(s => s.screeningStatus === 'pending-tour');
 
-  const [decisions, setDecisions] = useState([
+  const { decisions, approve, escalate } = useDecisionQueue([
     { id: 'psd-1', title: 'Betty Anderson — high-acuity wound care screening needed', facility: 'San Diego Pacific', priority: 'critical', confidence: 0.93, agent: 'clinical-monitor', governanceLevel: 3, recommendation: 'Stage 3 sacral wound requires wound care certified nurse on staff. San Diego Pacific has wound care specialist — approve clinical screening. Medicare A payer at $560/day.', impact: 'High-acuity admission requiring specialized staffing confirmation' },
     { id: 'psd-2', title: 'Susan Taylor — cardiac rehab capability verification', facility: 'Sacramento Valley', priority: 'high', confidence: 0.88, agent: 'clinical-monitor', governanceLevel: 3, recommendation: 'Post-CABG patient needs telemetry monitoring and cardiac rehab. Verify Sacramento Valley has telemetry equipment and trained staff before accepting.', impact: 'Medicare A admission — $560/day est. 28-day stay. Must confirm capability.' },
     { id: 'psd-3', title: 'Richard Lee — BCBS pre-auth overdue by 1 day', facility: 'San Diego Pacific', priority: 'high', confidence: 0.86, agent: 'clinical-monitor', governanceLevel: 2, recommendation: 'BCBS pre-auth submitted 2 days ago. Standard turnaround is 24-48 hours. Call BCBS provider line at (800) 262-2583 for status update.', impact: 'Patient discharge from hospital imminent — bed hold expires in 24 hours' },
@@ -45,9 +45,6 @@ export default function PreAdmissionScreening() {
     { key: 'screeningStatus', label: 'Status', render: (v) => <StatusBadge status={v} /> },
   ];
 
-  const handleApprove = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-  const handleEscalate = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
@@ -70,8 +67,8 @@ export default function PreAdmissionScreening() {
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={handleApprove}
-          onEscalate={handleEscalate}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Screening Decisions"
           badge={decisions.length}
         />

@@ -4,6 +4,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { cashPosition, covenants, cashForecast, treasurySummary } from '../../data/financial/treasuryData';
 
 const treasuryDecisions = [
@@ -37,6 +38,7 @@ const treasuryDecisions = [
 ];
 
 export default function TreasuryCashFlow() {
+  const { decisions: treasuryDecisionQueue, approve, escalate } = useDecisionQueue(treasuryDecisions);
   const stats = [
     { label: 'Total Cash', value: `$${(cashPosition.totalCash / 1000000).toFixed(1)}M`, icon: Wallet, color: 'emerald', change: 'Above covenant minimum', changeType: 'positive' },
     { label: 'Operating Account', value: `$${(cashPosition.operatingAccount / 1000000).toFixed(2)}M`, icon: DollarSign, color: 'blue' },
@@ -85,11 +87,11 @@ export default function TreasuryCashFlow() {
 
       <div className="mb-6">
         <DecisionQueue
-          decisions={treasuryDecisions}
+          decisions={treasuryDecisionQueue}
           title="Treasury Decisions"
-          badge={3}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          badge={treasuryDecisionQueue.length}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

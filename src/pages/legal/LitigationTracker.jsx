@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 export default function LitigationTracker() {
   const activeCases = litigation.filter(l => l.status === 'active');
@@ -25,7 +26,7 @@ export default function LitigationTracker() {
     { label: 'Attorneys', value: attorneys.length, icon: Users, color: 'purple' },
   ];
 
-  const decisions = upcomingDeadlineCases.map((l) => ({
+  const decisionData = upcomingDeadlineCases.map((l) => ({
     id: l.id,
     title: `${l.caseNumber} — ${l.plaintiff}`,
     description: `${l.description} Deadline: ${l.nextDeadline}. Reserve: $${(l.reserve / 1000).toFixed(0)}K. Attorney: ${l.attorney}.`,
@@ -40,7 +41,7 @@ export default function LitigationTracker() {
     governanceLevel: l.reserve >= 250000 ? 4 : 3,
   }));
 
-  const handleDecision = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const statusColors = {
     active: 'bg-red-50 text-red-700',
@@ -90,8 +91,8 @@ export default function LitigationTracker() {
         <div className="mb-6">
           <DecisionQueue
             decisions={decisions}
-            onApprove={handleDecision}
-            onEscalate={handleDecision}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Cases Requiring Attention"
             badge={decisions.length}
           />

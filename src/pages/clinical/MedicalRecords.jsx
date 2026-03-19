@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { assessments, overdueAssessments } from '../../data/clinical/assessments';
 import { residents } from '../../data/entities/residents';
 
@@ -18,7 +19,7 @@ const lateEntries = 3;
 const codingAccuracy = 96.4;
 const documentationScore = 88;
 
-const decisions = [
+const decisionData = [
   { id: 'mr-1', title: 'MDS Overdue — Margaret Chen (Heritage Oaks)', description: 'Quarterly MDS scheduled 3/1, now 14 days overdue. Resident has had significant clinical changes (3 falls, skin tear, medication changes) since last MDS.', priority: 'critical', agent: 'MDS Agent', confidence: 0.96, recommendation: 'Complete MDS immediately. Given 3 falls and condition changes, this should be coded as a Significant Change in Status Assessment (SCSA) rather than quarterly. Update Section GG, Section J (pain), and Section N (medications).', impact: 'F-641/F-642 citation risk. Late MDS affects reimbursement accuracy and quality measures.', governanceLevel: 3, evidence: [{ label: 'MDS schedule', detail: 'Quarterly due 3/1 — 14 days overdue' }, { label: 'Clinical changes', detail: '3 falls, skin tear, medication review pending' }] },
   { id: 'mr-2', title: 'MDS Overdue — Robert Williams (Heritage Oaks)', description: 'Quarterly MDS scheduled 2/15, now 28 days overdue. Weight loss 7.2%, dietary changes, and deconditioning since last assessment.', priority: 'critical', agent: 'MDS Agent', confidence: 0.95, recommendation: 'Complete MDS as SCSA due to significant weight loss and functional decline. Update nutrition sections. Ensure PDPM coding captures current therapy minutes.', impact: 'F-641/F-642 citation risk. Revenue impact from delayed PDPM recalculation.', governanceLevel: 3 },
   { id: 'mr-3', title: 'MDS Overdue — Helen Garcia (Bayview)', description: 'Quarterly MDS scheduled 2/20, now 23 days overdue. PHQ-9 increased from 14 to 18, weight loss 5.1%.', priority: 'high', agent: 'MDS Agent', confidence: 0.93, recommendation: 'Complete MDS with updated depression screening data. Code PHQ-9 score in Section D. Consider SCSA given mood deterioration.', impact: 'F-641/F-642 citation risk. Depression coding affects quality measures.', governanceLevel: 2 },
@@ -55,6 +56,7 @@ const tableData = assessments.map(a => ({
 }));
 
 export default function MedicalRecords() {
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
   return (
     <div className="p-6">
       <PageHeader
@@ -64,15 +66,15 @@ export default function MedicalRecords() {
         riskLevel="high"
       />
 
-      <AgentSummaryBar agentName="MDS Agent" summary={`tracked ${totalAssessments} assessments. ${overdueMDS.length} overdue, ${unsignedOrders} unsigned physician orders.`} itemsProcessed={totalAssessments} exceptionsFound={decisions.length} timeSaved="3.6 hrs" lastRunTime="5:00 AM" />
+      <AgentSummaryBar agentName="MDS Agent" summary={`tracked ${totalAssessments} assessments. ${overdueMDS.length} overdue, ${unsignedOrders} unsigned physician orders.`} itemsProcessed={totalAssessments} exceptionsFound={decisionData.length} timeSaved="3.6 hrs" lastRunTime="5:00 AM" />
 
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Medical Records Decisions"
           badge={decisions.length}
         />

@@ -3,6 +3,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { assessments } from '../../data/clinical/assessments';
 
 export default function PDPMOptimization() {
@@ -21,7 +22,7 @@ export default function PDPMOptimization() {
     { label: 'Under-Coded Risk', value: '4', icon: FileText, color: 'red', change: 'Review needed', changeType: 'negative' },
   ];
 
-  const decisions = [
+  const decisionData = [
     ...overdueMds.slice(0, 3).map(a => ({
       id: `pdpm-mds-${a.id}`,
       title: `Overdue MDS — Resident ${a.residentId} at ${a.facilityId.toUpperCase()}`,
@@ -56,6 +57,8 @@ export default function PDPMOptimization() {
       governanceLevel: 2,
     },
   ];
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const activities = [
     { id: 'pa1', agentName: 'mds-agent', action: 'cross-referenced Section GG scores with therapy documentation for 48 residents', status: 'completed', confidence: 0.91, timestamp: '2026-03-15T06:30:00Z', timeSaved: '4.2 hrs' },
@@ -92,8 +95,8 @@ export default function PDPMOptimization() {
             decisions={decisions}
             title="PDPM Review Queue"
             badge={decisions.length}
-            onApprove={(id) => console.log('approve', id)}
-            onEscalate={(id) => console.log('escalate', id)}
+            onApprove={approve}
+            onEscalate={escalate}
           />
         </div>
 

@@ -4,6 +4,7 @@ import { PageHeader } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 export default function RegulatoryResponse() {
   const pendingFilings = regulatoryFilings.filter(f => ['submitted', 'pending', 'under-review'].includes(f.status));
@@ -24,7 +25,7 @@ export default function RegulatoryResponse() {
     f => f.status !== 'accepted' && f.status !== 'approved' && f.dueDate >= '2026-03-15' && f.dueDate <= '2026-05-15'
   );
 
-  const decisions = approachingDeadlines.map((f) => ({
+  const decisionData = approachingDeadlines.map((f) => ({
     id: f.id,
     title: `${f.type.replace(/-/g, ' ')} — ${f.agency}`,
     description: `${f.description} Filed: ${f.filedDate}. Due: ${f.dueDate}. Facility: ${f.facilityId}.`,
@@ -41,7 +42,7 @@ export default function RegulatoryResponse() {
     governanceLevel: f.type === 'waiver-request' ? 3 : 2,
   }));
 
-  const handleDecision = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const statusColors = {
     accepted: 'bg-green-50 text-green-700',
@@ -91,8 +92,8 @@ export default function RegulatoryResponse() {
         <div className="mb-6">
           <DecisionQueue
             decisions={decisions}
-            onApprove={handleDecision}
-            onEscalate={handleDecision}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Regulatory Actions Required"
             badge={decisions.length}
           />

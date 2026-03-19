@@ -3,6 +3,7 @@ import { PageHeader, Card, SectionLabel, AgentHumanSplit } from '../../component
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { retentionMetrics } from '../../data/workforce/retention';
 import { credentialingSummary } from '../../data/workforce/credentialing';
 import { schedulingSummary } from '../../data/workforce/scheduling';
@@ -19,7 +20,7 @@ export default function WorkforceCommand() {
     { label: 'Avg Tenure', value: `${retentionMetrics.avgTenureYears} yrs`, icon: Clock, color: 'cyan' },
   ];
 
-  const decisions = [
+  const decisionData = [
     {
       id: 'wf-1', title: 'Sarah Mitchell RN license expires today', facility: 'Sunrise Senior Living',
       priority: 'critical', agent: 'HR Compliance Agent', confidence: 0.99, governanceLevel: 4,
@@ -56,6 +57,8 @@ export default function WorkforceCommand() {
     },
   ];
 
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
+
   return (
     <div className="p-6">
       <PageHeader
@@ -86,8 +89,8 @@ export default function WorkforceCommand() {
         <div>
           <DecisionQueue
             decisions={decisions}
-            onApprove={() => {}}
-            onEscalate={() => {}}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Critical Workforce Items"
             badge={decisions.length}
           />

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Bed, UserPlus, UserMinus, Users, TrendingUp, Clock } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { censusByFacility, censusSummary, referralPipeline } from '../../data/operations/census';
@@ -7,15 +6,18 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const occupancyColors = (pct) => pct >= 92 ? '#22c55e' : pct >= 85 ? '#3b82f6' : pct >= 75 ? '#f59e0b' : '#ef4444';
 
+const CENSUS_DECISIONS = [
+  { id: 'cd-1', title: 'Tucson Desert Bloom below 86% occupancy target', facility: 'Tucson Desert Bloom', priority: 'high', confidence: 0.88, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Activate marketing blitz — increase referral outreach to Banner UMC Tucson and Tucson Medical Center. Historical data shows 4-6 week lag from outreach to admissions.', impact: 'Projected $42K/month revenue gap at current census vs. target' },
+  { id: 'cd-2', title: 'Sacramento Valley Medicaid mix at 39% — above 35% threshold', facility: 'Sacramento Valley', priority: 'medium', confidence: 0.91, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Prioritize Medicare A and managed care referrals for next 2 weeks. Current pipeline has 1 Medicare A referral pending — expedite clinical screening.', impact: 'Payer mix imbalance reducing average daily rate by ~$18/patient day' },
+  { id: 'cd-3', title: 'Las Vegas Desert Springs at 94% — nearing overflow', facility: 'Las Vegas Desert Springs', priority: 'medium', confidence: 0.85, agent: 'census-forecast', governanceLevel: 1, recommendation: 'Prepare overflow protocol. Review 3 pending discharges for acceleration. Coordinate with Salt Lake Mountain View for transfer capacity.', impact: 'Risk of referral decline if no beds available within 48 hours' },
+];
+
 export default function CensusCommand() {
-  const [decisions, setDecisions] = useState([
-    { id: 'cd-1', title: 'Tucson Desert Bloom below 86% occupancy target', facility: 'Tucson Desert Bloom', priority: 'high', confidence: 0.88, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Activate marketing blitz — increase referral outreach to Banner UMC Tucson and Tucson Medical Center. Historical data shows 4-6 week lag from outreach to admissions.', impact: 'Projected $42K/month revenue gap at current census vs. target' },
-    { id: 'cd-2', title: 'Sacramento Valley Medicaid mix at 39% — above 35% threshold', facility: 'Sacramento Valley', priority: 'medium', confidence: 0.91, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Prioritize Medicare A and managed care referrals for next 2 weeks. Current pipeline has 1 Medicare A referral pending — expedite clinical screening.', impact: 'Payer mix imbalance reducing average daily rate by ~$18/patient day' },
-    { id: 'cd-3', title: 'Las Vegas Desert Springs at 94% — nearing overflow', facility: 'Las Vegas Desert Springs', priority: 'medium', confidence: 0.85, agent: 'census-forecast', governanceLevel: 1, recommendation: 'Prepare overflow protocol. Review 3 pending discharges for acceleration. Coordinate with Salt Lake Mountain View for transfer capacity.', impact: 'Risk of referral decline if no beds available within 48 hours' },
-  ]);
+  const { decisions, approve, escalate } = useDecisionQueue(CENSUS_DECISIONS);
 
   const stats = [
     { label: 'Total Census', value: censusSummary.totalCensus, icon: Bed, color: 'blue', change: `of ${censusSummary.totalBeds} beds` },
@@ -48,9 +50,6 @@ export default function CensusCommand() {
     return { id: c.facilityId, facility: f?.name || c.facilityId, census: c.totalCensus, beds: f?.beds || 0, occupancy: f?.occupancy || 0, medicareA: c.medicareA, medicaid: c.medicaid, managed: c.managed, admissions: c.admissions, discharges: c.discharges };
   });
 
-  const handleApprove = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-  const handleEscalate = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
@@ -73,8 +72,8 @@ export default function CensusCommand() {
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={handleApprove}
-          onEscalate={handleEscalate}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Census Decisions"
           badge={decisions.length}
         />

@@ -3,6 +3,7 @@ import { PageHeader, Card, SectionLabel } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const legislation = [
   { id: 'leg-1', state: 'AZ', bill: 'HB 2341', title: 'SNF Minimum Staffing Standards', status: 'Committee', impact: 'High', description: 'Mandates 4.1 HPRD minimum. Would require 12% staffing increase across AZ facilities.', introduced: '2026-01-15', chamber: 'House' },
@@ -69,7 +70,7 @@ const cmsColumns = [
 ];
 
 export default function GovernmentAffairs() {
-  const noop = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(legislativeDecisions);
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
@@ -92,11 +93,10 @@ export default function GovernmentAffairs() {
       <div className="mb-6">
         <DecisionQueue
           title="Position Decisions Required"
-          badge={legislativeDecisions.length}
-          decisions={legislativeDecisions}
-          onApprove={noop}
-          onOverride={noop}
-          onEscalate={noop}
+          badge={decisions.length}
+          decisions={decisions}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

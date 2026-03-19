@@ -1,9 +1,9 @@
-import { useState } from 'react';
 import { Building2, Users, TrendingUp, Calendar, DollarSign, Target } from 'lucide-react';
 import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const hospitalPartners = [
   { id: 'hp-1', hospital: 'Banner Desert Medical', city: 'Phoenix', state: 'AZ', referralsMTD: 8, referralsLastMonth: 6, conversionRate: 75, avgResponseHrs: 3.2, relationship: 'Strong', primaryContact: 'Dr. Lisa Chen', lastVisit: '2026-03-10' },
@@ -22,12 +22,14 @@ const totalReferralsMTD = hospitalPartners.reduce((s, h) => s + h.referralsMTD, 
 const topSource = hospitalPartners.reduce((a, b) => a.referralsMTD > b.referralsMTD ? a : b);
 const avgConversion = Math.round(hospitalPartners.reduce((s, h) => s + h.conversionRate, 0) / hospitalPartners.length);
 
+const MARKETING_DECISIONS = [
+  { id: 'mbd-1', title: 'Sunrise Hospital relationship deteriorating — 33% referral drop', facility: 'Las Vegas Desert Springs', priority: 'high', confidence: 0.89, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Schedule in-person meeting with Maria Santos this week. Response time of 6.4 hrs is double our target. Assign dedicated liaison. Last visit was 25 days ago.', impact: 'Sunrise Hospital was #3 referral source — losing volume to competitor SNF' },
+  { id: 'mbd-2', title: 'Valley Hospital Las Vegas — no visit in 31 days', facility: 'Las Vegas Desert Springs', priority: 'high', confidence: 0.91, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Immediate outreach needed. 7.2 hr avg response time is worst in network. Assign Brian Caldwell (administrator) to personally visit. Conversion rate at 50% — below 70% threshold.', impact: 'Two at-risk hospital relationships in Las Vegas market compounds census pressure' },
+  { id: 'mbd-3', title: 'Schedule community health fair — Sacramento market', facility: 'Sacramento Valley', priority: 'medium', confidence: 0.85, agent: 'census-forecast', governanceLevel: 1, recommendation: 'Sacramento Valley occupancy at 88.8%. Community health fair in partnership with UC Davis Medical would strengthen relationship and generate direct family referrals. Budget: $3,500.', impact: 'Previous health fairs generated 4-6 referrals within 30 days' },
+];
+
 export default function MarketingBD() {
-  const [decisions, setDecisions] = useState([
-    { id: 'mbd-1', title: 'Sunrise Hospital relationship deteriorating — 33% referral drop', facility: 'Las Vegas Desert Springs', priority: 'high', confidence: 0.89, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Schedule in-person meeting with Maria Santos this week. Response time of 6.4 hrs is double our target. Assign dedicated liaison. Last visit was 25 days ago.', impact: 'Sunrise Hospital was #3 referral source — losing volume to competitor SNF' },
-    { id: 'mbd-2', title: 'Valley Hospital Las Vegas — no visit in 31 days', facility: 'Las Vegas Desert Springs', priority: 'high', confidence: 0.91, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Immediate outreach needed. 7.2 hr avg response time is worst in network. Assign Brian Caldwell (administrator) to personally visit. Conversion rate at 50% — below 70% threshold.', impact: 'Two at-risk hospital relationships in Las Vegas market compounds census pressure' },
-    { id: 'mbd-3', title: 'Schedule community health fair — Sacramento market', facility: 'Sacramento Valley', priority: 'medium', confidence: 0.85, agent: 'census-forecast', governanceLevel: 1, recommendation: 'Sacramento Valley occupancy at 88.8%. Community health fair in partnership with UC Davis Medical would strengthen relationship and generate direct family referrals. Budget: $3,500.', impact: 'Previous health fairs generated 4-6 referrals within 30 days' },
-  ]);
+  const { decisions, approve, escalate } = useDecisionQueue(MARKETING_DECISIONS);
 
   const stats = [
     { label: 'Hospital Partners', value: hospitalPartners.length, icon: Building2, color: 'blue', change: '2 at risk' },
@@ -47,9 +49,6 @@ export default function MarketingBD() {
     { key: 'relationship', label: 'Status', render: (v) => <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${v === 'Strong' ? 'bg-green-50 text-green-600 border border-green-100' : v === 'At Risk' ? 'bg-red-50 text-red-600 border border-red-100' : v === 'Growing' ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-gray-50 text-gray-600 border border-gray-100'}`}>{v}</span> },
     { key: 'lastVisit', label: 'Last Visit', render: (v) => { const d = Math.floor((new Date() - new Date(v)) / 86400000); return <span className={`text-xs ${d > 21 ? 'text-red-600 font-semibold' : d > 14 ? 'text-amber-600' : 'text-gray-600'}`}>{d}d ago</span>; } },
   ];
-
-  const handleApprove = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-  const handleEscalate = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
 
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -73,8 +72,8 @@ export default function MarketingBD() {
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={handleApprove}
-          onEscalate={handleEscalate}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Marketing Decisions"
           badge={decisions.length}
         />

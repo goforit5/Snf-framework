@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { credentials, credentialingSummary } from '../../data/workforce/credentialing';
 
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
@@ -17,7 +18,7 @@ export default function Credentialing() {
     { label: 'Verification Rate', value: '100%', icon: CheckCircle2, color: 'emerald', change: 'All verified', changeType: 'positive' },
   ];
 
-  const decisions = [
+  const decisionData = [
     {
       id: 'cred-1', title: 'CRITICAL: Sarah Mitchell RN license expires TODAY', facility: facilityNames.f1,
       priority: 'critical', agent: 'HR Compliance Agent', confidence: 0.99, governanceLevel: 4,
@@ -44,6 +45,8 @@ export default function Credentialing() {
       recommendation: 'Verify CE hours completion. If incomplete, schedule remaining hours immediately.',
     },
   ];
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const credStatusMap = {
     active: 'approved',
@@ -88,7 +91,7 @@ export default function Credentialing() {
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DecisionQueue decisions={decisions} onApprove={() => {}} onEscalate={() => {}} title="Credential Alerts" badge={decisions.length} />
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Credential Alerts" badge={decisions.length} />
         <Card title="Credentials by Type">
           <div className="space-y-3">
             {['RN', 'LPN', 'CNA', 'BLS', 'ACLS', 'PT', 'OT', 'ST'].map((type) => {

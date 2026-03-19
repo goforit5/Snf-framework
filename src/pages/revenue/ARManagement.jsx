@@ -4,6 +4,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { arAgingByFacility, arAgingSummary } from '../../data/financial/arAging';
 
 export default function ARManagement() {
@@ -41,7 +42,7 @@ export default function ARManagement() {
     .filter(f => f.over120 > 0)
     .sort((a, b) => b.over120 - a.over120);
 
-  const decisions = facilityOver120.slice(0, 5).map((f) => ({
+  const decisionData = facilityOver120.slice(0, 5).map((f) => ({
     id: `ar-wo-${f.facilityId}`,
     title: `${f.facilityId.toUpperCase()} — ${f.count} accounts over 90 days ($${(f.over90 / 1000).toFixed(0)}K)`,
     description: `$${(f.over120 / 1000).toFixed(0)}K in 120+ day bucket. Review for write-off or escalated collection action.`,
@@ -52,6 +53,8 @@ export default function ARManagement() {
     impact: `$${(f.over120 / 1000).toFixed(0)}K potential write-off`,
     governanceLevel: 3,
   }));
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
@@ -93,9 +96,8 @@ export default function ARManagement() {
             decisions={decisions}
             title="Write-Off Review Queue"
             badge={decisions.length}
-            onApprove={(id) => console.log('approve write-off', id)}
-            onOverride={(id) => console.log('override', id)}
-            onEscalate={(id) => console.log('escalate', id)}
+            onApprove={approve}
+            onEscalate={escalate}
           />
         </div>
       </div>

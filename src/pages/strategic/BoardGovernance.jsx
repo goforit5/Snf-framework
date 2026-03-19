@@ -4,6 +4,7 @@ import { PageHeader, Card, SectionLabel, StatusBadge, ProgressBar } from '../../
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const kpi = kpiDashboard;
 const kpiOnTrack = [kpi.financial.revenue.pct >= 100, kpi.financial.ebitdar.pct >= 100, kpi.operational.occupancy >= 85, kpi.clinical.rehospRate <= 12].filter(Boolean).length;
@@ -34,7 +35,7 @@ const meetingColumns = [
 ];
 
 export default function BoardGovernance() {
-  const noop = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(boardDecisions);
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto">
@@ -57,10 +58,10 @@ export default function BoardGovernance() {
       <div className="mb-6">
         <DecisionQueue
           title="Board Preparation Required"
-          badge={boardDecisions.length}
-          decisions={boardDecisions}
-          onApprove={noop}
-          onEscalate={noop}
+          badge={decisions.length}
+          decisions={decisions}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

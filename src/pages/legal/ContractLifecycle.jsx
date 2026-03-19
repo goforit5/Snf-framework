@@ -4,6 +4,7 @@ import { PageHeader, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 export default function ContractLifecycle() {
   const expiringContracts = contractLifecycle.filter(c => c.status === 'expiring');
@@ -18,7 +19,7 @@ export default function ContractLifecycle() {
     { label: 'Expired', value: contractLifecycleSummary.expired, icon: AlertTriangle, color: 'red', change: 'Needs replacement', changeType: 'negative' },
   ];
 
-  const decisions = expiringContracts.map((c) => ({
+  const decisionData = expiringContracts.map((c) => ({
     id: c.id,
     title: `Renewal Decision: ${c.title}`,
     description: `Contract with ${c.counterparty} expires ${c.endDate}. Annual value: $${c.annualValue ? (c.annualValue / 1000).toFixed(0) + 'K' : 'N/A'}. Assigned: ${c.assignedAttorney}. ${c.autoRenewal ? 'Auto-renewal enabled.' : 'Manual renewal required.'}`,
@@ -32,7 +33,7 @@ export default function ContractLifecycle() {
     governanceLevel: c.annualValue > 500000 ? 4 : 3,
   }));
 
-  const handleDecision = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const statusColors = {
     active: 'bg-green-50 text-green-700',
@@ -75,8 +76,8 @@ export default function ContractLifecycle() {
         <div className="mb-6">
           <DecisionQueue
             decisions={decisions}
-            onApprove={handleDecision}
-            onEscalate={handleDecision}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Contract Renewal Decisions"
             badge={decisions.length}
           />

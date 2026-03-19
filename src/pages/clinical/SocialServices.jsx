@@ -3,8 +3,9 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
-const decisions = [
+const decisionData = [
   { id: 'ss-1', title: 'Helen Garcia — PHQ-9 reassessment due, score 18', description: 'Moderately severe depression (PHQ-9: 18). Passive death wish expressed at last screening. Social isolation worsening — rarely leaves room, no family visitors in 3 weeks. Weight loss 5.1% correlating with mood decline.', priority: 'critical', agent: 'Social Services Agent', confidence: 0.94, recommendation: 'Complete PHQ-9 reassessment this week. Schedule 1:1 social work session. Coordinate with activities director for structured daily engagement. Contact family for visit scheduling.', impact: 'Addresses F-679 (social services) and mental health decline. Passive death wish requires close monitoring.', governanceLevel: 3, evidence: [{ label: 'PHQ-9 History', detail: 'Score 14 → 18 (worsening over 2 months)' }, { label: 'Social engagement', detail: 'Zero group activities attended in 14 days' }] },
   { id: 'ss-2', title: 'James Patterson — discharge planning, home evaluation needed', description: 'CHF patient progressing well in rehab. PT targeting discharge 4/5. Home evaluation not yet scheduled. Lives alone — needs home health referral and durable medical equipment.', priority: 'high', agent: 'Social Services Agent', confidence: 0.91, recommendation: 'Schedule home evaluation within 7 days. Initiate home health agency referral. Order DME (rolling walker, bedside commode, shower chair). Family meeting for discharge education.', impact: 'Prevents discharge delays and readmission. Home safety assessment critical for CHF patient living alone.', governanceLevel: 2 },
   { id: 'ss-3', title: 'Advance directive update — 3 residents with incomplete documentation', description: 'Three residents admitted in last 60 days have incomplete advance directive documentation. Social work intake completed but physician discussion and signature pending.', priority: 'medium', agent: 'Social Services Agent', confidence: 0.88, recommendation: 'Schedule physician discussions for advance directive completion within 7 days. Ensure POLST forms are current. Update PCC documentation.', impact: 'Regulatory compliance F-578. Ensures resident wishes are documented.', governanceLevel: 1 },
@@ -20,6 +21,7 @@ const stats = [
 ];
 
 export default function SocialServices() {
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
   return (
     <div className="p-6">
       <PageHeader
@@ -29,15 +31,15 @@ export default function SocialServices() {
         riskLevel="high"
       />
 
-      <AgentSummaryBar agentName="Social Services Agent" summary="identified 3 discharge planning needs and 2 behavioral health concerns. 3 advance directives incomplete." itemsProcessed={85} exceptionsFound={decisions.length} timeSaved="2.4 hrs" lastRunTime="6:00 AM" />
+      <AgentSummaryBar agentName="Social Services Agent" summary="identified 3 discharge planning needs and 2 behavioral health concerns. 3 advance directives incomplete." itemsProcessed={85} exceptionsFound={decisionData.length} timeSaved="2.4 hrs" lastRunTime="6:00 AM" />
 
       <div className="mb-6"><StatGrid stats={stats} columns={5} /></div>
 
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Social Services Decisions"
           badge={decisions.length}
         />

@@ -3,6 +3,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar, AgentActivityFeed } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { claims, claimsSummary } from '../../data/financial/claims';
 import { arAgingSummary } from '../../data/financial/arAging';
 
@@ -22,7 +23,7 @@ export default function RevenueCycleCommand() {
   const deniedClaims = claims.filter(c => c.status === 'denied');
   const _over120 = claims.filter(c => c.status !== 'paid' && c.status !== 'denied');
 
-  const decisions = [
+  const decisionData = [
     ...deniedClaims.slice(0, 3).map((c) => ({
       id: `rev-deny-${c.id}`,
       title: `Appeal denied claim ${c.claimNumber}`,
@@ -58,6 +59,8 @@ export default function RevenueCycleCommand() {
       governanceLevel: 3,
     },
   ];
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const activities = [
     { id: 'ra1', agentName: 'revenue-optimization', action: 'identified $39.2K UHC underpayment across 14 claims', status: 'completed', confidence: 0.94, timestamp: '2026-03-15T07:30:00Z', timeSaved: '3.5 hrs', costImpact: '+$39,200 recovery' },
@@ -95,8 +98,8 @@ export default function RevenueCycleCommand() {
             decisions={decisions}
             title="Revenue Exceptions"
             badge={decisions.length}
-            onApprove={(id) => console.log('approve', id)}
-            onEscalate={(id) => console.log('escalate', id)}
+            onApprove={approve}
+            onEscalate={escalate}
           />
         </div>
 

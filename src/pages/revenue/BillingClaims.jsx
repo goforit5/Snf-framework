@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { claims, claimsSummary } from '../../data/financial/claims';
 
 export default function BillingClaims() {
@@ -21,7 +22,7 @@ export default function BillingClaims() {
     { label: 'Clean Claim Rate', value: `${cleanRate}%`, icon: DollarSign, color: 'cyan', change: 'Target 95%', changeType: cleanRate >= 95 ? 'positive' : 'negative' },
   ];
 
-  const decisions = denied.map((c) => ({
+  const decisionData = denied.map((c) => ({
     id: `bill-${c.id}`,
     title: `Appeal ${c.claimNumber} — ${c.denialCode}`,
     description: `${c.denialReason}. Charge: $${c.totalCharge.toLocaleString()}. Facility: ${c.facilityId.toUpperCase()}.`,
@@ -32,6 +33,8 @@ export default function BillingClaims() {
     impact: `$${c.totalCharge.toLocaleString()} revenue recovery`,
     governanceLevel: 2,
   }));
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const columns = [
     { key: 'claimNumber', label: 'Claim #', render: (v) => <span className="font-mono text-xs">{v}</span> },
@@ -69,10 +72,9 @@ export default function BillingClaims() {
         <DecisionQueue
           decisions={decisions.slice(0, 5)}
           title="Denied Claims — Appeal Decisions"
-          badge={denied.length}
-          onApprove={(id) => console.log('approve appeal', id)}
-          onOverride={(id) => console.log('override', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          badge={decisions.length}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

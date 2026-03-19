@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge, PriorityBadge } from '../../components/W
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { openPositions, candidates, recruitingSummary } from '../../data/workforce/recruiting';
 
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
@@ -21,7 +22,7 @@ export default function RecruitingPipeline() {
     { label: 'Positions >30 Days', value: positionsOver30, icon: AlertTriangle, color: 'red', change: 'Escalate hiring', changeType: 'negative' },
   ];
 
-  const decisions = [
+  const decisionData = [
     {
       id: 'rec-1', title: 'Approve offer — Luis Garcia, CNA ($18.50/hr)', facility: facilityNames.f4,
       priority: 'high', agent: 'Recruiting Agent', confidence: 0.93, governanceLevel: 2,
@@ -49,6 +50,8 @@ export default function RecruitingPipeline() {
       recommendation: 'Authorize weekend differential increase to $8/hr (from $5/hr) to attract candidates. Post on travel nurse boards as backup.',
     },
   ];
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const columns = [
     { key: 'title', label: 'Position' },
@@ -80,7 +83,7 @@ export default function RecruitingPipeline() {
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DecisionQueue decisions={decisions} onApprove={() => {}} onEscalate={() => {}} title="Recruiting Decisions" badge={decisions.length} />
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Recruiting Decisions" badge={decisions.length} />
         <Card title="Pipeline by Role">
           <div className="space-y-3">
             {['RN', 'CNA', 'LPN', 'Therapy', 'Other'].map((role) => {

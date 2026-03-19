@@ -7,6 +7,7 @@ import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue, EvidencePanel } from '../components/DecisionComponents';
 import { QuickFilter } from '../components/FilterComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 
 export default function InvoiceExceptions() {
   const { open } = useModal();
@@ -76,7 +77,7 @@ export default function InvoiceExceptions() {
     });
   };
 
-  const decisions = filtered.map(exc => ({
+  const decisionData = filtered.map(exc => ({
     id: exc.id,
     title: `${exc.vendor} — $${exc.amount.toLocaleString()}`,
     description: exc.issue,
@@ -89,8 +90,7 @@ export default function InvoiceExceptions() {
     governanceLevel: exc.amount > 10000 ? 4 : exc.amount > 5000 ? 3 : 2,
   }));
 
-  const handleApprove = (id) => { openExceptionModal(invoiceExceptions.find(e => e.id === id)); };
-  const handleReject = (id) => { openExceptionModal(invoiceExceptions.find(e => e.id === id)); };
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   return (
     <div className="p-6">
@@ -106,11 +106,10 @@ export default function InvoiceExceptions() {
 
       <DecisionQueue
         decisions={decisions}
-        onApprove={handleApprove}
-        onOverride={handleReject}
-        onEscalate={handleApprove}
+        onApprove={approve}
+        onEscalate={escalate}
         title="Exceptions Requiring Review"
-        badge={filtered.length}
+        badge={decisions.length}
       />
     </div>
   );

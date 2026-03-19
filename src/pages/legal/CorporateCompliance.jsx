@@ -3,6 +3,7 @@ import { PageHeader } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const complianceActivities = [
   { id: 'cc-001', type: 'training', title: 'Annual HIPAA Training — All Staff', status: 'in-progress', dueDate: '2026-03-31', completionPct: 87, assignee: 'HR Department', priority: 'high', facility: 'Enterprise' },
@@ -41,7 +42,7 @@ export default function CorporateCompliance() {
     a => ['in-progress', 'pending', 'investigating'].includes(a.status) && a.priority !== 'low'
   );
 
-  const decisions = actionItems.map((a) => ({
+  const decisionData = actionItems.map((a) => ({
     id: a.id,
     title: a.title,
     description: `Type: ${a.type}. Status: ${a.status}. Due: ${a.dueDate}. Progress: ${a.completionPct}%. Assigned: ${a.assignee}.`,
@@ -60,7 +61,7 @@ export default function CorporateCompliance() {
     governanceLevel: a.priority === 'high' ? 3 : 2,
   }));
 
-  const handleDecision = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const statusColors = {
     'in-progress': 'bg-blue-50 text-blue-700',
@@ -122,8 +123,8 @@ export default function CorporateCompliance() {
         <div className="mb-6">
           <DecisionQueue
             decisions={decisions}
-            onApprove={handleDecision}
-            onEscalate={handleDecision}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Compliance Actions Required"
             badge={decisions.length}
           />

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Inbox, CheckCircle2, Clock, XCircle, Percent, Timer } from 'lucide-react';
 import { referralPipeline } from '../../data/operations/census';
 import { facilityMap } from '../../data/entities/facilities';
@@ -6,6 +5,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 export default function ReferralManagement() {
   const active = referralPipeline.filter(r => r.status !== 'declined');
@@ -15,7 +15,7 @@ export default function ReferralManagement() {
   const pendingInsurance = referralPipeline.filter(r => r.status === 'pending-insurance');
   const conversionRate = Math.round((converted.length / referralPipeline.length) * 100);
 
-  const [decisions, setDecisions] = useState([
+  const { decisions, approve, escalate } = useDecisionQueue([
     { id: 'rd-1', title: 'Richard Lee — insurance verification pending 2 days', facility: facilityMap['f3']?.name, priority: 'high', confidence: 0.87, agent: 'census-forecast', governanceLevel: 2, recommendation: 'BCBS pre-auth typically takes 3 business days. Follow up with BCBS rep directly — patient is post-surgical and clinically appropriate.', impact: 'Delayed admission risks losing referral to competitor facility' },
     { id: 'rd-2', title: 'Robert Williams — clinical screening needed for knee rehab', facility: facilityMap['f7']?.name, priority: 'high', confidence: 0.92, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Medicare A referral — high-value admission. Assign clinical screening to DON Rachel Kim today. Patient meets skilled criteria based on hospital discharge summary.', impact: 'Medicare A at $560/day — estimated 22-day stay = $12,320 revenue' },
     { id: 'rd-3', title: 'Betty Anderson — pending clinical review for wound care', facility: facilityMap['f3']?.name, priority: 'medium', confidence: 0.89, agent: 'census-forecast', governanceLevel: 2, recommendation: 'Diabetic wound care referral from UC San Diego Health. Verify wound care capabilities and staffing. Medicare A payer — prioritize screening.', impact: 'Medicare A admission — potential 25-day stay at $560/day' },
@@ -46,9 +46,6 @@ export default function ReferralManagement() {
     facility: facilityMap[r.facilityId]?.name || r.facilityId,
   }));
 
-  const handleApprove = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-  const handleEscalate = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
@@ -71,8 +68,8 @@ export default function ReferralManagement() {
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={handleApprove}
-          onEscalate={handleEscalate}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Referral Decisions"
           badge={decisions.length}
         />

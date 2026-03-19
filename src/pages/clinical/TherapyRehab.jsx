@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { therapySessions, therapySummary } from '../../data/clinical/therapySessions';
 import { residents } from '../../data/entities/residents';
 
@@ -16,7 +17,7 @@ const avgFunctionalGain = '+1.2 pts';
 const medicareMinutesUsed = therapySessions.filter(s => s.payerType === 'Medicare Part A').reduce((sum, s) => sum + s.minutes, 0);
 const authsExpiringSoon = 3;
 
-const decisions = [
+const decisionData = [
   { id: 'ther-1', title: 'Margaret Chen — PT auth expires 3/20, limited progress', description: 'PT authorization expires in 5 days. TUG test 22 seconds (high fall risk). Cognitive decline limiting ability to follow multi-step instructions. 3 falls in 30 days.', priority: 'high', agent: 'Therapy Agent', confidence: 0.89, recommendation: 'Request auth extension with updated goals focused on safety and supervised ambulation rather than independent mobility. Adjust PT plan to seated exercises and 1:1 gait training.', impact: 'Continued therapy prevents further falls and maintains function.', governanceLevel: 2 },
   { id: 'ther-2', title: 'Robert Williams — declining functional scores, endurance limited', description: 'Standing tolerance only 5 minutes. Malnutrition and COPD limiting rehabilitation gains. PT sessions kept to 30 minutes due to fatigue.', priority: 'high', agent: 'Therapy Agent', confidence: 0.87, recommendation: 'Continue maintenance therapy. Coordinate with dietary for nutritional optimization before advancing therapy intensity. Speech therapy for swallow safety ongoing.', impact: 'Prevents deconditioning while addressing underlying nutritional deficit.', governanceLevel: 2 },
   { id: 'ther-3', title: 'Medicare minute threshold — res12 approaching limit', description: 'Post-hip replacement patient at 540 of 720 Medicare Part A therapy minutes. Progressing well, targeting discharge 3/21. 180 minutes remaining.', priority: 'medium', agent: 'Therapy Agent', confidence: 0.92, recommendation: 'Approve remaining sessions. Patient on track for discharge within benefit period. Document functional gains for continued stay justification.', impact: 'Ensures adequate rehab before discharge. Prevents readmission.', governanceLevel: 1 },
@@ -53,6 +54,7 @@ const tableData = therapySessions.map(s => ({
 }));
 
 export default function TherapyRehab() {
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
   return (
     <div className="p-6">
       <PageHeader
@@ -62,15 +64,15 @@ export default function TherapyRehab() {
         riskLevel="medium"
       />
 
-      <AgentSummaryBar agentName="Therapy Agent" summary={`tracked ${therapySessions.length} sessions. ${authsExpiringSoon} patients approaching Medicare minute thresholds.`} itemsProcessed={therapySessions.length} exceptionsFound={decisions.length} timeSaved="2.1 hrs" lastRunTime="6:00 AM" />
+      <AgentSummaryBar agentName="Therapy Agent" summary={`tracked ${therapySessions.length} sessions. ${authsExpiringSoon} patients approaching Medicare minute thresholds.`} itemsProcessed={therapySessions.length} exceptionsFound={decisionData.length} timeSaved="2.1 hrs" lastRunTime="6:00 AM" />
 
       <div className="mb-6"><StatGrid stats={stats} columns={5} /></div>
 
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Therapy Decisions"
           badge={decisions.length}
         />

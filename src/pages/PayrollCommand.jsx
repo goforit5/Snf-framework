@@ -5,6 +5,7 @@ import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 
 export default function PayrollCommand() {
   const { open } = useModal();
@@ -25,7 +26,7 @@ export default function PayrollCommand() {
 
   const severityToConfidence = { critical: 0.97, high: 0.91, medium: 0.85 };
 
-  const decisions = exceptions.map((exc, i) => ({
+  const decisionData = exceptions.map((exc, i) => ({
     id: `payroll-${i}`,
     title: `${exc.employee} — ${exc.type}`,
     description: exc.issue,
@@ -42,6 +43,8 @@ export default function PayrollCommand() {
     evidence: [{ label: 'Timecard record' }, { label: 'Schedule data' }, { label: 'Badge access log' }],
     governanceLevel: exc.severity === 'critical' ? 4 : exc.severity === 'high' ? 3 : 2,
   }));
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const openExceptionModal = (id) => {
     const idx = parseInt(id.replace('payroll-', ''));
@@ -113,7 +116,7 @@ export default function PayrollCommand() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div>
-          <DecisionQueue decisions={decisions} onApprove={openExceptionModal} onOverride={openExceptionModal} onEscalate={openExceptionModal} title="Payroll Exceptions" badge={exceptions.length} />
+          <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Payroll Exceptions" badge={decisions.length} />
         </div>
 
         <Card title="Labor Cost % of Revenue — 5 Week Trend">

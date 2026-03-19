@@ -6,6 +6,7 @@ import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const aboveBenchmark = qualityMeasures.filter(q => {
   const isLower = ['Rehospitalization', 'Falls', 'UTI', 'Antipsychotic', 'Weight loss', 'Catheter', 'Physical restraint', 'pressure ulcers'].some(k => q.measure.toLowerCase().includes(k.toLowerCase()));
@@ -26,7 +27,7 @@ const stats = [
   { label: 'QMs Below Benchmark', value: belowBenchmark.length, icon: TrendingDown, color: 'red', change: 'Need improvement plans', changeType: 'negative' },
 ];
 
-const decisions = belowBenchmark.slice(0, 5).map((qm, i) => ({
+const decisionData = belowBenchmark.slice(0, 5).map((qm, i) => ({
   id: qm.id,
   number: i + 1,
   title: `${qm.measure} — ${facilityName(qm.facilityId)}`,
@@ -50,8 +51,10 @@ const ratingColumns = [
 
 export default function QualityCommand() {
   const { open } = useModal();
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const handleApprove = (id) => {
+    approve(id);
     const qm = qualityMeasures.find(q => q.id === id);
     open({
       title: `Improvement Plan: ${qm?.measure}`,
@@ -88,7 +91,7 @@ export default function QualityCommand() {
           title="Quality Measures Needing Improvement Plans"
           badge={decisions.length}
           onApprove={handleApprove}
-          onEscalate={() => {}}
+          onEscalate={escalate}
         />
       </div>
 

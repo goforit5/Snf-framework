@@ -5,6 +5,7 @@ import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 
 const trendIcon = (trend) => {
   if (trend === 'worsening') return <TrendingUp size={14} className="text-red-500" />;
@@ -37,6 +38,7 @@ const docExceptions = [
 export default function ClinicalCommand() {
   const { open } = useModal();
   const { metrics, highRiskResidents } = clinicalData;
+  const { decisions: interventionDecisions, approve, escalate } = useDecisionQueue(interventions);
 
   const stats = [
     { label: 'Falls (30d)', value: metrics.falls, icon: AlertTriangle, color: 'red', change: '+2 vs prior', changeType: 'negative' },
@@ -133,9 +135,9 @@ export default function ClinicalCommand() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card title="Agent-Suggested Interventions" badge={`${interventions.length}`}>
           <DecisionQueue
-            decisions={interventions}
-            onApprove={(id) => console.log('approve', id)}
-            onEscalate={(id) => console.log('escalate', id)}
+            decisions={interventionDecisions}
+            onApprove={approve}
+            onEscalate={escalate}
             title=""
           />
         </Card>

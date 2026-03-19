@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { contracts } from '../../data/financial/contracts';
 
 const contractDecisions = [
@@ -36,6 +37,7 @@ const contractDecisions = [
 ];
 
 export default function ManagedCareContracts() {
+  const { decisions: contractDecisionQueue, approve, escalate } = useDecisionQueue(contractDecisions);
   const payerContracts = contracts.filter(c => c.type === 'payer');
   const activeContracts = payerContracts.filter(c => c.status === 'active');
   const totalAnnualValue = activeContracts.reduce((s, c) => s + c.annualValue, 0);
@@ -92,11 +94,11 @@ export default function ManagedCareContracts() {
 
       <div className="mb-6">
         <DecisionQueue
-          decisions={contractDecisions}
+          decisions={contractDecisionQueue}
           title="Contract Decisions"
-          badge={3}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          badge={contractDecisionQueue.length}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

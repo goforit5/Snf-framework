@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { training, trainingSummary } from '../../data/workforce/training';
 
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
@@ -23,7 +24,7 @@ export default function TrainingEducation() {
   ];
 
   const overdueItems = training.filter(t => t.status === 'overdue');
-  const decisions = overdueItems.map((t, i) => ({
+  const decisionData = overdueItems.map((t, i) => ({
     id: `trn-dec-${i}`,
     title: `${t.staffName} — ${t.courseName} overdue`,
     facility: facilityNames[t.facilityId] || t.facilityId,
@@ -35,6 +36,8 @@ export default function TrainingEducation() {
     recommendation: `Send final notice with 48-hour deadline. If not completed, escalate to facility administrator for mandatory scheduling. Consider suspending clinical duties until complete.`,
     impact: `Compliance gap — CMS survey finding risk`,
   }));
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const statusMap = { completed: 'completed', overdue: 'exception', pending: 'pending' };
 
@@ -74,7 +77,7 @@ export default function TrainingEducation() {
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DecisionQueue decisions={decisions} onApprove={() => {}} onEscalate={() => {}} title="Overdue Training" badge={decisions.length} />
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Overdue Training" badge={decisions.length} />
         <Card title="Overdue by Facility">
           <div className="space-y-3">
             {trainingSummary.overdueByFacility.map((f) => (

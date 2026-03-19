@@ -3,6 +3,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { beersListMedications, psychotropicMedications, medicationsWithInteractions, activeMedications } from '../../data/clinical/medications';
 import { residents } from '../../data/entities/residents';
 
@@ -14,7 +15,7 @@ const residentName = (id) => {
 const prnMeds = activeMedications.filter(m => m.isPRN);
 const formularyCompliance = 94.2;
 
-const decisions = [
+const decisionData = [
   { id: 'pharm-1', title: 'Ambien (Zolpidem) — Margaret Chen, 84', description: 'Beers List medication for patient with 3 falls in 30 days. Zolpidem + Lorazepam creates combined CNS depression. Fall risk score 92.', priority: 'critical', agent: 'Pharmacy Agent', confidence: 0.96, recommendation: 'Discontinue Ambien and switch to non-pharmacologic sleep interventions. Taper Lorazepam. Combined CNS depressants are primary fall-risk contributors.', impact: 'Directly addresses root cause of 3 falls in 30 days. F-689 citation prevention.', governanceLevel: 3, evidence: [{ label: 'Beers List 2023', detail: 'Zolpidem — avoid in older adults due to fall risk' }, { label: 'PCC MAR', detail: 'Ambien administered nightly since June 2025' }] },
   { id: 'pharm-2', title: 'Digoxin — James Patterson, cardiac monitoring gap', description: 'Digoxin 0.125mg in 78yo with CHF. Recent incident: administered without checking apical pulse. Level 1.2 (therapeutic) but monitoring protocol failure.', priority: 'high', agent: 'Pharmacy Agent', confidence: 0.91, recommendation: 'Reinforce apical pulse check protocol. Consider switching to rate-control alternative given monitoring compliance issues.', impact: 'Prevents digoxin toxicity and F-759 medication error citations.', governanceLevel: 2 },
   { id: 'pharm-3', title: 'Quetiapine initiation — GDR monitoring required', description: 'New antipsychotic (quetiapine 25mg) started 3/14 for dementia-related agitation. CMS requires gradual dose reduction attempt within 6 months.', priority: 'high', agent: 'Pharmacy Agent', confidence: 0.93, recommendation: 'Approve initiation with mandatory GDR tracking. Schedule AIMS baseline assessment. Psychiatry follow-up in 2 weeks.', impact: 'CMS F-758 psychotropic monitoring compliance.', governanceLevel: 3 },
@@ -50,6 +51,7 @@ const tableData = activeMedications.slice(0, 60).map(m => ({
 }));
 
 export default function PharmacyManagement() {
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
   return (
     <div className="p-6">
       <PageHeader
@@ -59,15 +61,15 @@ export default function PharmacyManagement() {
         riskLevel="high"
       />
 
-      <AgentSummaryBar agentName="Pharmacy Agent" summary={`reviewed ${activeMedications.length}+ medications. ${beersListMedications.length} Beers List flags, ${medicationsWithInteractions.length} drug interactions detected.`} itemsProcessed={activeMedications.length} exceptionsFound={decisions.length} timeSaved="3.2 hrs" lastRunTime="5:30 AM" />
+      <AgentSummaryBar agentName="Pharmacy Agent" summary={`reviewed ${activeMedications.length}+ medications. ${beersListMedications.length} Beers List flags, ${medicationsWithInteractions.length} drug interactions detected.`} itemsProcessed={activeMedications.length} exceptionsFound={decisionData.length} timeSaved="3.2 hrs" lastRunTime="5:30 AM" />
 
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={(id) => console.log('approve', id)}
-          onEscalate={(id) => console.log('escalate', id)}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Pharmacy Decisions"
           badge={decisions.length}
         />

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { DollarSign, PieChart as PieIcon, TrendingUp, Percent, Users, CreditCard } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { censusByFacility, censusSummary } from '../../data/operations/census';
@@ -7,6 +6,7 @@ import { PageHeader, Card } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const totalCensus = censusSummary.totalCensus;
 const totalMedicareA = censusByFacility.reduce((s, f) => s + f.medicareA, 0);
@@ -25,12 +25,14 @@ const revenuePerPatientDay = avgDailyRate;
 
 const COLORS = ['#3b82f6', '#6366f1', '#a855f7', '#f59e0b', '#22c55e'];
 
+const PAYER_MIX_DECISIONS = [
+  { id: 'pm-1', title: 'Enterprise Medicaid mix at 40.5% — above 38% target', priority: 'high', confidence: 0.92, agent: 'revenue-optimization', governanceLevel: 3, recommendation: 'Shift referral acceptance criteria to prioritize Medicare A and managed care for facilities above 38% Medicaid. Sacramento Valley (39.4%) and Denver Meadows (41.5%) are highest.', impact: 'Each 1% shift from Medicaid to Medicare A adds ~$315/day per patient' },
+  { id: 'pm-2', title: 'Managed care rate renegotiation opportunity — Humana', facility: 'Enterprise', priority: 'medium', confidence: 0.87, agent: 'revenue-optimization', governanceLevel: 4, recommendation: 'Humana contract renews in 60 days. Current rate $455/day is 7% below market. Volume justifies renegotiation to $485-$495/day based on quality scores.', impact: 'Estimated $18K/month revenue increase across 14 Humana patients' },
+  { id: 'pm-3', title: 'Phoenix Sunrise private pay mix declining — 13% to 11.5%', facility: 'Phoenix Sunrise', priority: 'medium', confidence: 0.85, agent: 'revenue-optimization', governanceLevel: 2, recommendation: 'Increase private pay marketing in Scottsdale/Paradise Valley market. Target assisted living communities for step-up referrals.', impact: 'Private pay at $350/day with longer LOS provides stable revenue base' },
+];
+
 export default function PayerMixOptimization() {
-  const [decisions, setDecisions] = useState([
-    { id: 'pm-1', title: 'Enterprise Medicaid mix at 40.5% — above 38% target', priority: 'high', confidence: 0.92, agent: 'revenue-optimization', governanceLevel: 3, recommendation: 'Shift referral acceptance criteria to prioritize Medicare A and managed care for facilities above 38% Medicaid. Sacramento Valley (39.4%) and Denver Meadows (41.5%) are highest.', impact: 'Each 1% shift from Medicaid to Medicare A adds ~$315/day per patient' },
-    { id: 'pm-2', title: 'Managed care rate renegotiation opportunity — Humana', facility: 'Enterprise', priority: 'medium', confidence: 0.87, agent: 'revenue-optimization', governanceLevel: 4, recommendation: 'Humana contract renews in 60 days. Current rate $455/day is 7% below market. Volume justifies renegotiation to $485-$495/day based on quality scores.', impact: 'Estimated $18K/month revenue increase across 14 Humana patients' },
-    { id: 'pm-3', title: 'Phoenix Sunrise private pay mix declining — 13% to 11.5%', facility: 'Phoenix Sunrise', priority: 'medium', confidence: 0.85, agent: 'revenue-optimization', governanceLevel: 2, recommendation: 'Increase private pay marketing in Scottsdale/Paradise Valley market. Target assisted living communities for step-up referrals.', impact: 'Private pay at $350/day with longer LOS provides stable revenue base' },
-  ]);
+  const { decisions, approve, escalate } = useDecisionQueue(PAYER_MIX_DECISIONS);
 
   const pieData = [
     { name: 'Medicare A', value: totalMedicareA, pct: ((totalMedicareA / totalCensus) * 100).toFixed(1) },
@@ -64,9 +66,6 @@ export default function PayerMixOptimization() {
     return { id: c.facilityId, facility: f?.name || c.facilityId, census: c.totalCensus, medicareA: c.medicareA, medicareB: c.medicareB, medicaid: c.medicaid, managed: c.managed, private: c.private };
   });
 
-  const handleApprove = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-  const handleEscalate = (id) => setDecisions(prev => prev.filter(d => d.id !== id));
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <PageHeader
@@ -89,8 +88,8 @@ export default function PayerMixOptimization() {
       <div className="mb-6">
         <DecisionQueue
           decisions={decisions}
-          onApprove={handleApprove}
-          onEscalate={handleEscalate}
+          onApprove={approve}
+          onEscalate={escalate}
           title="Payer Mix Decisions"
           badge={decisions.length}
         />

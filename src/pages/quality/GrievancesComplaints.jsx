@@ -6,6 +6,7 @@ import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const residentComplaints = grievances.filter(g => g.complainantType === 'resident').length;
 const familyComplaints = grievances.filter(g => g.complainantType === 'family').length;
@@ -21,7 +22,7 @@ const stats = [
 ];
 
 const openGrievances = grievances.filter(g => g.status !== 'resolved');
-const decisions = openGrievances.map((g, i) => ({
+const decisionData = openGrievances.map((g, i) => ({
   id: g.id,
   number: i + 1,
   title: `${g.category} — ${g.complainant}`,
@@ -57,6 +58,7 @@ const grievanceColumns = [
 
 export default function GrievancesComplaints() {
   const { open } = useModal();
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const handleRowClick = (row) => {
     open({
@@ -115,8 +117,8 @@ export default function GrievancesComplaints() {
           decisions={decisions}
           title="Grievances Needing Investigation"
           badge={decisions.length}
-          onApprove={() => {}}
-          onEscalate={() => {}}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

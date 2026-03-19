@@ -6,6 +6,7 @@ import { useModal } from '../../components/WidgetUtils';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 const medErrors = incidents.filter(i => i.type === 'medication-error');
 const nearMisses = incidents.filter(i => i.injuryLevel === 'none' && i.status === 'closed');
@@ -32,7 +33,7 @@ const stats = [
 ];
 
 const needsRCA = incidents.filter(i => i.status === 'open' || i.status === 'investigating');
-const decisions = needsRCA.map((inc, i) => ({
+const decisionData = needsRCA.map((inc, i) => ({
   id: inc.id,
   number: i + 1,
   title: `${inc.type.replace(/-/g, ' ')} — ${inc.location}`,
@@ -58,6 +59,7 @@ const incidentColumns = [
 
 export default function PatientSafety() {
   const { open } = useModal();
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const handleRowClick = (row) => {
     open({
@@ -116,8 +118,8 @@ export default function PatientSafety() {
           decisions={decisions}
           title="Incidents Needing Root Cause Analysis"
           badge={decisions.length}
-          onApprove={() => {}}
-          onEscalate={() => {}}
+          onApprove={approve}
+          onEscalate={escalate}
         />
       </div>
 

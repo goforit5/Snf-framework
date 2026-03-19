@@ -6,6 +6,7 @@ import { PageHeader, Card, StatusBadge } from '../../components/Widgets';
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 
 export default function LegalCommand() {
   const complianceScore = 87;
@@ -22,7 +23,7 @@ export default function LegalCommand() {
     { label: 'Compliance Score', value: `${complianceScore}%`, icon: CheckCircle2, color: 'emerald', change: '+2 pts vs prior quarter', changeType: 'positive' },
   ];
 
-  const decisions = [
+  const decisionData = [
     ...expiringContracts.map((c) => ({
       id: `dec-contract-${c.id}`,
       title: `Renewal: ${c.title}`,
@@ -57,7 +58,7 @@ export default function LegalCommand() {
     })),
   ];
 
-  const handleDecision = () => {};
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const categories = [
     { title: 'Contracts', icon: FileText, count: contractLifecycleSummary.totalContracts, active: contractLifecycleSummary.active, color: 'blue', path: '/legal/contracts' },
@@ -91,8 +92,8 @@ export default function LegalCommand() {
         <div className="lg:col-span-2">
           <DecisionQueue
             decisions={decisions}
-            onApprove={handleDecision}
-            onEscalate={handleDecision}
+            onApprove={approve}
+            onEscalate={escalate}
             title="Legal Actions Required"
             badge={decisions.length}
           />

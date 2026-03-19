@@ -3,6 +3,7 @@ import { PageHeader, Card, PriorityBadge, StatusBadge } from '../../components/W
 import { AgentSummaryBar } from '../../components/AgentComponents';
 import { StatGrid, DataTable } from '../../components/DataComponents';
 import { DecisionQueue } from '../../components/DecisionComponents';
+import { useDecisionQueue } from '../../hooks/useDecisionQueue';
 import { shifts, coverageGaps, agencyFills, schedulingSummary } from '../../data/workforce/scheduling';
 
 const facilityNames = { f1: 'Sunrise Senior Living', f2: 'Meadowbrook Care', f3: 'Pacific Gardens SNF', f4: 'Heritage Oaks SNF', f5: 'Bayview Rehabilitation', f6: 'Cedar Ridge SNF', f7: 'Mountain View Care', f8: 'Desert Springs SNF' };
@@ -24,7 +25,7 @@ export default function SchedulingStaffing() {
     { label: 'PPD Ratio', value: ppdRatio.toFixed(1), icon: Activity, color: 'emerald', change: 'Target: 3.5-4.0', changeType: 'positive' },
   ];
 
-  const decisions = [
+  const decisionData = [
     {
       id: 'sch-1', title: 'Critical: Night CNA no-show — Heritage Oaks A Wing', facility: facilityNames.f4,
       priority: 'critical', agent: 'Scheduling Agent', confidence: 0.97, governanceLevel: 3,
@@ -53,6 +54,8 @@ export default function SchedulingStaffing() {
       recommendation: 'Offer weekend differential bonus ($200) to available RNs. If no takers, agency fill required.',
     },
   ];
+
+  const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
   const gapColumns = [
     { key: 'facilityId', label: 'Facility', render: (v) => <span className="text-xs">{facilityNames[v] || v}</span> },
@@ -85,7 +88,7 @@ export default function SchedulingStaffing() {
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DecisionQueue decisions={decisions} onApprove={() => {}} onEscalate={() => {}} title="Staffing Decisions" badge={decisions.length} />
+        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Staffing Decisions" badge={decisions.length} />
         <Card title="Agency Spend by Facility — Today">
           <div className="space-y-3">
             {Object.entries(
