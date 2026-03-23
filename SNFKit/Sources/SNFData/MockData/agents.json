@@ -1,0 +1,817 @@
+[
+  {
+    "id": "clinical-monitor",
+    "name": "clinical-monitor",
+    "displayName": "Clinical Monitoring Agent",
+    "domain": "clinical",
+    "description": "Continuous resident monitoring — fall detection, weight loss tracking, vital sign anomalies, cognitive decline indicators. Scans PCC data every 6 hours across all facilities.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 142,
+    "exceptionsToday": 8,
+    "confidenceAvg": 0.91,
+    "policiesEnforced": [
+      "Fall risk protocol",
+      "3-fall escalation rule",
+      "Weight monitoring threshold",
+      "Family notification policy",
+      "Vital sign alert parameters"
+    ],
+    "triggers": [
+      "Scheduled 6AM/12PM/6PM/12AM scan",
+      "Incident report filed",
+      "Lab result received",
+      "Physician order change"
+    ],
+    "governanceLevel": 2,
+    "icon": "HeartPulse",
+    "color": "#EF4444"
+  },
+  {
+    "id": "pharmacy-agent",
+    "name": "pharmacy-agent",
+    "displayName": "Pharmacy Reconciliation Agent",
+    "domain": "clinical",
+    "description": "Medication reconciliation, Beers List screening, drug interaction detection, formulary compliance, and pharmacy cost optimization across all residents.",
+    "status": "active",
+    "lastRun": "2026-03-15T05:30:00Z",
+    "actionsToday": 87,
+    "exceptionsToday": 4,
+    "confidenceAvg": 0.94,
+    "policiesEnforced": [
+      "Beers List screening",
+      "Drug interaction check",
+      "Formulary compliance",
+      "Controlled substance protocol",
+      "Psychotropic review schedule"
+    ],
+    "triggers": [
+      "New admission",
+      "Medication order change",
+      "Pharmacy delivery",
+      "Scheduled daily reconciliation"
+    ],
+    "governanceLevel": 3,
+    "icon": "Pill",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "therapy-agent",
+    "name": "therapy-agent",
+    "displayName": "Therapy Management Agent",
+    "domain": "clinical",
+    "description": "PT/OT/ST session tracking, functional gain measurement, authorization management, and therapy minute optimization for PDPM compliance.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:00:00Z",
+    "actionsToday": 63,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.89,
+    "policiesEnforced": [
+      "Authorization tracking",
+      "Session documentation requirements",
+      "Functional outcome measurement",
+      "PDPM therapy classification"
+    ],
+    "triggers": [
+      "Session completed",
+      "Authorization nearing limit",
+      "Functional score change",
+      "Discharge planning trigger"
+    ],
+    "governanceLevel": 2,
+    "icon": "Activity",
+    "color": "#06B6D4"
+  },
+  {
+    "id": "infection-control",
+    "name": "infection-control",
+    "displayName": "Infection Control Agent",
+    "domain": "clinical",
+    "description": "Surveillance for healthcare-associated infections, outbreak detection, antibiotic stewardship tracking, and hand hygiene compliance monitoring.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 34,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.92,
+    "policiesEnforced": [
+      "Infection surveillance protocol",
+      "Outbreak detection threshold",
+      "Antibiotic stewardship guidelines",
+      "Isolation precaution rules",
+      "Hand hygiene audit standards"
+    ],
+    "triggers": [
+      "Lab result positive",
+      "New antibiotic order",
+      "Temperature spike cluster",
+      "Scheduled surveillance scan"
+    ],
+    "governanceLevel": 2,
+    "icon": "ShieldAlert",
+    "color": "#F59E0B"
+  },
+  {
+    "id": "mds-agent",
+    "name": "mds-agent",
+    "displayName": "MDS Assessment Agent",
+    "domain": "clinical",
+    "description": "MDS assessment scheduling, PDPM scoring optimization, quality measure calculation, and Care Area Assessment triggering.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 28,
+    "exceptionsToday": 3,
+    "confidenceAvg": 0.87,
+    "policiesEnforced": [
+      "MDS scheduling windows",
+      "PDPM classification accuracy",
+      "Quality measure thresholds",
+      "CAA trigger rules"
+    ],
+    "triggers": [
+      "Assessment due date approaching",
+      "Significant change in status",
+      "Admission/readmission",
+      "Quarterly schedule"
+    ],
+    "governanceLevel": 2,
+    "icon": "ClipboardList",
+    "color": "#10B981"
+  },
+  {
+    "id": "wound-care-agent",
+    "name": "wound-care-agent",
+    "displayName": "Wound Care Management Agent",
+    "domain": "clinical",
+    "description": "Wound staging verification, measurement tracking, treatment protocol compliance, and healing trajectory monitoring.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 19,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.86,
+    "policiesEnforced": [
+      "Wound staging protocol",
+      "Measurement documentation requirements",
+      "Treatment plan compliance",
+      "Wound care specialist referral criteria"
+    ],
+    "triggers": [
+      "New wound documented",
+      "Weekly measurement due",
+      "Treatment plan change",
+      "Wound status change"
+    ],
+    "governanceLevel": 2,
+    "icon": "Bandage",
+    "color": "#EC4899"
+  },
+  {
+    "id": "ap-processing",
+    "name": "ap-processing",
+    "displayName": "AP Processing Agent",
+    "domain": "revenue-cycle",
+    "description": "Invoice ingestion from email/EDI/portal, 3-way matching (PO/receipt/invoice), GL auto-coding, duplicate detection, and payment scheduling.",
+    "status": "active",
+    "lastRun": "2026-03-15T08:15:00Z",
+    "actionsToday": 47,
+    "exceptionsToday": 6,
+    "confidenceAvg": 0.94,
+    "policiesEnforced": [
+      "3-way match requirement",
+      "Duplicate detection (90% threshold)",
+      "Contract pricing validation",
+      "GL code mapping",
+      "Approval authority matrix"
+    ],
+    "triggers": [
+      "Email inbox scan (every 15min)",
+      "EDI receipt",
+      "Vendor portal check",
+      "Manual upload"
+    ],
+    "governanceLevel": 1,
+    "icon": "Receipt",
+    "color": "#3B82F6"
+  },
+  {
+    "id": "billing-claims",
+    "name": "billing-claims",
+    "displayName": "Billing & Claims Agent",
+    "domain": "revenue-cycle",
+    "description": "Claims submission to payers, denial management, appeal generation, and reimbursement optimization across Medicare, Medicaid, and commercial payers.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:00:00Z",
+    "actionsToday": 34,
+    "exceptionsToday": 5,
+    "confidenceAvg": 0.91,
+    "policiesEnforced": [
+      "Claims scrubbing rules",
+      "Timely filing deadlines",
+      "Denial appeal protocols",
+      "Payer-specific requirements"
+    ],
+    "triggers": [
+      "MDS assessment completed",
+      "Discharge event",
+      "Denial received",
+      "Authorization change"
+    ],
+    "governanceLevel": 2,
+    "icon": "FileText",
+    "color": "#6366F1"
+  },
+  {
+    "id": "ar-management",
+    "name": "ar-management",
+    "displayName": "AR Management Agent",
+    "domain": "revenue-cycle",
+    "description": "AR aging follow-up automation, collection activity management, write-off recommendations, and payer performance tracking.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:30:00Z",
+    "actionsToday": 22,
+    "exceptionsToday": 3,
+    "confidenceAvg": 0.88,
+    "policiesEnforced": [
+      "Collection escalation timeline",
+      "Write-off approval thresholds",
+      "Bad debt reserve calculation",
+      "Payer contract terms"
+    ],
+    "triggers": [
+      "AR aging threshold crossed",
+      "Payment posted",
+      "Denial resolved",
+      "Scheduled weekly review"
+    ],
+    "governanceLevel": 2,
+    "icon": "DollarSign",
+    "color": "#14B8A6"
+  },
+  {
+    "id": "payroll-audit",
+    "name": "payroll-audit",
+    "displayName": "Payroll Audit Agent",
+    "domain": "revenue-cycle",
+    "description": "Timecard auditing, overtime detection, meal break compliance, credential-to-schedule matching, and labor cost anomaly detection.",
+    "status": "active",
+    "lastRun": "2026-03-15T05:00:00Z",
+    "actionsToday": 892,
+    "exceptionsToday": 14,
+    "confidenceAvg": 0.96,
+    "policiesEnforced": [
+      "Overtime cap (60hr/week)",
+      "Meal break requirements",
+      "Credential verification",
+      "Rate-to-role matching",
+      "Duplicate shift detection"
+    ],
+    "triggers": [
+      "Timecard submission",
+      "Pay period close",
+      "Schedule change",
+      "Credential update"
+    ],
+    "governanceLevel": 1,
+    "icon": "Clock",
+    "color": "#F97316"
+  },
+  {
+    "id": "revenue-optimization",
+    "name": "revenue-optimization",
+    "displayName": "Revenue Optimization Agent",
+    "domain": "revenue-cycle",
+    "description": "PDPM revenue optimization, payer mix analysis, rate negotiation support, and revenue leakage detection.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 15,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.85,
+    "policiesEnforced": [
+      "PDPM classification accuracy",
+      "Payer mix targets",
+      "Rate schedule compliance",
+      "Revenue recognition rules"
+    ],
+    "triggers": [
+      "MDS assessment completed",
+      "Payer authorization change",
+      "Rate schedule update",
+      "Monthly analysis"
+    ],
+    "governanceLevel": 3,
+    "icon": "TrendingUp",
+    "color": "#22C55E"
+  },
+  {
+    "id": "monthly-close",
+    "name": "monthly-close",
+    "displayName": "Monthly Close Agent",
+    "domain": "revenue-cycle",
+    "description": "Automated close checklist management, variance analysis, reconciliation automation, and financial reporting preparation.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 12,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.9,
+    "policiesEnforced": [
+      "Close checklist completion",
+      "Variance threshold alerts",
+      "Reconciliation standards",
+      "Intercompany elimination rules"
+    ],
+    "triggers": [
+      "Close calendar milestone",
+      "Subledger reconciliation complete",
+      "Journal entry posted",
+      "Scheduled daily check"
+    ],
+    "governanceLevel": 2,
+    "icon": "CalendarCheck",
+    "color": "#A855F7"
+  },
+  {
+    "id": "hr-compliance",
+    "name": "hr-compliance",
+    "displayName": "HR Compliance Agent",
+    "domain": "workforce",
+    "description": "License and certification tracking, expiration alerts, schedule impact assessment, and regulatory reporting for all clinical and support staff.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 56,
+    "exceptionsToday": 3,
+    "confidenceAvg": 0.97,
+    "policiesEnforced": [
+      "License expiration tracking (90/60/30/14 day)",
+      "Schedule impact assessment",
+      "State reporting requirements",
+      "Credential verification"
+    ],
+    "triggers": [
+      "Daily license scan",
+      "New hire onboarding",
+      "State board update",
+      "Credential document upload"
+    ],
+    "governanceLevel": 3,
+    "icon": "BadgeCheck",
+    "color": "#DC2626"
+  },
+  {
+    "id": "recruiting-agent",
+    "name": "recruiting-agent",
+    "displayName": "Recruiting Pipeline Agent",
+    "domain": "workforce",
+    "description": "Candidate pipeline management, job posting optimization, screening automation, and time-to-fill tracking.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:00:00Z",
+    "actionsToday": 18,
+    "exceptionsToday": 0,
+    "confidenceAvg": 0.83,
+    "policiesEnforced": [
+      "Job posting compliance",
+      "Background check requirements",
+      "Reference verification",
+      "Offer approval workflow"
+    ],
+    "triggers": [
+      "New application received",
+      "Position requisition opened",
+      "Interview completed",
+      "Background check returned"
+    ],
+    "governanceLevel": 2,
+    "icon": "UserPlus",
+    "color": "#0EA5E9"
+  },
+  {
+    "id": "scheduling-agent",
+    "name": "scheduling-agent",
+    "displayName": "Scheduling & Coverage Agent",
+    "domain": "workforce",
+    "description": "Coverage analysis, open shift management, agency coordination, and staffing ratio compliance monitoring.",
+    "status": "active",
+    "lastRun": "2026-03-15T05:00:00Z",
+    "actionsToday": 38,
+    "exceptionsToday": 4,
+    "confidenceAvg": 0.9,
+    "policiesEnforced": [
+      "Minimum staffing ratios",
+      "Overtime limit compliance",
+      "Agency fill protocols",
+      "Credential-to-assignment matching"
+    ],
+    "triggers": [
+      "Call-off received",
+      "Schedule published",
+      "Census change",
+      "Staffing ratio alert"
+    ],
+    "governanceLevel": 1,
+    "icon": "CalendarDays",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "training-agent",
+    "name": "training-agent",
+    "displayName": "Training Compliance Agent",
+    "domain": "workforce",
+    "description": "Training compliance tracking, in-service scheduling, competency management, and regulatory training requirement monitoring.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 24,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.93,
+    "policiesEnforced": [
+      "Annual training requirements",
+      "New hire orientation checklist",
+      "Competency assessment schedule",
+      "State-specific training mandates"
+    ],
+    "triggers": [
+      "Training due date approaching",
+      "New hire start date",
+      "Regulatory update",
+      "Competency assessment due"
+    ],
+    "governanceLevel": 1,
+    "icon": "GraduationCap",
+    "color": "#F59E0B"
+  },
+  {
+    "id": "supply-chain",
+    "name": "supply-chain",
+    "displayName": "Supply Chain Agent",
+    "domain": "operations",
+    "description": "Inventory monitoring, automatic reorder triggers, vendor price comparison, and supply utilization tracking.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 31,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.91,
+    "policiesEnforced": [
+      "Reorder point thresholds",
+      "Par level compliance",
+      "Vendor price comparison",
+      "Contract pricing enforcement"
+    ],
+    "triggers": [
+      "Inventory count submitted",
+      "Reorder point reached",
+      "Price change detected",
+      "Delivery received"
+    ],
+    "governanceLevel": 1,
+    "icon": "Package",
+    "color": "#059669"
+  },
+  {
+    "id": "maintenance-agent",
+    "name": "maintenance-agent",
+    "displayName": "Maintenance & Facilities Agent",
+    "domain": "operations",
+    "description": "Work order management, preventive maintenance scheduling, equipment lifecycle tracking, and life safety compliance.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 17,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.88,
+    "policiesEnforced": [
+      "Preventive maintenance schedule",
+      "Life safety inspection requirements",
+      "Equipment replacement criteria",
+      "Work order SLA tracking"
+    ],
+    "triggers": [
+      "Work order submitted",
+      "PM schedule due",
+      "Equipment alarm",
+      "Inspection due date"
+    ],
+    "governanceLevel": 1,
+    "icon": "Wrench",
+    "color": "#78716C"
+  },
+  {
+    "id": "census-forecast",
+    "name": "census-forecast",
+    "displayName": "Census Forecasting Agent",
+    "domain": "operations",
+    "description": "Admission pipeline analysis, discharge planning support, occupancy forecasting, and payer mix projection.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:00:00Z",
+    "actionsToday": 11,
+    "exceptionsToday": 0,
+    "confidenceAvg": 0.82,
+    "policiesEnforced": [
+      "Bed availability tracking",
+      "Payer mix targets",
+      "Staffing requirement projections",
+      "Admission criteria compliance"
+    ],
+    "triggers": [
+      "Admission inquiry received",
+      "Discharge order entered",
+      "Census change",
+      "Scheduled daily forecast"
+    ],
+    "governanceLevel": 1,
+    "icon": "BarChart3",
+    "color": "#0284C7"
+  },
+  {
+    "id": "survey-readiness",
+    "name": "survey-readiness",
+    "displayName": "Survey Readiness Agent",
+    "domain": "quality-compliance",
+    "description": "Continuous mock survey scoring, F-tag risk identification, plan of correction tracking, and survey cycle prediction.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 45,
+    "exceptionsToday": 6,
+    "confidenceAvg": 0.89,
+    "policiesEnforced": [
+      "F-tag monitoring rules",
+      "Documentation completeness checks",
+      "POC tracking requirements",
+      "Survey cycle prediction model"
+    ],
+    "triggers": [
+      "Scheduled weekly assessment",
+      "Incident report filed",
+      "Documentation gap detected",
+      "F-tag risk threshold crossed"
+    ],
+    "governanceLevel": 2,
+    "icon": "Shield",
+    "color": "#7C3AED"
+  },
+  {
+    "id": "quality-measures",
+    "name": "quality-measures",
+    "displayName": "Quality Measures Agent",
+    "domain": "quality-compliance",
+    "description": "CMS 5-star rating tracking, quality measure trending, peer comparison analysis, and QAPI program support.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 22,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.9,
+    "policiesEnforced": [
+      "CMS quality measure thresholds",
+      "5-star rating methodology",
+      "QAPI program requirements",
+      "Peer comparison benchmarks"
+    ],
+    "triggers": [
+      "MDS data submission",
+      "Quality measure recalculation",
+      "CMS data refresh",
+      "Monthly trending analysis"
+    ],
+    "governanceLevel": 2,
+    "icon": "Star",
+    "color": "#EAB308"
+  },
+  {
+    "id": "risk-management",
+    "name": "risk-management",
+    "displayName": "Risk Management Agent",
+    "domain": "quality-compliance",
+    "description": "Incident trending analysis, claims tracking, root cause analysis automation, and risk mitigation recommendations.",
+    "status": "active",
+    "lastRun": "2026-03-15T06:00:00Z",
+    "actionsToday": 14,
+    "exceptionsToday": 2,
+    "confidenceAvg": 0.86,
+    "policiesEnforced": [
+      "Incident reporting requirements",
+      "Root cause analysis triggers",
+      "Claims notification thresholds",
+      "Risk mitigation protocols"
+    ],
+    "triggers": [
+      "Incident report filed",
+      "Claim received",
+      "Trend threshold crossed",
+      "Scheduled weekly analysis"
+    ],
+    "governanceLevel": 3,
+    "icon": "AlertTriangle",
+    "color": "#DC2626"
+  },
+  {
+    "id": "contract-agent",
+    "name": "contract-agent",
+    "displayName": "Contract Lifecycle Agent",
+    "domain": "legal-strategic",
+    "description": "Contract lifecycle management, renewal alert generation, term compliance monitoring, and obligation tracking.",
+    "status": "active",
+    "lastRun": "2026-03-15T04:00:00Z",
+    "actionsToday": 8,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.92,
+    "policiesEnforced": [
+      "Renewal timeline tracking",
+      "Auto-renewal clause monitoring",
+      "Term compliance verification",
+      "Obligation deadline tracking"
+    ],
+    "triggers": [
+      "Renewal date approaching",
+      "Contract milestone",
+      "Compliance review scheduled",
+      "New contract uploaded"
+    ],
+    "governanceLevel": 3,
+    "icon": "FileSignature",
+    "color": "#4F46E5"
+  },
+  {
+    "id": "ma-diligence",
+    "name": "ma-diligence",
+    "displayName": "M&A Due Diligence Agent",
+    "domain": "legal-strategic",
+    "description": "Due diligence document analysis, financial review automation, risk scoring, and deal memo generation for acquisition targets.",
+    "status": "active",
+    "lastRun": "2026-03-15T03:00:00Z",
+    "actionsToday": 6,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.84,
+    "policiesEnforced": [
+      "Due diligence checklist compliance",
+      "Financial analysis standards",
+      "Risk scoring methodology",
+      "Deal approval workflow"
+    ],
+    "triggers": [
+      "Document received",
+      "Analysis phase milestone",
+      "Risk score change",
+      "Deal stage transition"
+    ],
+    "governanceLevel": 4,
+    "icon": "Building2",
+    "color": "#0F766E"
+  },
+  {
+    "id": "vendor-compliance",
+    "name": "vendor-compliance",
+    "displayName": "Vendor Compliance Agent",
+    "domain": "vendor",
+    "description": "Certificate of Insurance tracking, W-9 currency verification, sanctions screening, and vendor performance monitoring.",
+    "status": "active",
+    "lastRun": "2026-03-15T03:00:00Z",
+    "actionsToday": 234,
+    "exceptionsToday": 3,
+    "confidenceAvg": 0.97,
+    "policiesEnforced": [
+      "COI expiration tracking",
+      "W-9 annual verification",
+      "OIG/SAM sanctions screening",
+      "Vendor performance metrics"
+    ],
+    "triggers": [
+      "Document expiry scan (daily)",
+      "New vendor onboarding",
+      "Payment processing check",
+      "Sanctions list update"
+    ],
+    "governanceLevel": 1,
+    "icon": "ShieldCheck",
+    "color": "#16A34A"
+  },
+  {
+    "id": "procurement-agent",
+    "name": "procurement-agent",
+    "displayName": "Procurement Agent",
+    "domain": "vendor",
+    "description": "Price comparison analysis, contract price enforcement, GPO compliance monitoring, and vendor alternative identification.",
+    "status": "active",
+    "lastRun": "2026-03-15T07:45:00Z",
+    "actionsToday": 19,
+    "exceptionsToday": 3,
+    "confidenceAvg": 0.93,
+    "policiesEnforced": [
+      "Contract price enforcement",
+      "GPO compliance",
+      "Price variance thresholds",
+      "Competitive bidding requirements"
+    ],
+    "triggers": [
+      "Invoice price variance detected",
+      "Contract price update",
+      "GPO catalog change",
+      "Scheduled vendor review"
+    ],
+    "governanceLevel": 2,
+    "icon": "ShoppingCart",
+    "color": "#D97706"
+  },
+  {
+    "id": "enterprise-orchestrator",
+    "name": "enterprise-orchestrator",
+    "displayName": "Enterprise Orchestrator",
+    "domain": "orchestration",
+    "description": "Cross-agent coordination, cascade event management, enterprise-wide pattern detection, and resource allocation optimization.",
+    "status": "active",
+    "lastRun": "2026-03-15T08:00:00Z",
+    "actionsToday": 67,
+    "exceptionsToday": 0,
+    "confidenceAvg": 0.95,
+    "policiesEnforced": [
+      "Cross-agent coordination rules",
+      "Cascade management protocols",
+      "Resource allocation policies",
+      "Enterprise escalation matrix"
+    ],
+    "triggers": [
+      "Agent-to-agent event",
+      "Cross-facility pattern detected",
+      "Resource contention",
+      "Cascade trigger"
+    ],
+    "governanceLevel": 1,
+    "icon": "Network",
+    "color": "#6366F1"
+  },
+  {
+    "id": "facility-orchestrator",
+    "name": "facility-orchestrator",
+    "displayName": "Facility Orchestrator",
+    "domain": "orchestration",
+    "description": "Facility-level agent coordination, local priority management, and cross-domain integration within a single facility.",
+    "status": "active",
+    "lastRun": "2026-03-15T08:00:00Z",
+    "actionsToday": 145,
+    "exceptionsToday": 0,
+    "confidenceAvg": 0.93,
+    "policiesEnforced": [
+      "Facility priority rules",
+      "Local coordination protocols",
+      "Cross-domain integration",
+      "Facility SLA tracking"
+    ],
+    "triggers": [
+      "Any facility-level agent event",
+      "Priority change",
+      "Staffing change",
+      "Census change"
+    ],
+    "governanceLevel": 1,
+    "icon": "Building",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "escalation-manager",
+    "name": "escalation-manager",
+    "displayName": "Escalation Manager",
+    "domain": "orchestration",
+    "description": "Escalation routing based on governance levels, SLA tracking, escalation chain management, and timeout handling.",
+    "status": "active",
+    "lastRun": "2026-03-15T08:00:00Z",
+    "actionsToday": 23,
+    "exceptionsToday": 0,
+    "confidenceAvg": 0.98,
+    "policiesEnforced": [
+      "Escalation routing rules",
+      "SLA compliance tracking",
+      "Timeout escalation protocols",
+      "After-hours routing"
+    ],
+    "triggers": [
+      "Decision pending timeout",
+      "SLA threshold approaching",
+      "Manual escalation request",
+      "Governance level trigger"
+    ],
+    "governanceLevel": 0,
+    "icon": "ArrowUpCircle",
+    "color": "#EF4444"
+  },
+  {
+    "id": "platform-monitor",
+    "name": "platform-monitor",
+    "displayName": "Platform Monitor",
+    "domain": "meta",
+    "description": "Agent health monitoring, performance metrics collection, error detection and recovery, and system resource tracking.",
+    "status": "active",
+    "lastRun": "2026-03-15T08:20:00Z",
+    "actionsToday": 288,
+    "exceptionsToday": 1,
+    "confidenceAvg": 0.99,
+    "policiesEnforced": [
+      "Agent health check intervals",
+      "Error rate thresholds",
+      "Performance SLA monitoring",
+      "Resource utilization limits"
+    ],
+    "triggers": [
+      "Scheduled health check (every 5min)",
+      "Agent error detected",
+      "Performance degradation",
+      "Resource threshold crossed"
+    ],
+    "governanceLevel": 0,
+    "icon": "Monitor",
+    "color": "#64748B"
+  }
+]

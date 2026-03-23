@@ -2,3 +2,12 @@ node_modules
 dist
 .DS_Store
 logs/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+SNFKit/.build/
+SNF_macOS/.build/
+SNF_iOS/.build/
+*.xcodeproj
+xcuserdata/
