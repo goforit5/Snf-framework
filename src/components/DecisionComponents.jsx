@@ -482,7 +482,7 @@ export function DecisionCard({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.(); } }}
         >
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-sm font-semibold text-gray-900 truncate max-w-[200px] xl:max-w-none">{title}</h4>
+            <h4 className="text-sm font-semibold text-gray-900 truncate max-w-[180px] sm:max-w-[240px] lg:max-w-none">{title}</h4>
             {facility && <span className="text-[10px] text-gray-400 font-medium hidden sm:inline">{facility}</span>}
           </div>
         </div>

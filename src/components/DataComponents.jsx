@@ -159,7 +159,7 @@ export function DataTable({
                 <th
                   key={col.key}
                   scope="col"
-                  className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider ${
+                  className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap ${
                     sortable && col.sortable !== false ? 'cursor-pointer select-none hover:text-gray-700 transition-colors' : ''
                   }`}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
@@ -192,7 +192,7 @@ export function DataTable({
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-gray-700">
+                    <td key={col.key} className="px-4 py-3 text-gray-700 whitespace-nowrap">
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
                     </td>
                   ))}

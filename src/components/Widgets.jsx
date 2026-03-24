@@ -100,13 +100,13 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
 
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-4">
-        <div>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h1>
           {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
         </div>
         {riskLevel && (
-          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${riskColors[riskLevel]}`}>
+          <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex-shrink-0 ${riskColors[riskLevel]}`}>
             {riskLevel.toUpperCase()} RISK
           </span>
         )}
@@ -416,7 +416,7 @@ export function AgentHumanSplit({ agentCount, humanCount, agentLabel = 'Agent Ac
   const agentPct = total > 0 ? (agentCount / total * 100).toFixed(0) : 0;
   return (
     <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-5 border border-blue-100/50">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <div className="flex items-center gap-2">
           <Bot size={16} className="text-blue-600" />
           <span className="text-sm font-semibold text-gray-900">{agentLabel}</span>
