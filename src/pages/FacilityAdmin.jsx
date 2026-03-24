@@ -2,7 +2,7 @@ import { AlertTriangle, Users, ShieldAlert, FileText, Bed, Heart, Bot } from 'lu
 import { facilities, clinicalData } from '../data/mockData';
 import { PageHeader, Card, PriorityBadge, StatusBadge, ClickableRow, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { AgentSummaryBar } from '../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
@@ -39,6 +39,14 @@ const adminDecisions = [
   { id: 'd4', title: 'Budget variance explanation — agency labor 167% over', description: 'February agency spend $142K vs $85K budget. CFO requesting variance memo by EOD.', priority: 'medium', agent: 'Finance Agent', confidence: 0.94, recommendation: 'Submit pre-drafted variance memo with root cause analysis and recruitment timeline.', governanceLevel: 2, facility: 'Heritage Oaks' },
 ];
 
+const facilityActivities = [
+  { id: 'faa1', agentName: 'Census Agent', action: 'synced facility census from PCC — 87 of 100 beds occupied, 87% occupancy', status: 'completed', confidence: 0.99, timestamp: '2026-03-15T06:00:00Z', timeSaved: '20 min', policiesChecked: ['Census Reconciliation Policy'] },
+  { id: 'faa2', agentName: 'Facility Admin Agent', action: 'updated 12 bed assignments after 3 admissions and 2 discharges yesterday', status: 'completed', confidence: 0.95, timestamp: '2026-03-15T06:15:00Z', timeSaved: '35 min' },
+  { id: 'faa3', agentName: 'Facility Admin Agent', action: 'generated 4 transfer summaries for residents moving between units', status: 'completed', confidence: 0.92, timestamp: '2026-03-15T05:45:00Z', timeSaved: '1.2 hrs', policiesChecked: ['Transfer Documentation Policy'] },
+  { id: 'faa4', agentName: 'Vendor Agent', action: 'flagged ABC Electric COI expiration — fire alarm repair on hold', status: 'completed', confidence: 0.97, timestamp: '2026-03-15T07:00:00Z', costImpact: '$480/day fire watch cost', policiesChecked: ['Vendor Insurance Requirements'] },
+  { id: 'faa5', agentName: 'Facility Admin Agent', action: 'compiling daily administrator briefing from 6 agent reports', status: 'in-progress', confidence: 0.90, timestamp: '2026-03-15T07:30:00Z' },
+];
+
 export default function FacilityAdmin() {
   const { open } = useModal();
   const heritageOaks = facilities.find(f => f.id === 'f4');
@@ -62,8 +70,13 @@ export default function FacilityAdmin() {
 
       <div className="mb-6"><StatGrid stats={stats} columns={6} /></div>
 
-      <div className="mb-6">
-        <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Administrator Decisions Due Today" badge={decisions.length} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+          <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Administrator Decisions Due Today" badge={decisions.length} />
+        </div>
+        <Card title="Agent Activity" badge="Live">
+          <AgentActivityFeed activities={facilityActivities} maxItems={5} />
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">

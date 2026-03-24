@@ -32,21 +32,78 @@ const stats = [
   { label: 'Corrective Actions Open', value: correctiveOpen.length, icon: FileText, color: 'red' },
 ];
 
-const needsRCA = incidents.filter(i => i.status === 'open' || i.status === 'investigating');
-const decisionData = needsRCA.map((inc, i) => ({
-  id: inc.id,
-  number: i + 1,
-  title: `${inc.type.replace(/-/g, ' ')} — ${inc.location}`,
-  description: inc.description.length > 120 ? inc.description.slice(0, 120) + '...' : inc.description,
-  facility: facilityName(inc.facilityId),
-  priority: inc.injuryLevel === 'moderate' ? 'critical' : inc.injuryLevel === 'minor' ? 'high' : 'medium',
-  agent: inc.type === 'fall' ? 'clinical-monitor' : 'risk-management',
-  confidence: 0.85,
-  recommendation: inc.fTagRisk
-    ? `Complete root cause analysis. F-tag risk: ${inc.fTagRisk}. Document corrective actions and prevention plan.`
-    : 'Complete root cause analysis and document corrective actions within 72 hours.',
-  governanceLevel: inc.injuryLevel === 'moderate' ? 4 : 3,
-}));
+const decisionData = [
+  {
+    id: 'ps-fall-chen-3',
+    title: 'Margaret Chen — 3rd fall in 30 days, Immediate Jeopardy risk (F-689)',
+    description: 'Margaret Chen (Room 214B, Heritage Oaks) fell at bedside at 6:15 AM on March 11 — her third fall in 30 days. Bed alarm sounded but staff response was delayed due to a concurrent emergency in the adjacent room. She sustained a skin tear to her right forearm treated with steri-strips. CT head was negative. Root cause analysis points to polypharmacy (Ambien + Lorazepam + Mirtazapine), progressive cognitive decline, and a staffing coverage gap during the 10PM-6AM shift. Her son David Chen has called twice demanding a formal care conference.',
+    priority: 'critical',
+    agent: 'Clinical Monitor Agent',
+    confidence: 0.97,
+    governanceLevel: 4,
+    recommendation: 'Approve immediate 1:1 aide coverage during high-risk hours (10PM-6AM) at $28/hr ($196/night). Schedule IDT care conference with family by March 13. Expedite pharmacy review to taper Ambien and Lorazepam per Beers List guidance. Implement low bed with bilateral floor mats. This is a reportable event under state regulations — ensure incident report filed with state agency within 24 hours.',
+    impact: 'F-689 Immediate Jeopardy risk — 3 falls in 30 days triggers CMS survey scrutiny. Potential $22,000/day CMP if cited as IJ. 1:1 aide cost of $5,880/month is negligible compared to regulatory and litigation exposure.',
+    evidence: [
+      { label: 'PCC incident log', detail: 'Falls on 2/14, 2/28, and 3/11 — all in Room 214B, Heritage Oaks' },
+      { label: 'Pharmacy profile', detail: 'Ambien 10mg QHS + Lorazepam 0.5mg BID + Mirtazapine 15mg — triple CNS depression' },
+      { label: 'Staffing data (Workday)', detail: 'Night shift 3/11: 1 RN covering 32 residents, concurrent emergency in Room 215' },
+      { label: 'CT Head (3/11)', detail: 'Negative for acute intracranial hemorrhage' },
+      { label: 'Family contact log', detail: 'Son David Chen called 3/11 and 3/12, requesting formal IDT meeting' },
+    ],
+  },
+  {
+    id: 'ps-fall-parkinson',
+    title: 'Richard Torres — Parkinson fall, room layout hazard (Valley View)',
+    description: 'Richard Torres (Room 118, Valley View) fell forward while reaching for clothing in his closet on March 12 at 8:00 AM. His festinating gait from Parkinson disease caused him to accelerate forward uncontrollably. His rollator was positioned across the room, out of reach. He sustained a forehead abrasion. Neuro checks were initiated Q1H for 4 hours — all normal. This is his first fall in 60 days, but his Parkinson medication timing may be contributing to morning "off" periods before his first dose of carbidopa-levodopa takes effect.',
+    priority: 'high',
+    agent: 'Clinical Monitor Agent',
+    confidence: 0.91,
+    governanceLevel: 3,
+    recommendation: 'Approve room redesign: relocate frequently used clothing from closet to accessible bedside dresser. Standing order for rollator positioning at bedside at all times. Request neurology consult to evaluate carbidopa-levodopa timing — consider moving first dose 30 minutes earlier to reduce morning "off" period. Add to PT plan: reaching and balance exercises specific to Parkinson gait patterns.',
+    impact: 'Prevents recurrent falls from environmental hazard. Room redesign cost: $0 (furniture repositioning). Neurology consult may optimize medication timing to reduce morning fall window.',
+    evidence: [
+      { label: 'PCC fall report (3/12)', detail: 'Festinating gait episode reaching into closet, rollator out of reach' },
+      { label: 'PCC medication schedule', detail: 'Carbidopa-levodopa 25/100 first dose at 8:00 AM — peak effect not until 9:00 AM' },
+      { label: 'PT evaluation (3/1)', detail: 'TUG test 18 seconds, moderate fall risk. Gait freezing episodes 2-3x daily' },
+      { label: 'Prior fall history', detail: 'Last fall 1/10/2026 — similar morning timing, before first medication dose' },
+    ],
+  },
+  {
+    id: 'ps-fall-anemia',
+    title: 'Patricia Nguyen — fall from acute anemia (Hgb 7.8), GI bleed suspected',
+    description: 'Patricia Nguyen (Room 302, Sunrise Meadows) was found on the floor next to her bed at 5:00 AM on March 13. She was pale, diaphoretic, with BP 92/58 and HR 102. STAT CBC showed hemoglobin 7.8 — significantly below her baseline of 11.2 from January. One unit of PRBCs was transfused, bringing hemoglobin to 9.1. Stool guaiac returned positive, indicating a suspected GI bleed. GI consult has been expedited but not yet scheduled. This fall is a symptom of the underlying anemia — fall precautions alone will not prevent recurrence without treating the bleed source.',
+    priority: 'critical',
+    agent: 'Clinical Monitor Agent',
+    confidence: 0.93,
+    governanceLevel: 3,
+    recommendation: 'Approve enhanced fall precautions (bed alarm, staff assist for all position changes). Escalate GI consult to urgent — request appointment within 48 hours. Repeat CBC in 12 hours to monitor for ongoing blood loss. Hold aspirin and any anticoagulants pending GI evaluation. If hemoglobin drops below 8.0 again, transfuse per physician standing order.',
+    impact: 'Untreated GI bleed risk: hemodynamic instability, recurrent falls, potential hospital transfer ($8,500 average SNF-to-hospital transfer cost). Early GI intervention prevents cascade of complications.',
+    evidence: [
+      { label: 'STAT CBC (3/13)', detail: 'Hgb 7.8 g/dL (baseline 11.2 in January), Hct 23.4%' },
+      { label: 'Transfusion record', detail: '1 unit PRBC transfused 3/13, post-transfusion Hgb 9.1' },
+      { label: 'Stool guaiac', detail: 'Positive — suspected lower GI bleed source' },
+      { label: 'Vitals at time of fall', detail: 'BP 92/58, HR 102, O2 96% — orthostatic hypotension confirmed' },
+      { label: 'Medication review', detail: 'Aspirin 81mg daily — hold pending GI evaluation' },
+    ],
+  },
+  {
+    id: 'ps-abuse-investigation',
+    title: 'Verbal abuse allegation — Meadowbrook, staff investigation in progress',
+    description: 'A family member reported overhearing CNA speak harshly to a resident during care at Meadowbrook on March 6: "If you don\'t hold still I can\'t help you." The CNA was immediately removed from direct care pending investigation. The involved resident was assessed and showed no signs of distress. Witness interviews are underway, and the state agency has been notified per mandatory reporting requirements. Preliminary findings suggest frustration during a difficult care situation rather than a pattern of abuse, but the investigation must be completed within the 5-business-day state requirement.',
+    priority: 'high',
+    agent: 'Risk Management Agent',
+    confidence: 0.88,
+    governanceLevel: 4,
+    recommendation: 'Continue investigation per state-mandated timeline (must complete by March 13). Keep CNA on non-direct-care duties until investigation concludes. Schedule abuse prevention in-service for all Meadowbrook direct care staff within 7 days. If substantiated: corrective action per HR policy. If unsubstantiated: document findings, return CNA to duties with coaching on therapeutic communication.',
+    impact: 'F-600 (free from abuse) citation risk if investigation is incomplete or inadequate. State survey follow-up likely. Proactive in-service demonstrates systemic response beyond individual incident.',
+    evidence: [
+      { label: 'Incident report (3/6)', detail: 'Family member witness, CNA identified, statement obtained from both parties' },
+      { label: 'State notification', detail: 'Filed per mandatory reporting — acknowledgment received 3/7' },
+      { label: 'HR record', detail: 'CNA has 2 years tenure, no prior complaints or disciplinary actions' },
+      { label: 'Resident assessment', detail: 'No signs of emotional distress, resident states "she was just trying to help"' },
+    ],
+  },
+];
 
 const incidentColumns = [
   { key: 'dateTime', label: 'Date', render: (v) => <span className="text-xs font-mono">{formatDate(v)}</span> },

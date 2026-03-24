@@ -2,10 +2,18 @@ import { Users, Clock, AlertTriangle, DollarSign, FileWarning, Bot, CheckCircle2
 import { payrollData } from '../data/mockData';
 import { PageHeader, Card, PriorityBadge, ActionButton, AgentHumanSplit, SectionLabel, ConfidenceBar } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { AgentSummaryBar } from '../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
+
+const payrollActivities = [
+  { id: 'pa1', agentName: 'Payroll Audit Agent', action: 'validated 1,247 timecards across 5 facilities — 42 exceptions flagged', status: 'completed', confidence: 0.96, timestamp: '2026-03-15T05:00:00Z', timeSaved: '6.4 hrs', policiesChecked: ['OT Policy 4.2', 'Timecard Validation Rules'] },
+  { id: 'pa2', agentName: 'Payroll Audit Agent', action: 'flagged 8 overtime threshold breaches — Meadowbrook night CNAs at 340% increase', status: 'completed', confidence: 0.94, timestamp: '2026-03-15T05:15:00Z', timeSaved: '45 min', costImpact: '$2,400/week excess labor identified' },
+  { id: 'pa3', agentName: 'Payroll Audit Agent', action: 'reconciled PTO balances for 312 staff against Workday accrual schedules', status: 'completed', confidence: 0.97, timestamp: '2026-03-15T04:30:00Z', timeSaved: '3.2 hrs', policiesChecked: ['PTO Accrual Policy 6.1'] },
+  { id: 'pa4', agentName: 'Payroll Audit Agent', action: 'detected rate mismatch for Linda Chen — LPN credential paid at CNA rate', status: 'completed', confidence: 0.91, timestamp: '2026-03-15T05:30:00Z', costImpact: '$380 retro correction needed' },
+  { id: 'pa5', agentName: 'Payroll Audit Agent', action: 'cross-referencing badge access logs with duplicate shift records', status: 'in-progress', confidence: 0.85, timestamp: '2026-03-15T06:00:00Z', policiesChecked: ['Anti-Fraud Policy 9.2'] },
+];
 
 export default function PayrollCommand() {
   const { open } = useModal();
@@ -119,6 +127,11 @@ export default function PayrollCommand() {
           <DecisionQueue decisions={decisions} onApprove={approve} onEscalate={escalate} title="Payroll Exceptions" badge={decisions.length} />
         </div>
 
+        <div className="space-y-6">
+        <Card title="Agent Activity" badge="Live">
+          <AgentActivityFeed activities={payrollActivities} maxItems={5} />
+        </Card>
+
         <Card title="Labor Cost % of Revenue — 5 Week Trend">
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
@@ -144,6 +157,7 @@ export default function PayrollCommand() {
           </div>
           <div className="pt-3 border-t border-gray-100"><div className="flex items-start gap-2"><Bot size={14} className="text-blue-600 mt-0.5 flex-shrink-0" /><p className="text-xs text-gray-500">Labor cost has increased 3.9 percentage points over 5 weeks. Primary driver: agency fill rates at Meadowbrook (+340% OT) and Heritage Oaks (staffing vacancies). Recommend accelerated hiring for 3 open CNA positions.</p></div></div>
         </Card>
+        </div>
       </div>
 
       <SectionLabel>Action Items for Payroll Admin</SectionLabel>

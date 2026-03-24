@@ -2,7 +2,7 @@ import { AlertTriangle, Activity, Shield, Heart, Brain, FileWarning, ClipboardLi
 import { clinicalData } from '../data/mockData';
 import { PageHeader, Card, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { AgentSummaryBar } from '../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { DecisionQueue } from '../components/DecisionComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
@@ -33,6 +33,14 @@ const docExceptions = [
   { type: 'Care Plan Updates', count: 8, details: 'Care plans not updated within 48hrs of significant change', breakdown: '5 at Heritage Oaks, 2 at Meadowbrook, 1 at Bayview. CMS requires care plan updates within 48 hours of any significant change in condition.', fTags: ['F-659'] },
   { type: 'Physician Orders', count: 5, details: 'Verbal orders not co-signed within required timeframe', breakdown: '3 orders from weekend on-call physician not co-signed. 2 orders from night shift at Heritage Oaks.', fTags: ['F-756'] },
   { type: 'Incident Reports', count: 4, details: 'Incomplete incident documentation — missing witness statements or follow-up', breakdown: '2 fall incidents missing witness statements. 1 skin tear missing follow-up. 1 elopement attempt missing root cause analysis.', fTags: ['F-689', 'F-600'] },
+];
+
+const clinicalActivities = [
+  { id: 'ca1', agentName: 'Clinical Monitoring Agent', action: 'scanned 142 nursing assessments across 5 facilities', status: 'completed', confidence: 0.96, timestamp: '2026-03-15T06:00:00Z', timeSaved: '4.2 hrs', policiesChecked: ['F-641 MDS Timeliness', 'F-659 Care Plan Updates'] },
+  { id: 'ca2', agentName: 'Clinical Monitoring Agent', action: 'flagged 3 MDS timing alerts — quarterly assessments overdue at Heritage Oaks', status: 'completed', confidence: 0.94, timestamp: '2026-03-15T06:15:00Z', timeSaved: '45 min', costImpact: 'Survey citation risk mitigated' },
+  { id: 'ca3', agentName: 'Pharmacy Agent', action: 'reconciled medication orders across 4 units — 2 discrepancies found', status: 'completed', confidence: 0.91, timestamp: '2026-03-15T05:30:00Z', timeSaved: '1.8 hrs', policiesChecked: ['F-757 Medication Orders'] },
+  { id: 'ca4', agentName: 'Clinical Monitoring Agent', action: 'generated fall risk reassessments for 6 residents with score changes', status: 'completed', confidence: 0.89, timestamp: '2026-03-14T18:00:00Z', timeSaved: '1.2 hrs', costImpact: 'F-689 compliance maintained' },
+  { id: 'ca5', agentName: 'Wound Care Agent', action: 'analyzing wound measurement trends for 8 active pressure ulcer cases', status: 'in-progress', confidence: 0.87, timestamp: '2026-03-15T07:00:00Z', policiesChecked: ['F-686 Pressure Ulcer Treatment'] },
 ];
 
 export default function ClinicalCommand() {
@@ -132,17 +140,24 @@ export default function ClinicalCommand() {
         <DataTable columns={residentColumns} data={highRiskResidents} onRowClick={openResidentModal} sortable pageSize={10} />
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Agent-Suggested Interventions" badge={`${interventions.length}`}>
-          <DecisionQueue
-            decisions={interventionDecisions}
-            onApprove={approve}
-            onEscalate={escalate}
-            title=""
-          />
-        </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card title="Agent-Suggested Interventions" badge={`${interventions.length}`}>
+            <DecisionQueue
+              decisions={interventionDecisions}
+              onApprove={approve}
+              onEscalate={escalate}
+              title=""
+            />
+          </Card>
+        </div>
 
-        <Card title="Documentation Exceptions" badge={`${metrics.docExceptions}`}>
+        <div className="space-y-6">
+          <Card title="Agent Activity" badge="Live">
+            <AgentActivityFeed activities={clinicalActivities} maxItems={5} />
+          </Card>
+
+          <Card title="Documentation Exceptions" badge={`${metrics.docExceptions}`}>
           <div className="space-y-3">
             {docExceptions.map((item, i) => (
               <div key={i} className="rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995]" onClick={() => openDocExceptionModal(item)}>
@@ -159,6 +174,7 @@ export default function ClinicalCommand() {
             </div>
           </div>
         </Card>
+        </div>
       </div>
     </div>
   );

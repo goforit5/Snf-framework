@@ -26,9 +26,57 @@ const revenuePerPatientDay = avgDailyRate;
 const COLORS = ['#3b82f6', '#6366f1', '#a855f7', '#f59e0b', '#22c55e'];
 
 const PAYER_MIX_DECISIONS = [
-  { id: 'pm-1', title: 'Enterprise Medicaid mix at 40.5% — above 38% target', priority: 'high', confidence: 0.92, agent: 'revenue-optimization', governanceLevel: 3, recommendation: 'Shift referral acceptance criteria to prioritize Medicare A and managed care for facilities above 38% Medicaid. Sacramento Valley (39.4%) and Denver Meadows (41.5%) are highest.', impact: 'Each 1% shift from Medicaid to Medicare A adds ~$315/day per patient' },
-  { id: 'pm-2', title: 'Managed care rate renegotiation opportunity — Humana', facility: 'Enterprise', priority: 'medium', confidence: 0.87, agent: 'revenue-optimization', governanceLevel: 4, recommendation: 'Humana contract renews in 60 days. Current rate $455/day is 7% below market. Volume justifies renegotiation to $485-$495/day based on quality scores.', impact: 'Estimated $18K/month revenue increase across 14 Humana patients' },
-  { id: 'pm-3', title: 'Phoenix Sunrise private pay mix declining — 13% to 11.5%', facility: 'Phoenix Sunrise', priority: 'medium', confidence: 0.85, agent: 'revenue-optimization', governanceLevel: 2, recommendation: 'Increase private pay marketing in Scottsdale/Paradise Valley market. Target assisted living communities for step-up referrals.', impact: 'Private pay at $350/day with longer LOS provides stable revenue base' },
+  {
+    id: 'pm-1',
+    title: 'Enterprise Medicaid at 40.5% — $47K/month revenue drag vs target',
+    description: 'Enterprise-wide Medicaid census is at 40.5% (257 of 634 residents), exceeding the 38% board-approved threshold. Sacramento Valley is the worst at 39.4% (41 of 104 residents) and trending upward with 6 of its last 8 admissions being Medicaid. The blended average daily rate has dropped from $362 to $344/patient day over 90 days. At a $315/day differential between Medicaid ($245/day) and Medicare A ($560/day), every percentage point of Medicaid above target costs the enterprise approximately $2,000/day across all facilities. The root cause is hospital discharge planners defaulting to Medicaid-heavy referral patterns — our admissions teams are not screening aggressively enough on payer type.',
+    priority: 'high',
+    confidence: 0.92,
+    agent: 'Revenue Optimization Agent',
+    governanceLevel: 3,
+    recommendation: 'Implement payer-aware referral acceptance at Sacramento Valley and any facility above 38% Medicaid. All new Medicaid referrals at over-threshold facilities require DON and administrator joint approval before acceptance. Redirect admissions coordinator effort toward Medicare A and managed care referral sources — target 60% of outreach time on hospital case managers at Medicare-heavy discharge facilities. Review monthly at revenue committee.',
+    impact: 'Reducing Medicaid from 40.5% to 38% target = shifting 16 beds enterprise-wide. At $315/day differential, this adds $5,040/day or $151,200/month in revenue. Sacramento Valley alone accounts for $47K/month of the gap.',
+    evidence: [
+      { label: 'Workday payer report (enterprise)', detail: '257 Medicaid (40.5%), 142 Medicare A (22.4%), 108 managed care (17.0%), 127 other' },
+      { label: 'Sacramento Valley trend', detail: '6 of 8 new admits in past 90 days were Medicaid — driving facility to 39.4%' },
+      { label: 'ADR impact analysis', detail: 'Enterprise ADR declined from $362 to $344/patient day over 90 days' },
+      { label: 'Board threshold', detail: '38% Medicaid cap approved Q4 2025 revenue committee meeting' },
+    ],
+  },
+  {
+    id: 'pm-2',
+    title: 'Humana contract renewal in 60 days — $18K/month renegotiation opportunity',
+    description: 'The Humana Gold Plus managed care contract renews on May 15, 2026. The current negotiated rate is $455/day, which is 7% below the market average of $490/day for comparable SNF providers in our markets. Ensign facilities serve 14 Humana patients across 4 facilities (Desert Springs 5, Heritage Oaks 4, Sacramento Valley 3, Mountain Crest 2). Our Five-Star quality ratings (4.2 enterprise average), low readmission rate (8.3% vs industry 12.1%), and high patient satisfaction scores (87th percentile) justify a rate increase. Humana has been expanding their MA enrollment in our markets — they need SNF network adequacy.',
+    priority: 'medium',
+    confidence: 0.87,
+    agent: 'Revenue Optimization Agent',
+    governanceLevel: 4,
+    recommendation: 'Initiate contract renegotiation with Humana provider relations. Target rate: $490-$495/day (market parity). Present quality scorecard: Five-Star ratings, readmission rates, patient satisfaction. Leverage network adequacy — Humana has limited SNF options in Tucson and Salt Lake City markets. If Humana counters below $480, escalate to regional VP for volume commitment negotiation (guaranteed minimum referrals in exchange for rate concession). CFO approval required for final terms.',
+    impact: '$35-40/day increase across 14 patients = $490-560/day additional revenue = $14,700-16,800/month ($176K-201K annually). Contract renewal also locks in 2-year rate with annual CPI escalator.',
+    evidence: [
+      { label: 'Current contract terms', detail: 'Humana Gold Plus: $455/day, 1-year term, expires May 15, 2026' },
+      { label: 'Market rate analysis', detail: 'Comparable SNF providers in AZ/CA/UT averaging $490/day for managed care' },
+      { label: 'Quality scorecard', detail: 'Enterprise Five-Star avg 4.2, readmission rate 8.3%, patient satisfaction 87th %ile' },
+      { label: 'Humana patient volume', detail: '14 current patients: Desert Springs (5), Heritage Oaks (4), Sacramento Valley (3), Mountain Crest (2)' },
+    ],
+  },
+  {
+    id: 'pm-3',
+    title: 'Phoenix Sunrise private pay declining 13% to 11.5% — LOS advantage eroding',
+    description: 'Phoenix Sunrise private pay mix has dropped from 13% to 11.5% over the past 6 months (from 14 to 12 residents). Private pay residents have an average length of stay of 340 days vs 22 days for Medicare A and 180 days for Medicaid — providing the most stable revenue base. The decline correlates with reduced marketing presence in the Scottsdale/Paradise Valley affluent market since the admissions coordinator position was vacant for 6 weeks (filled March 1). Two assisted living communities in the area (Sunrise Senior Living Scottsdale, Brookdale Paradise Valley) are natural step-up referral sources that have not been contacted in 90 days.',
+    priority: 'medium',
+    confidence: 0.85,
+    agent: 'Revenue Optimization Agent',
+    governanceLevel: 2,
+    recommendation: 'Assign new admissions coordinator to re-establish relationships with Sunrise Senior Living Scottsdale and Brookdale Paradise Valley within 2 weeks. Schedule facility tours for assisted living activity directors. Place targeted digital ads in Scottsdale ZIP codes (85251, 85253, 85258) — estimated $2,500/month ad spend. Host a family information session at the facility within 30 days to showcase private suites and amenities.',
+    impact: 'Private pay at $350/day with 340-day average LOS = $119,000 lifetime value per resident. Recovering from 11.5% to 13% target means adding 2 private pay residents = $700/day or $21,000/month in stable revenue. Marketing spend ROI: $2,500/month for $21,000/month return.',
+    evidence: [
+      { label: 'Census data (6-month trend)', detail: 'Private pay: 14 residents (13%) in Sep 2025 to 12 residents (11.5%) in Mar 2026' },
+      { label: 'Admissions coordinator gap', detail: 'Position vacant Jan 15 - Mar 1 — no outreach to private pay referral sources for 6 weeks' },
+      { label: 'ALF referral contacts', detail: 'Sunrise Senior Living and Brookdale Paradise Valley — last contact Dec 2025' },
+      { label: 'Private pay LOS analysis', detail: 'Average 340 days vs Medicare A 22 days — 15x longer revenue stream' },
+    ],
+  },
 ];
 
 export default function PayerMixOptimization() {

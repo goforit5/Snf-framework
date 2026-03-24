@@ -2,7 +2,7 @@ import { DollarSign, AlertTriangle, Clock, Wallet, CreditCard, Building2, CheckC
 import { financeData } from '../data/mockData';
 import { PageHeader, Card, ActionButton, ProgressBar, SectionLabel } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
-import { AgentSummaryBar } from '../components/AgentComponents';
+import { AgentSummaryBar, AgentActivityFeed } from '../components/AgentComponents';
 import { StatGrid, DataTable } from '../components/DataComponents';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { DecisionQueue } from '../components/DecisionComponents';
@@ -11,6 +11,14 @@ const financeDecisions = [
   { id: 'fin-1', title: 'Budget Variance — Meadowbrook Labor 12% Over', description: 'Meadowbrook\'s March labor hit $1.32M against a $1.175M budget — $145K unfavorable (12.3%). The GL breakdown: night shift overtime surged $38K because 3 CNA positions have been open since February (Workday requisitions #4821, #4833, #4847). Retroactive pay adjustments added $22K when HR corrected a missed wage increase for 6 LPNs effective January 1. The remaining $85K is agency backfill from StaffBridge at $48/hr vs $28/hr staff rate. Payroll ran at 52.1% of revenue vs the 46% target — 6.1 points over.', facility: 'Meadowbrook Care Center', priority: 'High', agent: 'Finance Agent', confidence: 0.92, governanceLevel: 4, recommendation: 'Approve $145K reallocation from contingency reserves (current balance: $420K, post-allocation: $275K — still above $200K minimum policy). Root cause is being addressed: 2 CNA offers accepted March 8, start date March 22. Third position in final interview stage. Overtime should normalize within 4 weeks.', impact: 'Without reallocation, Meadowbrook reports 12.3% unfavorable labor variance on the March board package. Contingency reserve remains healthy at $275K post-allocation (38% above minimum). If denied, the variance rolls forward and compounds in April.', evidence: [{ label: 'GL Account 5100-Labor — March MTD: $1,320K actual vs $1,175K budget. Overtime (5110): $98K vs $60K budget (+$38K). Retro adjustments (5150): $22K one-time.' }, { label: 'Workday Payroll — 6 LPN retro corrections processed 3/5 for Jan-Feb wage increase gap. Total retro: $22,140. No further retro expected.' }, { label: 'StaffBridge agency invoices — March: 847 agency hours at $48-52/hr = $41,200. All backfilling 3 open CNA positions (Req #4821, #4833, #4847).' }, { label: 'Workday Recruiting — 2 CNA offers accepted 3/8 (start 3/22), 1 CNA in final interview (decision expected 3/14). Agency spend projected to drop 70% by April.' }] },
   { id: 'fin-2', title: 'AP Threshold Override — $45K Sysco Invoice', description: 'Sysco invoice #SC-2026-0847 arrived March 7 for $45,200 — $20,200 above the $25K auto-approve threshold. The invoice covers food and paper goods for all 5 facilities. AP Agent matched line items to the master agreement (Contract #ENS-SYSCO-2024, signed June 2024, expires June 2026) and found the problem: paper goods category was billed at $18,400 vs the contracted $10,400 — an 18% unilateral price increase with zero advance notice. The contract (Section 4.2) caps annual escalation at 5% and requires 60-day written notice. Food items ($26,800) match contracted rates exactly.', facility: 'All Facilities', priority: 'Medium', agent: 'AP Processing Agent', confidence: 0.88, governanceLevel: 3, recommendation: 'Approve partial payment of $37,200 (food at contract rate + paper goods at contract rate). Place $8,000 variance on hold. Dispute letter was sent March 9 citing Section 4.2 breach. Sysco account rep (Tom Rodriguez) acknowledged receipt March 10 — resolution expected within 15 business days.', impact: 'If we pay the full $45,200, it sets a precedent for unilateral price increases across all vendor contracts. Annualized impact of accepting the 18% paper goods increase: $96K across all facilities. Holding $8K preserves negotiating leverage with zero supply chain risk — food items are paid in full.', evidence: [{ label: 'Sysco invoice #SC-2026-0847 — $45,200 total. Food service: $26,800 (matches contract). Paper goods: $18,400 (contract rate: $10,400, variance: $8,000, 18% increase).' }, { label: 'Master Agreement #ENS-SYSCO-2024 — Section 4.2: max 5% annual escalation with 60-day written notice. No notice received. Contract runs through June 2026.' }, { label: 'AP Agent dispute log — formal dispute letter sent 3/9 via certified mail + email. Sysco account rep Tom Rodriguez acknowledged 3/10, escalated to regional pricing team.' }, { label: 'Historical invoices — prior 6 months of paper goods: $10,200, $10,400, $10,350, $10,400, $10,300, $10,400. March is a clear outlier at $18,400.' }] },
   { id: 'fin-3', title: 'Revenue Recognition — Therapy Billing Correction', description: 'The Revenue Integrity Agent ran its weekly Medicare Part B audit and flagged 12 therapy claims at Heritage Oaks totaling $34,200. The claims (dates of service February 1-28) used CPT code 97110 (therapeutic exercises) when the documentation supports 97140 (manual therapy). This isn\'t fraud — it\'s a coding error by a new therapy assistant (Maria Santos, hired January 15) who wasn\'t trained on the CPT code update effective January 2026. The error inflated reimbursement by $2,850 per claim on average. Heritage Oaks is scheduled for a RAC audit in Q3 2026 based on the CMS audit cycle.', facility: 'Heritage Oaks', priority: 'High', agent: 'Revenue Integrity Agent', confidence: 0.95, governanceLevel: 4, recommendation: 'Approve voluntary self-disclosure to OIG and refund $34,200. Under the OIG Self-Disclosure Protocol, voluntary disclosure reduces penalties from treble damages (3x = $102,600) to 1.5x ($51,300) and demonstrates compliance culture. Agent has pre-drafted the disclosure letter and refund check request — ready to submit upon approval.', impact: 'If not self-disclosed and discovered by RAC audit in Q3: $102,600 in penalties (3x damages), potential False Claims Act referral, plus 3-year enhanced monitoring. Voluntary disclosure now: $34,200 refund + goodwill with OIG. Net savings of self-disclosure vs RAC discovery: $68,400.', evidence: [{ label: 'Billing audit — 12 claims flagged: DOS 2/1-2/28, all Heritage Oaks, all coded 97110 (therapeutic exercises). Correct code per documentation: 97140 (manual therapy). Overpayment: $34,200.' }, { label: 'PCC therapy notes — Maria Santos (OTA, hired 1/15/26) documented manual therapy techniques but selected wrong CPT dropdown. Training gap confirmed by therapy director on 3/9.' }, { label: 'CMS RAC schedule — Heritage Oaks in Q3 2026 audit pool based on claims volume trigger. RAC contractors specifically target 97110/97140 coding discrepancies.' }, { label: 'OIG Self-Disclosure Protocol — penalty reduction from 3x to 1.5x for voluntary disclosure. Pre-drafted disclosure letter and refund calculation ready for submission.' }] },
+];
+
+const financeActivities = [
+  { id: 'fa1', agentName: 'Finance Agent', action: 'processed 847 GL entries and generated variance commentary for March close', status: 'completed', confidence: 0.95, timestamp: '2026-03-15T08:00:00Z', timeSaved: '5.2 hrs', policiesChecked: ['Month-End Close Policy', 'GL Coding Standards'] },
+  { id: 'fa2', agentName: 'Revenue Integrity Agent', action: 'identified $23K in duplicate charges across Heritage Oaks therapy billing', status: 'completed', confidence: 0.93, timestamp: '2026-03-15T07:15:00Z', timeSaved: '3.1 hrs', costImpact: '$23K potential recovery' },
+  { id: 'fa3', agentName: 'Finance Agent', action: 'completed month-end accrual analysis for all 5 facilities', status: 'completed', confidence: 0.97, timestamp: '2026-03-15T06:30:00Z', timeSaved: '2.8 hrs' },
+  { id: 'fa4', agentName: 'Finance Agent', action: 'flagged $34K intercompany imbalance between Sunrise and Meadowbrook', status: 'completed', confidence: 0.91, timestamp: '2026-03-15T06:00:00Z', costImpact: 'Close blocker identified', policiesChecked: ['Intercompany Elimination Policy'] },
+  { id: 'fa5', agentName: 'Finance Agent', action: 'running 30-day cash flow projection with updated payroll assumptions', status: 'in-progress', confidence: 0.88, timestamp: '2026-03-15T08:30:00Z' },
 ];
 
 export default function FinanceCommand() {
@@ -96,24 +104,30 @@ export default function FinanceCommand() {
           <DataTable columns={varianceColumns} data={variance} pageSize={10} sortable={false} />
         </Card>
 
-        <Card title="Cash Forecast (30-Day)">
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Current Balance</span><span className="text-green-600 font-mono font-semibold">$4.2M</span></div>
-              <ProgressBar value={84} color="emerald" />
-            </div>
-            {cashItems.map((item, i) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                <span className="text-xs text-gray-500">{item.label}</span>
-                <span className={`text-xs font-mono font-semibold ${item.color}`}>{item.amount}</span>
+        <div className="space-y-6">
+          <Card title="Cash Forecast (30-Day)">
+            <div className="space-y-4">
+              <div>
+                <div className="flex justify-between text-xs text-gray-500 mb-1"><span>Current Balance</span><span className="text-green-600 font-mono font-semibold">$4.2M</span></div>
+                <ProgressBar value={84} color="emerald" />
               </div>
-            ))}
-            <div className="mt-4 pt-3 border-t border-gray-200">
-              <div className="flex justify-between items-center"><span className="text-sm font-semibold text-gray-900">Projected 30-Day Balance</span><span className="text-lg font-bold text-green-600 font-mono">$2.4M</span></div>
-              <p className="text-[10px] text-gray-400 mt-1">Above $2M minimum covenant threshold</p>
+              {cashItems.map((item, i) => (
+                <div key={i} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                  <span className="text-xs text-gray-500">{item.label}</span>
+                  <span className={`text-xs font-mono font-semibold ${item.color}`}>{item.amount}</span>
+                </div>
+              ))}
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="flex justify-between items-center"><span className="text-sm font-semibold text-gray-900">Projected 30-Day Balance</span><span className="text-lg font-bold text-green-600 font-mono">$2.4M</span></div>
+                <p className="text-[10px] text-gray-400 mt-1">Above $2M minimum covenant threshold</p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          <Card title="Agent Activity" badge="Live">
+            <AgentActivityFeed activities={financeActivities} maxItems={5} />
+          </Card>
+        </div>
       </div>
 
       <Card title="Key Financial Risks" badge="4">

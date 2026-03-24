@@ -20,9 +20,57 @@ const facilityName = (id) => {
 const handHygieneCompliance = 91;
 
 const decisionData = [
-  { id: 'inf-1', title: 'MRSA wound infection — Contact precautions review', description: 'Palliative patient with MRSA in chronic wound. IV Vancomycin course ending 3/22. Contact precautions in place. Infectious disease consulted.', priority: 'high', agent: 'Infection Control Agent', confidence: 0.93, recommendation: 'Continue contact precautions through treatment course. Schedule follow-up wound culture 48hrs post-antibiotic completion. Review roommate placement.', impact: 'Prevents MRSA transmission on unit. Active surveillance required.', governanceLevel: 2, evidence: [{ label: 'Culture result', detail: 'MRSA — resistant to Oxacillin, Amoxicillin, Cephalexin' }] },
-  { id: 'inf-2', title: 'Antibiotic stewardship — Levofloxacin for UTI review', description: 'Levofloxacin prescribed for E. coli UTI. Fluoroquinolone use in SNF requires stewardship review. Prior C. diff case linked to fluoroquinolone use at this facility.', priority: 'high', agent: 'Infection Control Agent', confidence: 0.90, recommendation: 'Consider de-escalation to Nitrofurantoin or TMP-SMX based on culture sensitivities. Fluoroquinolone stewardship per facility policy.', impact: 'Reduces C. difficile risk and antibiotic resistance pressure.', governanceLevel: 2 },
-  { id: 'inf-3', title: 'Suspected cluster — 2 UTIs at facility f7 this month', description: 'Two UTI cases at Mountain Crest within 10 days. Both catheter-associated. No shared organism, but pattern warrants investigation.', priority: 'medium', agent: 'Infection Control Agent', confidence: 0.82, recommendation: 'Initiate catheter care audit on unit. Review indwelling catheter necessity for both patients. No outbreak declared — monitor for additional cases.', impact: 'Early detection prevents potential UTI cluster escalation.', governanceLevel: 1 },
+  {
+    id: 'inf-1',
+    title: 'Betty Anderson — MRSA wound infection, contact precautions through 3/22',
+    description: 'Betty Anderson (Room 204, Heritage Pines) has MRSA cultured from her Stage 3 sacral wound on March 4. She is on day 10 of a 14-day IV Vancomycin course via PICC line, with completion date of March 22. Vancomycin trough level on March 12 was 16.2 mcg/mL (therapeutic range 15-20). Contact precautions are in place and compliance has been monitored — PCC infection control log shows 94% PPE compliance on her unit (2 lapses documented: 1 CNA entering without gown on 3/8, 1 dietary aide on 3/10). Her roommate was moved to Room 206 on admission. Infectious disease Dr. Patel was consulted and recommends follow-up wound culture 48 hours after antibiotic completion.',
+    priority: 'high',
+    agent: 'Infection Control Agent',
+    confidence: 0.93,
+    governanceLevel: 2,
+    recommendation: 'Continue contact precautions through antibiotic completion (3/22) and for 48 hours post-treatment. Schedule follow-up wound culture for March 24. Address 2 PPE compliance lapses with targeted re-education for the specific staff members involved. If follow-up culture is negative, step down to standard precautions. If still positive, extend isolation and consult ID for suppressive therapy options.',
+    impact: 'MRSA transmission to other residents would trigger outbreak investigation and potential F-880 citation ($7,500 per instance CMP). Heritage Pines has 3 other wound care patients on the same unit — containment is critical.',
+    evidence: [
+      { label: 'Wound culture (3/4)', detail: 'MRSA isolated — resistant to Oxacillin, Amoxicillin, Cephalexin; sensitive to Vancomycin, Linezolid, Daptomycin' },
+      { label: 'Vancomycin trough (3/12)', detail: '16.2 mcg/mL — therapeutic (target 15-20). Next trough due 3/19' },
+      { label: 'PPE compliance audit', detail: '94% compliance on Unit 2; 2 documented lapses (CNA 3/8, dietary aide 3/10)' },
+      { label: 'ID consult (Dr. Patel)', detail: 'Recommends 14-day course, follow-up culture 48hrs post-completion, consider suppressive therapy if recurrent' },
+    ],
+  },
+  {
+    id: 'inf-2',
+    title: 'Antibiotic stewardship alert — Levofloxacin for UTI, C. diff risk at Meadowbrook',
+    description: 'Dr. Martinez prescribed Levofloxacin 500mg daily for 7 days for Virginia Walsh (Room 305C, Meadowbrook) for E. coli UTI confirmed by urine culture on March 14. Per the enterprise antibiotic stewardship program, fluoroquinolone use in SNF residents requires pharmacy review before dispensing. This is flagged because Meadowbrook had a C. difficile case in January 2026 (resident Sarah Kim, Room 310) linked to a prior Levofloxacin course. The culture sensitivity report shows E. coli is also sensitive to Nitrofurantoin, TMP-SMX, and Cephalexin — all with lower C. diff risk profiles. Virginia Walsh is 82 years old with history of 2 prior UTIs treated with Cipro in 2025.',
+    priority: 'high',
+    agent: 'Infection Control Agent',
+    confidence: 0.90,
+    governanceLevel: 2,
+    recommendation: 'Contact Dr. Martinez to recommend de-escalation from Levofloxacin to Nitrofurantoin 100mg BID for 5 days (first-line per IDSA guidelines for uncomplicated UTI in elderly). If creatinine clearance <30 mL/min (contraindicates Nitrofurantoin), use TMP-SMX as alternative. Reference facility C. diff history and stewardship policy. Pharmacy to hold Levofloxacin pending physician response.',
+    impact: 'Fluoroquinolone use increases C. difficile risk 3-5x in elderly SNF residents. A C. diff case costs $12,000-$15,000 in treatment, isolation, and additional LOS. Meadowbrook already had 1 case this year — a second would trigger enhanced surveillance reporting to the state.',
+    evidence: [
+      { label: 'Urine culture (3/14)', detail: 'E. coli >100K CFU/mL; sensitive to Levofloxacin, Nitrofurantoin, TMP-SMX, Cephalexin' },
+      { label: 'C. diff history (Meadowbrook)', detail: 'Sarah Kim (Room 310) — C. diff Jan 2026, linked to Levofloxacin course' },
+      { label: 'IDSA guidelines', detail: 'Nitrofurantoin or TMP-SMX preferred first-line for uncomplicated UTI in elderly' },
+      { label: 'Patient history', detail: 'Virginia Walsh, 82yo, 2 prior UTIs treated with Cipro in 2025, CrCl 42 mL/min' },
+    ],
+  },
+  {
+    id: 'inf-3',
+    title: 'Suspected CAUTI cluster — 2 cases at Mountain Crest in 10 days',
+    description: 'Two catheter-associated urinary tract infections were identified at Mountain Crest within 10 days: Linda Park (Room 142, onset March 5, E. coli) and George Hoffman (Room 148, onset March 15, Klebsiella). Both patients have indwelling Foley catheters — Linda since January (post-stroke urinary retention) and George since February (BPH, post-TURP). While the organisms differ (suggesting independent events rather than cross-contamination), two CAUTIs in 10 days on the same unit warrants investigation per CDC/NHSN cluster threshold criteria. Mountain Crest has 6 residents with indwelling catheters on this unit — the catheter utilization rate of 12% exceeds the 8% enterprise target.',
+    priority: 'medium',
+    agent: 'Infection Control Agent',
+    confidence: 0.82,
+    governanceLevel: 1,
+    recommendation: 'Initiate catheter care audit on the unit this week — observe insertion site care, closed system maintenance, and hand hygiene for all 6 catheterized residents. Review catheter necessity: Linda Park (post-stroke, 60 days indwelling — trial of void appropriate?), George Hoffman (post-TURP, assess for catheter removal per urology). No outbreak declaration needed at this time — different organisms indicate independent events. Monitor for any additional CAUTI cases through March 31.',
+    impact: 'CAUTI rate above NHSN benchmark triggers CMS quality measure penalty. Each CAUTI adds $3,500-$5,000 in treatment cost and 3-5 additional LOS days. Reducing catheter utilization from 12% to 8% target would eliminate 2 unnecessary catheters on the unit.',
+    evidence: [
+      { label: 'CAUTI case 1', detail: 'Linda Park, Room 142, onset 3/5, E. coli, Foley since January (60 days)' },
+      { label: 'CAUTI case 2', detail: 'George Hoffman, Room 148, onset 3/15, Klebsiella, Foley since February (30 days)' },
+      { label: 'Unit catheter census', detail: '6 indwelling catheters on Unit A (12% utilization vs 8% enterprise target)' },
+      { label: 'NHSN benchmark', detail: 'Mountain Crest CAUTI SIR 1.4 (above expected) — 2 additional cases would trigger penalty threshold' },
+    ],
+  },
 ];
 
 const stats = [
