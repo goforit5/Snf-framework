@@ -1,65 +1,10 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Filter, Grid3X3, Building2 } from 'lucide-react';
-import { facilities as baseFacilities } from '../data/mockData';
+import { allFacilities } from '../data/entities/facilities';
 
 const REGIONS = ['All Regions', 'Northeast', 'Southeast', 'Midwest', 'West', 'Southwest', 'Pacific Northwest', 'Mid-Atlantic'];
 const STATUSES = ['All Statuses', 'Healthy', 'Warning', 'Critical'];
-
-const FACILITY_NAMES = [
-  'Sunrise Senior Living', 'Meadowbrook Care Center', 'Pacific Gardens SNF', 'Heritage Oaks Nursing',
-  'Bayview Rehabilitation', 'Desert Springs Care', 'Mountain View SNF', 'Lakeshore Health',
-  'Pinecrest Nursing', 'Valley Vista Care', 'Riverside Rehab', 'Golden Acres SNF',
-  'Cedar Ridge Care', 'Willow Creek Nursing', 'Oakwood Health', 'Harbor View SNF',
-  'Summit Care Center', 'Meadow Lane Nursing', 'Forest Glen SNF', 'Coastal Care',
-  'Prairie Wind Nursing', 'Silver Lake Care', 'Canyon Ridge SNF', 'Maple Grove Nursing',
-  'Aspen Valley Care', 'Blue Ridge SNF', 'Crystal Springs Care', 'Eagle Point Nursing',
-  'Foxwood Health', 'Glen Oaks SNF', 'Hilltop Care Center', 'Ivory Gardens Nursing',
-  'Jade Valley SNF', 'Keystone Care', 'Liberty Hill Nursing', 'Magnolia Park SNF',
-  'Northwind Care', 'Orchard View Nursing', 'Pinedale SNF', 'Quail Ridge Care',
-];
-
-const CITIES = [
-  'Hartford, CT', 'Atlanta, GA', 'San Diego, CA', 'Columbus, OH', 'Boston, MA',
-  'Las Vegas, NV', 'Denver, CO', 'Chicago, IL', 'Phoenix, AZ', 'Portland, OR',
-  'Nashville, TN', 'Austin, TX', 'Seattle, WA', 'Tampa, FL', 'Charlotte, NC',
-  'Minneapolis, MN', 'Dallas, TX', 'Sacramento, CA', 'Boise, ID', 'Raleigh, NC',
-];
-
-function seededRandom(seed) {
-  let x = Math.sin(seed) * 10000;
-  return x - Math.floor(x);
-}
-
-function generateFacilities() {
-  const all = baseFacilities.map(f => ({ ...f }));
-  const regions = REGIONS.slice(1);
-
-  for (let i = all.length; i < 330; i++) {
-    const seed = i * 7 + 13;
-    const healthScore = Math.round(55 + seededRandom(seed) * 40);
-    const beds = Math.round(60 + seededRandom(seed + 1) * 120);
-    const occupancy = Math.round(70 + seededRandom(seed + 2) * 25);
-    const census = Math.round(beds * occupancy / 100);
-    const alertCount = healthScore < 70 ? Math.round(3 + seededRandom(seed + 3) * 10) : healthScore < 80 ? Math.round(1 + seededRandom(seed + 3) * 5) : Math.round(seededRandom(seed + 3) * 3);
-
-    all.push({
-      id: `f${i + 1}`,
-      name: FACILITY_NAMES[i % FACILITY_NAMES.length] + (i >= FACILITY_NAMES.length ? ` #${Math.floor(i / FACILITY_NAMES.length) + 1}` : ''),
-      region: regions[Math.floor(seededRandom(seed + 4) * regions.length)],
-      city: CITIES[Math.floor(seededRandom(seed + 5) * CITIES.length)],
-      beds,
-      census,
-      occupancy,
-      healthScore,
-      laborPct: Math.round((42 + seededRandom(seed + 6) * 16) * 10) / 10,
-      apAging: Math.round(50000 + seededRandom(seed + 7) * 500000),
-      surveyRisk: healthScore < 70 ? 'High' : healthScore < 80 ? 'Medium' : 'Low',
-      openIncidents: alertCount,
-    });
-  }
-  return all;
-}
 
 function getStatus(healthScore) {
   if (healthScore >= 80) return 'healthy';
@@ -92,8 +37,6 @@ export default function FacilityHeatmap() {
   const [hoveredFacility, setHoveredFacility] = useState(null);
   const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
 
-  const allFacilities = useMemo(() => generateFacilities(), []);
-
   const filtered = useMemo(() => {
     return allFacilities.filter(f => {
       if (regionFilter !== 'All Regions' && f.region !== regionFilter) return false;
@@ -105,7 +48,7 @@ export default function FacilityHeatmap() {
       }
       return true;
     });
-  }, [allFacilities, regionFilter, statusFilter]);
+  }, [regionFilter, statusFilter]);
 
   const counts = useMemo(() => {
     const healthy = filtered.filter(f => getStatus(f.healthScore) === 'healthy').length;
