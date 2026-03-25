@@ -409,12 +409,19 @@ export default function Layout({ children }) {
     return initial;
   });
 
-  // Auto-expand current section — derived from user state + current route
+  // Auto-expand current section on navigation — but respect manual toggles
+  const prevSectionRef = useRef(currentSectionKey);
   const expandedSections = useMemo(() => {
-    if (userExpandedSections[currentSectionKey]) return userExpandedSections;
-    const merged = { ...userExpandedSections, [currentSectionKey]: true };
-    saveCollapsedState(merged);
-    return merged;
+    // Only auto-expand when navigating to a NEW section, not on re-render
+    if (currentSectionKey !== prevSectionRef.current) {
+      prevSectionRef.current = currentSectionKey;
+      if (!userExpandedSections[currentSectionKey]) {
+        const merged = { ...userExpandedSections, [currentSectionKey]: true };
+        saveCollapsedState(merged);
+        return merged;
+      }
+    }
+    return userExpandedSections;
   }, [userExpandedSections, currentSectionKey]);
 
   const toggleSection = (key) => {
@@ -518,23 +525,8 @@ export default function Layout({ children }) {
         })}
       </nav>
 
-      {/* Dark mode toggle + User */}
+      {/* User */}
       <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100 dark:border-gray-800`}>
-        {/* Dark mode toggle */}
-        <div className={`flex items-center ${full ? 'px-2 mb-3' : 'justify-center mb-2'}`}>
-          <button
-            onClick={toggleDarkMode}
-            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-            className={`flex items-center gap-2 rounded-xl transition-all duration-200 active:scale-[0.97] ${
-              full
-                ? 'w-full px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-                : 'w-10 h-10 justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-            }`}
-          >
-            {isDark ? <Sun size={16} /> : <Moon size={16} />}
-            {full && (isDark ? 'Light Mode' : 'Dark Mode')}
-          </button>
-        </div>
         <div className={`flex items-center ${full ? 'gap-3 px-2' : 'justify-center'}`}>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm flex-shrink-0">
             {user.avatarInitials}
@@ -632,6 +624,13 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-1 md:gap-2">
             <div className="hidden lg:block"><ScopeSelectorBar /></div>
             <div className="hidden md:block"><AgentPulse /></div>
+            <button
+              onClick={toggleDarkMode}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
             <NotificationBell onClick={() => setNotificationsOpen(true)} />
             <RoleSwitcher />
           </div>
