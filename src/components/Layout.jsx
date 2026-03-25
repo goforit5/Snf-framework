@@ -10,9 +10,10 @@ import {
   Award, ShieldAlert, HeartPulse, MessageSquare, Target,
   Scale, FileSignature, Gavel, FileCheck, Home,
   Building, Globe, Landmark, LineChart, Flag,
-  Menu, X, ChevronDown, ChevronRight, Bot, Search, Bell, Play
+  Menu, X, ChevronDown, ChevronLeft, ChevronRight, Bot, Search, Bell, Play, Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
+import { useDarkModeContext } from '../hooks/useDarkMode';
 import { useScopeContext } from '../hooks/useScopeContext';
 import { useAgentContext } from '../hooks/useAgentContext';
 import { useNotificationContext } from '../hooks/useNotificationContext';
@@ -252,7 +253,7 @@ function RoleSwitcher() {
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`Switch role, current: ${user.name}`}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 transition-colors"
+        className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm" aria-hidden="true">
           {user.avatarInitials}
@@ -261,11 +262,11 @@ function RoleSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1.5 w-64 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden" role="menu" aria-label="Role switcher">
+        <div className="absolute top-full right-0 mt-1.5 w-64 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 overflow-hidden" role="menu" aria-label="Role switcher">
           {/* Current user header */}
-          <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-            <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-            <p className="text-[11px] text-gray-500">{user.title}</p>
+          <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50">
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{user.name}</p>
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">{user.title}</p>
           </div>
           <div className="py-1">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 pt-2 pb-1" id="role-switcher-label">Switch Role</p>
@@ -276,7 +277,7 @@ function RoleSwitcher() {
                 onClick={() => { switchRole(u.role); setIsOpen(false); }}
                 aria-current={user.id === u.id ? 'true' : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                  user.id === u.id ? 'bg-blue-50' : 'hover:bg-gray-50'
+                  user.id === u.id ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
@@ -287,8 +288,8 @@ function RoleSwitcher() {
                   {u.avatarInitials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm truncate ${user.id === u.id ? 'font-semibold text-blue-700' : 'text-gray-700'}`}>{u.name}</p>
-                  <p className="text-[10px] text-gray-400 truncate">{u.title}</p>
+                  <p className={`text-sm truncate ${user.id === u.id ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{u.name}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{u.title}</p>
                 </div>
               </button>
             ))}
@@ -306,10 +307,10 @@ function NotificationBell({ onClick }) {
   return (
     <button
       onClick={onClick}
-      className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
+      className="relative p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
     >
-      <Bell size={18} className="text-gray-500" aria-hidden="true" />
+      <Bell size={18} className="text-gray-500 dark:text-gray-400" aria-hidden="true" />
       {unreadCount > 0 && (
         <span
           className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
@@ -329,9 +330,9 @@ function AgentPulse() {
   const { agentCount } = useAgentContext();
 
   return (
-    <div className="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full border border-green-100" role="status" aria-live="polite">
+    <div className="flex items-center gap-2 bg-green-50 dark:bg-green-900/30 px-3 py-1.5 rounded-full border border-green-100 dark:border-green-800" role="status" aria-live="polite">
       <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" aria-hidden="true" />
-      <span className="text-xs text-green-700 font-medium">{agentCount.active} agents active</span>
+      <span className="text-xs text-green-700 dark:text-green-400 font-medium">{agentCount.active} agents active</span>
     </div>
   );
 }
@@ -379,6 +380,7 @@ export default function Layout({ children }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const location = useLocation();
   const { user, canViewSection } = useAuth();
+  const { isDark, toggle: toggleDarkMode } = useDarkModeContext();
 
   useGlobalSearchShortcut(setSearchOpen);
 
@@ -433,15 +435,15 @@ export default function Layout({ children }) {
   const sidebarContent = (full) => (
     <div className={`${full ? 'w-64' : 'w-16'} h-full flex flex-col transition-all duration-200`}>
       {/* Logo */}
-      <div className={`${full ? 'p-5' : 'p-3'} border-b border-gray-100`}>
+      <div className={`${full ? 'p-5' : 'p-3'} border-b border-gray-100 dark:border-gray-800`}>
         <div className={`flex items-center ${full ? 'gap-3' : 'justify-center'}`}>
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
             <Bot size={18} className="text-white" />
           </div>
           {full && (
             <div>
-              <h1 className="text-sm font-bold text-gray-900 tracking-tight">Ensign</h1>
-              <p className="text-[10px] text-gray-400 leading-tight font-medium">Agentic Framework</p>
+              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">Ensign</h1>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight font-medium">Agentic Framework</p>
             </div>
           )}
         </div>
@@ -463,8 +465,8 @@ export default function Layout({ children }) {
                   aria-label={`${section.title} section`}
                   className={`w-full flex items-center justify-between px-2 py-2 min-h-[44px] text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
                     isCurrentSection
-                      ? 'text-blue-600 bg-blue-50/50'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
+                      : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
                   <div className="flex items-center gap-1.5">
@@ -480,8 +482,8 @@ export default function Layout({ children }) {
                     title={section.title}
                     className={`w-11 h-11 flex items-center justify-center rounded-xl transition-colors ${
                       isCurrentSection
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                        : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
                     <SectionIcon size={18} />
@@ -500,11 +502,11 @@ export default function Layout({ children }) {
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex items-center gap-2.5 px-3 py-2 min-h-[44px] rounded-xl text-sm transition-all ${
                           isActive
-                            ? 'bg-blue-50 text-blue-700 font-semibold shadow-sm'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold shadow-sm'
+                            : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                         }`}
                       >
-                        <Icon size={16} className={isActive ? 'text-blue-600' : 'text-gray-400'} aria-hidden="true" />
+                        <Icon size={16} className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'} aria-hidden="true" />
                         {item.label}
                       </Link>
                     );
@@ -516,16 +518,31 @@ export default function Layout({ children }) {
         })}
       </nav>
 
-      {/* User */}
-      <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100`}>
+      {/* Dark mode toggle + User */}
+      <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100 dark:border-gray-800`}>
+        {/* Dark mode toggle */}
+        <div className={`flex items-center ${full ? 'px-2 mb-3' : 'justify-center mb-2'}`}>
+          <button
+            onClick={toggleDarkMode}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className={`flex items-center gap-2 rounded-xl transition-all duration-200 active:scale-[0.97] ${
+              full
+                ? 'w-full px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                : 'w-10 h-10 justify-center text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+            }`}
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            {full && (isDark ? 'Light Mode' : 'Dark Mode')}
+          </button>
+        </div>
         <div className={`flex items-center ${full ? 'gap-3 px-2' : 'justify-center'}`}>
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm flex-shrink-0">
             {user.avatarInitials}
           </div>
           {full && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium truncate">{user.title}</p>
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{user.name}</p>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium truncate">{user.title}</p>
             </div>
           )}
         </div>
@@ -534,7 +551,7 @@ export default function Layout({ children }) {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f5f5f7]">
+    <div className="flex h-screen overflow-hidden bg-[#f5f5f7] dark:bg-gray-950">
       {/* Skip navigation link */}
       <a href="#main-content" className="skip-nav">
         Skip to main content
@@ -544,11 +561,11 @@ export default function Layout({ children }) {
       {isMobile && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <aside className="relative w-64 bg-white border-r border-gray-200 shadow-xl">
+          <aside className="relative w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-xl">
             <button
               onClick={() => setMobileMenuOpen(false)}
               aria-label="Close menu"
-              className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors z-10"
+              className="absolute top-4 right-4 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors z-10"
             >
               <X size={20} className="text-gray-500" aria-hidden="true" />
             </button>
@@ -559,7 +576,7 @@ export default function Layout({ children }) {
 
       {/* Desktop / tablet sidebar */}
       {!isMobile && (
-        <aside className={`${isIconsOnly ? 'w-16' : 'w-64'} transition-all duration-200 bg-white border-r border-gray-200 flex-shrink-0 overflow-hidden`} aria-label="Primary navigation">
+        <aside className={`${isIconsOnly ? 'w-16' : 'w-64'} transition-all duration-200 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex-shrink-0 overflow-hidden`} aria-label="Primary navigation">
           {sidebarContent(!isIconsOnly)}
         </aside>
       )}
@@ -567,14 +584,14 @@ export default function Layout({ children }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 border-b border-gray-200 bg-white/80 backdrop-blur-xl flex items-center justify-between px-4 flex-shrink-0">
+        <header className="h-14 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl flex items-center justify-between px-4 flex-shrink-0">
           {/* Left: hamburger + breadcrumb */}
           <div className="flex items-center gap-3">
             {isMobile ? (
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open menu"
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <Menu size={20} aria-hidden="true" />
               </button>
@@ -583,15 +600,15 @@ export default function Layout({ children }) {
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 aria-label={sidebarOpen ? 'Close sidebar' : 'Open sidebar'}
                 aria-expanded={sidebarOpen}
-                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
+                className="min-h-[44px] min-w-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 {sidebarOpen ? <X size={18} aria-hidden="true" /> : <Menu size={18} aria-hidden="true" />}
               </button>
             )}
             <div className="hidden sm:flex items-center gap-1.5 text-sm">
-              <span className="text-gray-400 font-medium">{breadcrumb.section}</span>
-              <ChevronRight size={12} className="text-gray-300" />
-              <span className="text-gray-700 font-semibold">{breadcrumb.page}</span>
+              <span className="text-gray-400 dark:text-gray-500 font-medium">{breadcrumb.section}</span>
+              <ChevronRight size={12} className="text-gray-300 dark:text-gray-600" />
+              <span className="text-gray-700 dark:text-gray-200 font-semibold">{breadcrumb.page}</span>
             </div>
           </div>
 
@@ -600,12 +617,12 @@ export default function Layout({ children }) {
             <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search the platform (Command+K)"
-              className="w-full max-w-md flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 min-h-[44px] text-sm text-gray-400 hover:bg-gray-100 hover:border-gray-300 transition-all cursor-pointer"
+              className="w-full max-w-md flex items-center gap-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 min-h-[44px] text-sm text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer"
             >
               <Search size={14} className="text-gray-400 flex-shrink-0" aria-hidden="true" />
               <span className="flex-1 text-left hidden sm:inline">Search anything...</span>
               <span className="flex-1 text-left sm:hidden">Search...</span>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-gray-200 text-[10px] font-semibold text-gray-500">
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-gray-200 dark:bg-gray-700 text-[10px] font-semibold text-gray-500 dark:text-gray-400">
                 &#8984;K
               </kbd>
             </button>

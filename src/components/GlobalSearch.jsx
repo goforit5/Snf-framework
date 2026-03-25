@@ -296,11 +296,11 @@ export default function GlobalSearch({ isOpen, onClose }) {
 
       {/* Search panel */}
       <div
-        className="relative w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+        className="relative w-full max-w-2xl mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Search input */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-800">
           <Search size={18} className="text-gray-400 flex-shrink-0" />
           <input
             ref={inputRef}
@@ -309,7 +309,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search facilities, residents, staff, agents, pages..."
-            className="flex-1 text-base text-gray-900 placeholder-gray-400 outline-none bg-transparent"
+            className="flex-1 text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 outline-none bg-transparent"
           />
           {query && (
             <button
@@ -323,7 +323,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
           <button
             onClick={onClose}
             aria-label="Close search"
-            className="text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded-md"
+            className="text-[11px] font-medium text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md"
           >
             ESC
           </button>
@@ -396,16 +396,16 @@ export default function GlobalSearch({ isOpen, onClose }) {
                         onClick={() => handleSelect(result)}
                         onMouseEnter={() => setSelectedIndex(currentIdx)}
                         className={`w-full flex items-center gap-3 px-5 py-2.5 transition-colors text-left ${
-                          isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          isSelected ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'bg-blue-100' : 'bg-gray-100'
+                          isSelected ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-gray-100 dark:bg-gray-800'
                         }`}>
                           <Icon size={16} className={isSelected ? 'text-blue-600' : 'text-gray-500'} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-blue-700' : 'text-gray-900'}`}>
+                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'}`}>
                             {result.name}
                           </p>
                           <p className="text-[11px] text-gray-400 truncate">{result.subtitle}</p>
@@ -424,7 +424,7 @@ export default function GlobalSearch({ isOpen, onClose }) {
 
         {/* Footer hint */}
         {flatResults.length > 0 && (
-          <div className="px-5 py-2.5 border-t border-gray-100 bg-gray-50/50">
+          <div className="px-5 py-2.5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
             <p className="text-[11px] text-gray-400 text-center">
               <span className="inline-flex items-center gap-1"><kbd className="px-1.5 py-0.5 rounded bg-gray-200 text-gray-500 font-mono text-[10px]">&uarr;&darr;</kbd> to navigate</span>
               <span className="mx-2">&middot;</span>

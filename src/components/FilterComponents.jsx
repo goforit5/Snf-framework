@@ -24,7 +24,7 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-[0.97] ${
               isActive
                 ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
             {filter.label}
@@ -32,7 +32,7 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums ${
                 isActive
                   ? 'bg-blue-500 text-white'
-                  : 'bg-gray-200 text-gray-500'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
               }`}>
                 {filter.count}
               </span>
@@ -55,7 +55,7 @@ export function SearchInput({ placeholder = 'Search...', value = '', onChange, o
         aria-label={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+        className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
       />
       {value && (
         <button
@@ -215,17 +215,17 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={`Scope: ${currentScope?.label || 'Enterprise'}`}
-        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-all duration-200 active:scale-[0.98]"
+        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 active:scale-[0.98]"
       >
         {scopeIcon()}
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
           {currentScope?.label || 'Enterprise'}
         </span>
         <ChevronDown size={13} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+        <div className="absolute top-full left-0 mt-1.5 w-72 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
           <div className="p-2">
             <div className="relative">
               <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true" />

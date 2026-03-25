@@ -21,7 +21,7 @@ export function AIAnalysisCard({ title = 'AI Analysis', children, icon: Icon = B
         </div>
         <p className={`text-[10px] font-semibold ${v.header} uppercase tracking-wider`}>{title}</p>
       </div>
-      <div className="text-sm text-gray-700 leading-relaxed">{children}</div>
+      <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -137,7 +137,7 @@ export function DataTable({
             aria-label="Search table"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl border border-gray-200 text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+            className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
           />
           {searchQuery && (
             <button
@@ -151,16 +151,16 @@ export function DataTable({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-2xl border border-gray-100">
+      <div className="overflow-x-auto rounded-2xl border border-gray-100 dark:border-gray-800">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-gray-50/80">
+            <tr className="bg-gray-50/80 dark:bg-gray-800/80">
               {columns.map((col) => (
                 <th
                   key={col.key}
                   scope="col"
-                  className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap ${
-                    sortable && col.sortable !== false ? 'cursor-pointer select-none hover:text-gray-700 transition-colors' : ''
+                  className={`px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap ${
+                    sortable && col.sortable !== false ? 'cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-200 transition-colors' : ''
                   }`}
                   onClick={() => col.sortable !== false && handleSort(col.key)}
                   aria-sort={sortKey === col.key ? (sortDir === 'asc' ? 'ascending' : 'descending') : undefined}
@@ -177,7 +177,7 @@ export function DataTable({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
             {pagedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-sm text-gray-400">
@@ -188,11 +188,11 @@ export function DataTable({
               pagedData.map((row, rowIndex) => (
                 <tr
                   key={row.id || rowIndex}
-                  className={`${onRowClick ? 'cursor-pointer hover:bg-gray-50/80 active:bg-gray-100/50' : ''} transition-colors`}
+                  className={`${onRowClick ? 'cursor-pointer hover:bg-gray-50/80 dark:hover:bg-gray-800/50 active:bg-gray-100/50 dark:active:bg-gray-700/50' : ''} transition-colors`}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-gray-700 whitespace-nowrap">
+                    <td key={col.key} className="px-4 py-3 text-gray-700 dark:text-gray-300 whitespace-nowrap">
                       {col.render ? col.render(row[col.key], row) : row[col.key]}
                     </td>
                   ))}
@@ -236,16 +236,16 @@ export function DataTable({
 /* ─── Detail Row ─── */
 export function DetailRow({ label, value, badge, trend }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
-      <span className="text-xs text-gray-500">{label}</span>
+    <div className="flex items-center justify-between py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
       <div className="flex items-center gap-2">
         {trend && <TrendIndicator {...trend} />}
         {badge && (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
             {badge}
           </span>
         )}
-        <span className="text-sm font-medium text-gray-900">{value}</span>
+        <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{value}</span>
       </div>
     </div>
   );

@@ -27,12 +27,12 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
   return (
     <div className="space-y-3">
       {agentReasoning && (
-        <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100">
+        <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-100 dark:border-blue-800">
           <div className="flex items-start gap-2">
-            <Bot size={13} className="text-blue-600 mt-0.5 flex-shrink-0" />
+            <Bot size={13} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[10px] font-semibold text-blue-600 uppercase tracking-wider mb-1">Agent Reasoning</p>
-              <p className="text-xs text-gray-700 leading-relaxed">{agentReasoning}</p>
+              <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Agent Reasoning</p>
+              <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{agentReasoning}</p>
             </div>
           </div>
         </div>
@@ -45,8 +45,8 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
               <div key={i} className="flex items-start gap-2 text-xs">
                 <FileText size={11} className="text-gray-400 mt-0.5 flex-shrink-0" />
                 <div>
-                  <span className="font-medium text-gray-700">{item.label}</span>
-                  {item.detail && <span className="text-gray-500"> — {item.detail}</span>}
+                  <span className="font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
+                  {item.detail && <span className="text-gray-500 dark:text-gray-400"> — {item.detail}</span>}
                 </div>
               </div>
             ))}
@@ -58,7 +58,7 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
           <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Policies Checked</p>
           <div className="flex flex-wrap gap-1">
             {policies.map((policy, i) => (
-              <span key={i} className="px-1.5 py-0.5 rounded bg-gray-100 text-[10px] text-gray-600 font-medium">
+              <span key={i} className="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-[10px] text-gray-600 dark:text-gray-400 font-medium">
                 <Shield size={9} className="inline mr-0.5 -mt-0.5" />
                 {policy}
               </span>
@@ -172,23 +172,23 @@ function DecisionDetailModal({
         {description && (
           <div>
             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1.5">Situation</p>
-            <p className="text-sm text-gray-700 leading-relaxed">{description}</p>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{description}</p>
           </div>
         )}
 
         {/* Agent Analysis — only shows if reasoning differs from recommendation */}
         {analysisText && (
-          <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100">
+          <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <Bot size={16} className="text-blue-600" />
+              <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
+                <Bot size={16} className="text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <p className="text-xs font-semibold text-blue-700">{agent || 'AI Agent'}</p>
-                  <span className="text-[10px] text-blue-500 font-medium">Analysis</span>
+                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{agent || 'AI Agent'}</p>
+                  <span className="text-[10px] text-blue-500 dark:text-blue-400 font-medium">Analysis</span>
                 </div>
-                <p className="text-xs text-gray-700 leading-relaxed">{analysisText}</p>
+                <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{analysisText}</p>
               </div>
             </div>
           </div>
@@ -196,20 +196,20 @@ function DecisionDetailModal({
 
         {/* Recommendation */}
         {recommendation && (
-          <div className="bg-green-50/50 rounded-xl p-4 border border-green-100">
+          <div className="bg-green-50/50 dark:bg-green-900/20 rounded-xl p-4 border border-green-100 dark:border-green-800">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={16} className="text-green-600" />
+              <div className="w-8 h-8 rounded-xl bg-green-100 dark:bg-green-900/50 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 size={16} className="text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-1.5">Recommendation</p>
-                <p className="text-sm text-gray-700 leading-relaxed">{recommendation}</p>
+                <p className="text-[10px] font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-1.5">Recommendation</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{recommendation}</p>
               </div>
             </div>
             {impact && (
-              <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-100 ml-11">
+              <div className="flex items-start gap-2 mt-3 pt-3 border-t border-green-100 dark:border-green-800 ml-11">
                 <AlertTriangle size={12} className="text-amber-500 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-gray-600"><span className="font-semibold text-gray-700">If unresolved:</span> {impact}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400"><span className="font-semibold text-gray-700 dark:text-gray-300">If unresolved:</span> {impact}</p>
               </div>
             )}
           </div>
@@ -225,17 +225,17 @@ function DecisionDetailModal({
                 return (
                   <button
                     key={i}
-                    className="w-full flex items-center gap-3 bg-gray-50 rounded-xl p-3 border border-gray-100 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all duration-200 text-left group"
+                    className="w-full flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 border border-gray-100 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-600 hover:shadow-sm transition-all duration-200 text-left group"
                     onClick={() => {
                       /* In production: deep-link to source record. In demo: visual feedback */
                     }}
                   >
-                    <div className="w-6 h-6 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0">
+                    <div className="w-6 h-6 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 flex items-center justify-center flex-shrink-0">
                       <span className="text-[10px] font-bold text-gray-400 tabular-nums">{i + 1}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-700 truncate">{item.label}</p>
-                      {item.detail && <p className="text-[11px] text-gray-500 mt-0.5 truncate">{item.detail}</p>}
+                      <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">{item.label}</p>
+                      {item.detail && <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">{item.detail}</p>}
                     </div>
                     {sys ? (
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${sys.bg} ${sys.color} ${sys.border} border flex-shrink-0 opacity-80 group-hover:opacity-100 transition-opacity`}>
@@ -318,7 +318,7 @@ function DecisionDetailModal({
       </div>
 
       {/* Sticky action bar */}
-      <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-white/95 backdrop-blur-sm border-t border-gray-100 flex items-center gap-2 rounded-b-2xl" role="group" aria-label="Decision actions">
+      <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 rounded-b-2xl" role="group" aria-label="Decision actions">
         {onApprove && (
           <button
             onClick={() => handleAction(onApprove)}
@@ -331,7 +331,7 @@ function DecisionDetailModal({
         {onOverride && (
           <button
             onClick={() => handleAction(onOverride)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <XCircle size={14} />
             Override
@@ -340,7 +340,7 @@ function DecisionDetailModal({
         {onEscalate && (
           <button
             onClick={() => handleAction(onEscalate)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <ArrowUp size={14} />
             Escalate
@@ -349,7 +349,7 @@ function DecisionDetailModal({
         {onDefer && (
           <button
             onClick={() => handleAction(onDefer)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <Clock size={14} />
             Defer
@@ -465,12 +465,12 @@ export function DecisionCard({
   return (
     <div
       ref={cardRef}
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 border-l-4 ${borderColor} transition-all duration-200 hover:shadow-md ${flashClass} ${dismissing ? 'card-dismiss' : ''}`}
+      className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 border-l-4 ${borderColor} transition-all duration-200 hover:shadow-md ${flashClass} ${dismissing ? 'card-dismiss' : ''}`}
     >
       {/* Collapsed view — always visible */}
       <div className="px-4 py-3 flex items-center gap-2 lg:gap-3">
         {number != null && (
-          <span className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-500 flex-shrink-0 tabular-nums">
+          <span className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-500 dark:text-gray-400 flex-shrink-0 tabular-nums">
             {number}
           </span>
         )}
@@ -482,7 +482,7 @@ export function DecisionCard({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle?.(); } }}
         >
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="text-sm font-semibold text-gray-900 truncate max-w-[180px] sm:max-w-[240px] lg:max-w-none">{title}</h4>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate max-w-[180px] sm:max-w-[240px] lg:max-w-none">{title}</h4>
             {facility && <span className="text-[10px] text-gray-400 font-medium hidden sm:inline">{facility}</span>}
           </div>
         </div>
@@ -509,7 +509,7 @@ export function DecisionCard({
             {onOverride && (
               <button
                 onClick={handleDismissAction(onOverride)}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] hidden lg:block"
+                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] hidden lg:block"
                 aria-label={`Override: ${title}`}
               >
                 Override
@@ -518,7 +518,7 @@ export function DecisionCard({
             {onEscalate && (
               <button
                 onClick={(e) => { e.stopPropagation(); onEscalate(); }}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97]"
+                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97]"
                 aria-label={`Escalate: ${title}`}
               >
                 <ArrowUp size={12} aria-hidden="true" />
@@ -529,7 +529,7 @@ export function DecisionCard({
             onClick={onToggle}
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for: ${title}`}
-            className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             {isExpanded ? <ChevronDown size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" /> : <ChevronRight size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" />}
           </button>
@@ -538,18 +538,18 @@ export function DecisionCard({
 
       {/* Expanded view — animated, scrollable for dense briefings */}
       {isExpanded && (
-        <div className="px-4 pb-4 border-t border-gray-100 card-expand max-h-[420px] overflow-y-auto">
+        <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-800 card-expand max-h-[420px] overflow-y-auto">
           <div className="pt-3 space-y-3">
             {description && (
-              <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{description}</p>
             )}
             {recommendation && (
-              <div className="bg-green-50/50 rounded-xl p-3 border border-green-100">
+              <div className="bg-green-50/50 dark:bg-green-900/20 rounded-xl p-3 border border-green-100 dark:border-green-800">
                 <div className="flex items-start gap-2">
-                  <Bot size={13} className="text-green-600 mt-0.5 flex-shrink-0" />
+                  <Bot size={13} className="text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider mb-1">Recommendation</p>
-                    <p className="text-xs text-gray-700">{recommendation}</p>
+                    <p className="text-[10px] font-semibold text-green-600 dark:text-green-400 uppercase tracking-wider mb-1">Recommendation</p>
+                    <p className="text-xs text-gray-700 dark:text-gray-300">{recommendation}</p>
                   </div>
                 </div>
               </div>
@@ -576,13 +576,13 @@ export function DecisionCard({
             {/* View Full Detail button — opens Level 3 modal */}
             <button
               onClick={openDetailModal}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium text-gray-500 hover:text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all duration-200 active:scale-[0.97]"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-all duration-200 active:scale-[0.97]"
             >
               <Maximize2 size={11} />
               View Full Detail
             </button>
             {/* Action buttons repeated in expanded view for accessibility */}
-            <div className="flex items-center gap-2 pt-2 border-t border-gray-100" role="group" aria-label="Decision actions">
+            <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800" role="group" aria-label="Decision actions">
               {onApprove && (
                 <button
                   onClick={handleApprove}
@@ -597,7 +597,7 @@ export function DecisionCard({
                 <button
                   onClick={handleDismissAction(onOverride)}
                   aria-label={`Override: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <XCircle size={13} aria-hidden="true" />
                   Override
@@ -607,7 +607,7 @@ export function DecisionCard({
                 <button
                   onClick={onEscalate}
                   aria-label={`Escalate: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <ArrowUp size={13} aria-hidden="true" />
                   Escalate
@@ -617,7 +617,7 @@ export function DecisionCard({
                 <button
                   onClick={onDefer}
                   aria-label={`Defer: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <Clock size={13} aria-hidden="true" />
                   Defer
@@ -645,10 +645,10 @@ export function DecisionQueue({
 
   if (decisions.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-8 text-center">
         <CheckCircle2 size={32} className="text-green-500 mx-auto mb-3" />
-        <h3 className="text-sm font-semibold text-gray-900 mb-1">All clear</h3>
-        <p className="text-xs text-gray-500">Agents handled everything. No decisions needed.</p>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">All clear</h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400">Agents handled everything. No decisions needed.</p>
       </div>
     );
   }
@@ -656,7 +656,7 @@ export function DecisionQueue({
   return (
     <div>
       <div className="flex items-center gap-2.5 mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
         {badge != null && (
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100 tabular-nums">
             {badge}

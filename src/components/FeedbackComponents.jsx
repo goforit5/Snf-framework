@@ -111,10 +111,10 @@ export function SlideOutPanel({ isOpen, onClose, title, width = 'md', children }
       />
       <div
         ref={panelRef}
-        className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white shadow-2xl flex flex-col slide-in-right`}
+        className={`relative w-full ${widthClasses[width] || widthClasses.md} bg-white dark:bg-gray-900 shadow-2xl flex flex-col slide-in-right`}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
-          <h2 id="slide-panel-title" className="text-lg font-semibold text-gray-900">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+          <h2 id="slide-panel-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close panel"
@@ -180,7 +180,7 @@ function ToastItem({ toast, onDismiss }) {
 
   return (
     <div
-      className={`pointer-events-auto bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] ${toast.exiting ? 'toast-exit' : 'toast-enter'}`}
+      className={`pointer-events-auto bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] ${toast.exiting ? 'toast-exit' : 'toast-enter'}`}
     >
       <Icon size={16} className={color} />
       <p className="text-sm text-gray-700 flex-1">{toast.message}</p>
@@ -215,7 +215,7 @@ export function Toast({ message, type = 'info', action, duration = 5000, onDismi
   }, [duration, onDismiss]);
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] toast-enter">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 px-4 py-3 flex items-center gap-3 min-w-[300px] max-w-[420px] toast-enter">
       <Icon size={16} className={color} />
       <p className="text-sm text-gray-700 flex-1">{message}</p>
       {action && (
@@ -267,20 +267,20 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <div
         ref={confirmRef}
-        className="relative bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden modal-enter"
+        className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden modal-enter"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <div className={`w-10 h-10 rounded-xl ${config.iconBg} flex items-center justify-center mb-4`} aria-hidden="true">
             <VIcon size={20} className={config.iconColor} />
           </div>
-          <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-          <p className="text-sm text-gray-600 leading-relaxed">{message}</p>
+          <h3 id="confirm-dialog-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{message}</p>
         </div>
-        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
+        <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all active:scale-[0.97]"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all active:scale-[0.97]"
           >
             {cancelLabel}
           </button>
@@ -306,12 +306,12 @@ export function EmptyState({ icon: Icon, title = 'All clear', description = 'Age
       <div className="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center mb-4">
         <DisplayIcon size={28} className="text-green-500" />
       </div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-1">{title}</h3>
-      <p className="text-xs text-gray-500 max-w-xs">{description}</p>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-1">{title}</h3>
+      <p className="text-xs text-gray-500 dark:text-gray-400 max-w-xs">{description}</p>
       {resolvedAction && (
         <button
           onClick={resolvedAction.onClick}
-          className="mt-4 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all active:scale-[0.97]"
+          className="mt-4 px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all active:scale-[0.97]"
         >
           {resolvedAction.label}
         </button>
@@ -376,11 +376,11 @@ export function PageSkeleton() {
     <div className="animate-pulse skeleton-pulse space-y-6 p-6">
       {/* Header skeleton */}
       <div className="space-y-2">
-        <div className="h-7 w-48 bg-gray-200 rounded-lg" />
-        <div className="h-4 w-72 bg-gray-100 rounded-lg" />
+        <div className="h-7 w-48 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        <div className="h-4 w-72 bg-gray-100 dark:bg-gray-800 rounded-lg" />
       </div>
       {/* Agent summary bar skeleton */}
-      <div className="h-12 bg-gray-100 rounded-2xl" />
+      <div className="h-12 bg-gray-100 dark:bg-gray-800 rounded-2xl" />
       {/* Stat cards skeleton */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-4">
         {[...Array(5)].map((_, i) => (

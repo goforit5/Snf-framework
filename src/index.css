@@ -1,15 +1,26 @@
 @import "tailwindcss";
 
+/* ─── Tailwind 4: class-based dark mode (enables manual toggle) ─── */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   body {
     @apply bg-[#f5f5f7] text-gray-900 antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
   }
 
+  .dark body {
+    @apply bg-gray-950 text-gray-100;
+  }
+
   /* Global focus-visible styles for accessibility (WCAG 2.1 AA) */
   *:focus-visible {
     @apply outline-none ring-2 ring-blue-500 ring-offset-2 ring-offset-white;
     border-radius: inherit;
+  }
+
+  .dark *:focus-visible {
+    @apply ring-offset-gray-900;
   }
 
   /* Skip navigation link — visually hidden until focused */
@@ -35,7 +46,66 @@
     background: #d1d5db;
     border-radius: 3px;
   }
+  .dark .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #4b5563;
+  }
 }
+
+/* ─── Dark Mode Page-Level Overrides ───
+   Handles color tokens used directly in page files outside shared components.
+   Shared components have explicit dark: variants for precise control.
+   These catch-all rules ensure pages look correct without editing each file. ─── */
+
+/* Page content areas: override common text/border/bg colors in dark mode.
+   Using #main-content scoping to avoid affecting presentation or shared components
+   that already have their own dark: variants. But since the dark: variants and
+   these rules produce the same result, overlap is harmless. */
+.dark #main-content .text-gray-900:not([class*="dark:"]) { color: var(--color-gray-100); }
+.dark #main-content .text-gray-800:not([class*="dark:"]) { color: var(--color-gray-200); }
+.dark #main-content .text-gray-700:not([class*="dark:"]) { color: var(--color-gray-300); }
+.dark #main-content .text-gray-600:not([class*="dark:"]) { color: var(--color-gray-400); }
+.dark #main-content .text-gray-500:not([class*="dark:"]) { color: var(--color-gray-400); }
+
+.dark #main-content .bg-white:not([class*="dark:"]) { background-color: var(--color-gray-900); }
+.dark #main-content .bg-gray-50:not([class*="dark:"]) { background-color: color-mix(in srgb, var(--color-gray-800) 60%, transparent); }
+.dark #main-content .bg-gray-100:not([class*="dark:"]) { background-color: var(--color-gray-800); }
+
+.dark #main-content .border-gray-100:not([class*="dark:"]) { border-color: var(--color-gray-800); }
+.dark #main-content .border-gray-200:not([class*="dark:"]) { border-color: var(--color-gray-700); }
+
+.dark #main-content .divide-gray-50:not([class*="dark:"]) > * + * { border-color: var(--color-gray-800); }
+.dark #main-content .divide-gray-100:not([class*="dark:"]) > * + * { border-color: var(--color-gray-800); }
+
+/* Hover states in pages */
+.dark #main-content .hover\:bg-white:hover { background-color: var(--color-gray-800); }
+.dark #main-content .hover\:bg-gray-50:hover { background-color: var(--color-gray-800); }
+.dark #main-content .hover\:bg-gray-100:hover { background-color: var(--color-gray-700); }
+.dark #main-content .hover\:bg-gray-200:hover { background-color: var(--color-gray-700); }
+
+/* Placeholder text */
+.dark #main-content .placeholder-gray-400::placeholder { color: var(--color-gray-500); }
+
+/* Select/input elements in pages */
+.dark #main-content select,
+.dark #main-content input[type="text"],
+.dark #main-content input[type="date"],
+.dark #main-content input[type="number"],
+.dark #main-content textarea {
+  background-color: var(--color-gray-800);
+  color: var(--color-gray-200);
+  border-color: var(--color-gray-700);
+}
+
+/* Recharts dark mode */
+.dark .recharts-cartesian-axis-tick-value { fill: #9ca3af; }
+.dark .recharts-cartesian-grid line { stroke: #374151; }
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #e5e7eb !important;
+}
+.dark .recharts-default-tooltip .recharts-tooltip-label { color: #d1d5db !important; }
+.dark .recharts-legend-item-text { color: #9ca3af !important; }
 
 /* ─── Animation Keyframes ─── */
 

@@ -65,12 +65,12 @@ export function ModalProvider({ children }) {
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
           <div
             ref={modalRef}
-            className={`relative bg-white rounded-2xl shadow-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4 ${modal.maxWidth || 'max-w-2xl'}`}
+            className={`relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-h-[85vh] overflow-hidden modal-enter mx-2 sm:mx-4 ${modal.maxWidth || 'max-w-2xl'}`}
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-              <h2 id="modal-title" className="text-lg font-semibold text-gray-900">{modal.title}</h2>
-              <button onClick={close} aria-label="Close dialog" className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+              <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">{modal.title}</h2>
+              <button onClick={close} aria-label="Close dialog" className="p-1.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                 <X size={18} className="text-gray-400" aria-hidden="true" />
               </button>
             </div>
@@ -78,7 +78,7 @@ export function ModalProvider({ children }) {
               {modal.content}
             </div>
             {modal.actions && (
-              <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
+              <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50 flex items-center justify-end gap-3">
                 {modal.actions}
               </div>
             )}
@@ -102,8 +102,8 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
     <div className="mb-8">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{title}</h1>
-          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{title}</h1>
+          {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{subtitle}</p>}
         </div>
         {riskLevel && (
           <span className={`px-3 py-1.5 rounded-full text-xs font-semibold border flex-shrink-0 ${riskColors[riskLevel]}`}>
@@ -112,14 +112,14 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
         )}
       </div>
       {aiSummary && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-5">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-100 dark:border-blue-800 rounded-2xl p-5">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Bot size={16} className="text-blue-600" />
+            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
+              <Bot size={16} className="text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-600 mb-1">AI Analysis</p>
-              <p className="text-sm text-gray-700 leading-relaxed">{aiSummary}</p>
+              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">AI Analysis</p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{aiSummary}</p>
             </div>
           </div>
         </div>
@@ -131,18 +131,18 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
 /* ─── Stat Card ─── */
 export function StatCard({ label, value, change, changeType, icon: Icon, color = 'blue', onClick }) {
   const colorMap = {
-    blue: { bg: 'bg-blue-50', icon: 'text-blue-600', ring: 'ring-blue-100' },
-    emerald: { bg: 'bg-emerald-50', icon: 'text-emerald-600', ring: 'ring-emerald-100' },
-    amber: { bg: 'bg-amber-50', icon: 'text-amber-600', ring: 'ring-amber-100' },
-    red: { bg: 'bg-red-50', icon: 'text-red-600', ring: 'ring-red-100' },
-    purple: { bg: 'bg-purple-50', icon: 'text-purple-600', ring: 'ring-purple-100' },
-    cyan: { bg: 'bg-cyan-50', icon: 'text-cyan-600', ring: 'ring-cyan-100' },
+    blue: { bg: 'bg-blue-50 dark:bg-blue-900/30', icon: 'text-blue-600 dark:text-blue-400', ring: 'ring-blue-100' },
+    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', icon: 'text-emerald-600 dark:text-emerald-400', ring: 'ring-emerald-100' },
+    amber: { bg: 'bg-amber-50 dark:bg-amber-900/30', icon: 'text-amber-600 dark:text-amber-400', ring: 'ring-amber-100' },
+    red: { bg: 'bg-red-50 dark:bg-red-900/30', icon: 'text-red-600 dark:text-red-400', ring: 'ring-red-100' },
+    purple: { bg: 'bg-purple-50 dark:bg-purple-900/30', icon: 'text-purple-600 dark:text-purple-400', ring: 'ring-purple-100' },
+    cyan: { bg: 'bg-cyan-50 dark:bg-cyan-900/30', icon: 'text-cyan-600 dark:text-cyan-400', ring: 'ring-cyan-100' },
   };
   const c = colorMap[color] || colorMap.blue;
 
   return (
     <div
-      className={`bg-white rounded-2xl p-4 shadow-sm border border-gray-100 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-gray-200 transition-all active:scale-[0.98]' : ''}`}
+      className={`bg-white dark:bg-gray-900 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 ${onClick ? 'cursor-pointer hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700 transition-all active:scale-[0.98]' : ''}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
@@ -150,14 +150,14 @@ export function StatCard({ label, value, change, changeType, icon: Icon, color =
       aria-label={onClick ? `${label}: ${value}` : undefined}
     >
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs text-gray-500 font-medium">{label}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{label}</span>
         {Icon && (
           <div className={`w-8 h-8 rounded-xl ${c.bg} flex items-center justify-center`}>
             <Icon size={16} className={c.icon} />
           </div>
         )}
       </div>
-      <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
+      <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{value}</p>
       {change && (
         <div className={`flex items-center gap-1 mt-1.5 text-xs font-medium ${changeType === 'positive' ? 'text-green-600' : changeType === 'negative' ? 'text-red-500' : 'text-gray-400'}`}>
           {changeType === 'positive' ? <ArrowUpRight size={12} /> : changeType === 'negative' ? <ArrowDownRight size={12} /> : null}
@@ -172,16 +172,16 @@ export function StatCard({ label, value, change, changeType, icon: Icon, color =
 export function Card({ title, children, className = '', action, badge, onClick }) {
   return (
     <div
-      className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${onClick ? 'cursor-pointer hover:shadow-md transition-all' : ''} ${className}`}
+      className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 ${onClick ? 'cursor-pointer hover:shadow-md transition-all' : ''} ${className}`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
     >
       {title && (
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between min-w-0">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between min-w-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900 truncate">{title}</h3>
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">{title}</h3>
             {badge && (
               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">{badge}</span>
             )}
@@ -199,14 +199,14 @@ export function CollapsibleCard({ title, defaultOpen = true, children, badge, cl
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 ${className}`}>
+    <div className={`bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 ${className}`}>
       <button
-        className="w-full px-6 py-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors"
+        className="w-full px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5">
-          <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
           {badge && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-100">{badge}</span>
           )}
@@ -227,7 +227,7 @@ export function PriorityBadge({ priority }) {
     Critical: 'bg-red-50 text-red-700 border-red-200',
     High: 'bg-amber-50 text-amber-700 border-amber-200',
     Medium: 'bg-blue-50 text-blue-700 border-blue-200',
-    Low: 'bg-gray-50 text-gray-600 border-gray-200',
+    Low: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
   };
   return (
     <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold border ${colors[priority] || colors.Low}`}>
@@ -250,7 +250,7 @@ export function StatusBadge({ status }) {
     missing: 'bg-red-50 text-red-700',
   };
   return (
-    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold ${colors[status] || 'bg-gray-100 text-gray-500'}`}>
+    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold ${colors[status] || 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}>
       {status}
     </span>
   );
@@ -262,10 +262,10 @@ export function ConfidenceBar({ value }) {
   const pct = (value * 100).toFixed(0);
   return (
     <div className="flex items-center gap-2" role="meter" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`Confidence: ${pct}%`}>
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden" aria-hidden="true">
+      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden" aria-hidden="true">
         <div className={`h-full rounded-full ${color} transition-all`} style={{ width: `${value * 100}%` }} />
       </div>
-      <span className="text-[10px] text-gray-500 font-mono font-medium">{pct}%</span>
+      <span className="text-[10px] text-gray-500 dark:text-gray-400 font-mono font-medium">{pct}%</span>
     </div>
   );
 }
@@ -276,8 +276,8 @@ export function ActionButton({ label, variant = 'primary', onClick, icon: Icon }
     primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
     success: 'bg-green-600 hover:bg-green-700 text-white shadow-sm',
     danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
-    ghost: 'bg-gray-100 hover:bg-gray-200 text-gray-700',
-    outline: 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700',
+    ghost: 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
+    outline: 'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300',
   };
   return (
     <button onClick={onClick} className={`px-3.5 py-2 min-h-[44px] min-w-[44px] rounded-xl text-xs font-semibold transition-all active:scale-[0.97] flex items-center justify-center gap-1.5 ${variants[variant]}`}>
@@ -294,11 +294,11 @@ export function ProgressBar({ value, label, color = 'blue' }) {
     <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label ? `${label}: ${value}%` : `${value}%`}>
       {label && (
         <div className="flex justify-between mb-1.5">
-          <span className="text-xs text-gray-500">{label}</span>
-          <span className="text-xs text-gray-700 font-mono font-semibold">{value}%</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+          <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-semibold">{value}%</span>
         </div>
       )}
-      <div className="h-2 bg-gray-100 rounded-full overflow-hidden" aria-hidden="true">
+      <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden" aria-hidden="true">
         <div className={`h-full rounded-full ${colors[color]} transition-all`} style={{ width: `${value}%` }} />
       </div>
     </div>
@@ -308,9 +308,9 @@ export function ProgressBar({ value, label, color = 'blue' }) {
 /* ─── Agent Badge ─── */
 export function EmptyAgentBadge({ agent }) {
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-100">
-      <Bot size={12} className="text-blue-600" />
-      <span className="text-[11px] text-blue-700 font-medium">{agent}</span>
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800">
+      <Bot size={12} className="text-blue-600 dark:text-blue-400" />
+      <span className="text-[11px] text-blue-700 dark:text-blue-300 font-medium">{agent}</span>
     </div>
   );
 }
@@ -319,27 +319,27 @@ export function ActorBadge({ name, type }) {
   return (
     <div className="inline-flex items-center gap-1.5">
       {type === 'agent' ? (
-        <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center">
-          <Bot size={11} className="text-blue-600" />
+        <div className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+          <Bot size={11} className="text-blue-600 dark:text-blue-400" />
         </div>
       ) : (
-        <div className="w-5 h-5 rounded-md bg-green-50 flex items-center justify-center">
-          <User size={11} className="text-green-600" />
+        <div className="w-5 h-5 rounded-md bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
+          <User size={11} className="text-green-600 dark:text-green-400" />
         </div>
       )}
-      <span className="text-xs text-gray-700 font-medium">{name}</span>
+      <span className="text-xs text-gray-700 dark:text-gray-300 font-medium">{name}</span>
     </div>
   );
 }
 
 /* ─── Facility Card ─── */
 export function FacilityCard({ facility, onClick }) {
-  const riskBorder = facility.surveyRisk === 'High' ? 'border-red-200 bg-red-50/30' : facility.surveyRisk === 'Medium' ? 'border-amber-200 bg-amber-50/30' : 'border-gray-100';
+  const riskBorder = facility.surveyRisk === 'High' ? 'border-red-200 bg-red-50/30 dark:border-red-800 dark:bg-red-900/20' : facility.surveyRisk === 'Medium' ? 'border-amber-200 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-900/20' : 'border-gray-100 dark:border-gray-800';
   const healthColor = facility.healthScore >= 80 ? 'text-green-600' : facility.healthScore >= 70 ? 'text-amber-600' : 'text-red-600';
 
   return (
     <div
-      className={`bg-white border ${riskBorder} rounded-2xl p-5 hover:shadow-md transition-all cursor-pointer active:scale-[0.98]`}
+      className={`bg-white dark:bg-gray-900 border ${riskBorder} rounded-2xl p-5 hover:shadow-md transition-all cursor-pointer active:scale-[0.98]`}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -347,17 +347,17 @@ export function FacilityCard({ facility, onClick }) {
       aria-label={`${facility.name}, health score ${facility.healthScore}, ${facility.surveyRisk} risk`}
     >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{facility.name}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{facility.name}</h3>
         <span className={`text-xl font-bold ${healthColor}`}>{facility.healthScore}</span>
       </div>
       <p className="text-xs text-gray-400 mb-4">{facility.city}</p>
       <div className="grid grid-cols-2 gap-2.5 text-xs">
-        <div><span className="text-gray-400">Census:</span> <span className="text-gray-700 font-medium">{facility.census}/{facility.beds}</span></div>
-        <div><span className="text-gray-400">Occupancy:</span> <span className="text-gray-700 font-medium">{facility.occupancy}%</span></div>
-        <div><span className="text-gray-400">Labor %:</span> <span className="text-gray-700 font-medium">{facility.laborPct}%</span></div>
-        <div><span className="text-gray-400">Incidents:</span> <span className="text-gray-700 font-medium">{facility.openIncidents}</span></div>
+        <div><span className="text-gray-400">Census:</span> <span className="text-gray-700 dark:text-gray-300 font-medium">{facility.census}/{facility.beds}</span></div>
+        <div><span className="text-gray-400">Occupancy:</span> <span className="text-gray-700 dark:text-gray-300 font-medium">{facility.occupancy}%</span></div>
+        <div><span className="text-gray-400">Labor %:</span> <span className="text-gray-700 dark:text-gray-300 font-medium">{facility.laborPct}%</span></div>
+        <div><span className="text-gray-400">Incidents:</span> <span className="text-gray-700 dark:text-gray-300 font-medium">{facility.openIncidents}</span></div>
       </div>
-      <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
         <StatusBadge status={facility.surveyRisk === 'High' ? 'exception' : facility.surveyRisk === 'Medium' ? 'pending' : 'completed'} />
         <span className="text-xs text-gray-400 font-medium">AP: ${(facility.apAging / 1000).toFixed(0)}K</span>
       </div>
@@ -369,7 +369,7 @@ export function FacilityCard({ facility, onClick }) {
 export function ClickableRow({ children, onClick, className = '' }) {
   return (
     <div
-      className={`rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995] ${className}`}
+      className={`rounded-xl p-4 bg-gray-50/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-800 hover:shadow-sm hover:border-gray-200 dark:hover:border-gray-700 transition-all cursor-pointer active:scale-[0.995] ${className}`}
       onClick={onClick}
       role="button"
       tabIndex={0}
@@ -392,7 +392,7 @@ export function MiniChart({ data, height = 40 }) {
       {data.map((val, i) => (
         <div
           key={i}
-          className="flex-1 bg-blue-200 rounded-t"
+          className="flex-1 bg-blue-200 dark:bg-blue-700 rounded-t"
           style={{ height: `${((val - min) / range) * 100}%`, minHeight: 2 }}
         />
       ))}
@@ -405,7 +405,7 @@ export function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-3 mb-4 mt-2">
       <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider">{children}</h2>
-      <div className="flex-1 h-px bg-gray-200" />
+      <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
     </div>
   );
 }
@@ -415,25 +415,25 @@ export function AgentHumanSplit({ agentCount, humanCount, agentLabel = 'Agent Ac
   const total = agentCount + humanCount;
   const agentPct = total > 0 ? (agentCount / total * 100).toFixed(0) : 0;
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-5 border border-blue-100/50">
+    <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-2xl p-5 border border-blue-100/50 dark:border-blue-800/50">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <Bot size={16} className="text-blue-600" />
-          <span className="text-sm font-semibold text-gray-900">{agentLabel}</span>
-          <span className="text-sm font-bold text-blue-600">{agentCount}</span>
+          <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{agentLabel}</span>
+          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{agentCount}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-green-600">{humanCount}</span>
-          <span className="text-sm font-semibold text-gray-900">{humanLabel}</span>
-          <User size={16} className="text-green-600" />
+          <span className="text-sm font-bold text-green-600 dark:text-green-400">{humanCount}</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{humanLabel}</span>
+          <User size={16} className="text-green-600 dark:text-green-400" />
         </div>
       </div>
-      <div className="h-3 bg-white rounded-full overflow-hidden flex shadow-inner">
+      <div className="h-3 bg-white dark:bg-gray-800 rounded-full overflow-hidden flex shadow-inner">
         <div className="bg-blue-500 rounded-l-full transition-all" style={{ width: `${agentPct}%` }} />
         <div className="bg-green-500 rounded-r-full flex-1" />
       </div>
-      <p className="text-center text-xs text-gray-500 mt-2">
-        Agents handle <span className="font-semibold text-blue-600">{agentPct}%</span> autonomously — humans approve exceptions
+      <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
+        Agents handle <span className="font-semibold text-blue-600 dark:text-blue-400">{agentPct}%</span> autonomously — humans approve exceptions
       </p>
     </div>
   );

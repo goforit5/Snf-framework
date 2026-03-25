@@ -6,6 +6,7 @@ import { ScopeProvider } from './providers/ScopeProvider';
 import { AgentProvider } from './providers/AgentProvider';
 import { NotificationProvider } from './providers/NotificationProvider';
 import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
+import { useDarkMode, DarkModeContext } from './hooks/useDarkMode';
 import Layout from './components/Layout';
 import ComingSoon from './pages/ComingSoon';
 
@@ -220,21 +221,25 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const darkMode = useDarkMode();
+
   return (
-    <Router>
-      <AuthProvider>
-        <ScopeProvider>
-          <AgentProvider>
-            <NotificationProvider>
-              <ModalProvider>
-                <ToastProvider>
-                  <AppRoutes />
-                </ToastProvider>
-              </ModalProvider>
-            </NotificationProvider>
-          </AgentProvider>
-        </ScopeProvider>
-      </AuthProvider>
-    </Router>
+    <DarkModeContext.Provider value={darkMode}>
+      <Router>
+        <AuthProvider>
+          <ScopeProvider>
+            <AgentProvider>
+              <NotificationProvider>
+                <ModalProvider>
+                  <ToastProvider>
+                    <AppRoutes />
+                  </ToastProvider>
+                </ModalProvider>
+              </NotificationProvider>
+            </AgentProvider>
+          </ScopeProvider>
+        </AuthProvider>
+      </Router>
+    </DarkModeContext.Provider>
   );
 }
