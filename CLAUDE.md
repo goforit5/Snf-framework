@@ -12,24 +12,33 @@ The app simulates a full agentic command center where AI agents monitor, analyze
 
 Ensign's operating model is uniquely decentralized — each facility operates semi-autonomously with its own leadership. This makes enterprise-wide visibility a massive challenge and a perfect use case for agentic AI that connects all data sources into one intelligence layer.
 
-## Andrew's Engagement with Barry
+## Andrew's Engagement with Ensign Leadership
 
-Andrew is pitching Barry Port on a consulting engagement to deploy agentic AI across Ensign's entire operation. The pitch:
+Andrew is pitching Ensign's executive and technical leadership — **Barry Port (CEO)** and the **CTO/tech team** — on a consulting engagement to deploy agentic AI across Ensign's entire operation. The pitch:
 
 - **Problem**: Ensign pays millions/year for SaaS products (PCC, Workday, etc.) that are just databases + UIs + APIs. AI agents don't need the UI — they connect directly to the data and run the business.
 - **Barry's current strategy** (from Q4 2025 earnings call): waiting for existing SaaS vendors to add AI features. Andrew's counter: that's like asking Blockbuster to build Netflix.
 - **The ask**: 30-day engagement to connect all systems, deploy clinical app (voice-based, PCC-connected), financial/billing audits, and an executive intelligence layer. Then scale with 5-6 AI engineers.
 - **Key concern**: Barry worries about AI safety, HIPAA, compliance, legal risk. The platform addresses this with human-in-the-loop approval, complete audit trails, role-based access, read-only defaults, governance levels, and kill switches.
 - **Security architecture**: AWS Bedrock for in-VPC processing (BAA-covered, SOC 2, HITRUST). PHI never leaves Ensign's cloud. No new attack surface.
+- **Technical audience**: The CTO/tech team presentation focuses on architecture, API integration patterns, agent framework design, and security posture rather than business strategy.
 
-## Current State (as of 2026-03-18)
+## Current State (as of 2026-03-25)
 
 **65 of 69 pages have functional DecisionQueue** with `useDecisionQueue` hook. Every DecisionCard is a self-contained analyst briefing — agents pre-pull all data from PCC, Workday, CMS, GL systems. Humans never open another application. The 4 pages without DecisionQueue are intentional: AgentWorkLedger, AuditTrail (monitoring views), ComingSoon (placeholder), Settings (config).
+
+**330 facilities** with full detail (administrator, DON, phone, star ratings, survey dates) across Ensign's 15 operating states. Shared data layer powers both the portfolio heatmap and the facility operations page. Apple-level search/filter/sort with Spotlight-style search bar, region and status filter chips, and sort controls. Heatmap click-through deep-links to individual facility detail views via `?id=` query param.
+
+**Dark mode** with system preference detection and manual toggle (top bar). All 69 pages support light/dark.
+
+**Presentation deck** restructured for CTO/dev team audience (14 slides) in `public/presentation-barry.html`. Original presentation in `public/presentation.html`. Companion platform guide in `public/agentic-platform-guide.html`.
 
 **3 oversized pages decomposed** into sub-components:
 - MorningStandup: 658 → 139 lines (5 sub-components in `src/components/standup/`)
 - AgentWorkLedger: 727 → 197 lines (5 sub-components in `src/components/agent-ledger/`)
 - AuditTrail: 582 → 274 lines (3 sub-components in `src/components/audit/`)
+
+**Native companion apps**: macOS and iOS apps in `SNF_macOS/` and `SNF_iOS/` with shared `SNFKit` package.
 
 **Live site**: https://goforit5.github.io/Snf-framework/
 
@@ -46,7 +55,12 @@ Andrew is pitching Barry Port on a consulting engagement to deploy agentic AI ac
 ```
 Snf_Framework/
 ├── public/
-│   └── presentation.html       # 11-slide pitch deck for Barry (self-contained HTML)
+│   ├── presentation.html       # Original pitch deck (self-contained HTML)
+│   ├── presentation-barry.html # CTO/tech team version (14 slides)
+│   └── agentic-platform-guide.html # Companion platform guide
+├── SNF_iOS/                     # Native iOS companion app (Swift Package)
+├── SNF_macOS/                   # Native macOS companion app (Swift Package)
+├── SNFKit/                      # Shared Swift package for native apps
 ├── src/
 │   ├── App.jsx                  # Router — all 69 pages
 │   ├── components/
@@ -97,19 +111,13 @@ npm run preview  # preview built output
 
 ## The Presentation
 
-`public/presentation.html` is a self-contained 11-slide pitch deck for Barry Port. Apple HIG design principles, dark mode, scroll-snap navigation, keyboard controls (arrows/space/pageup/pagedown), nav dots, progress bar. Contains:
+Three presentation files in `public/`:
 
-1. Title — The Agentic Enterprise
-2. The Reality — SaaS = database + UI + API
-3. SaaSpocalypse — $285B selloff, structural per-seat pressure
-4. AI Leader Quotes — 9 quotes from Nadella, Schmidt, Amodei, Benioff, Huang, Altman, McDermott
-5. Ensign's Plan vs Reality — Barry's earnings call quote vs agentic alternative
-6. Full Agentic Vision — every business function connected
-7. HIPAA & PHI Security — AWS Bedrock in-VPC architecture
-8. AI Safety & Guardrails — human-in-the-loop, audit trails, RBAC, compliance, kill switches
-9. Live Demo — the working prototype (this app)
-10. The Insider Advantage — Andrew's unique qualifications
-11. The Ask — 30-day engagement, immediate ROI
+- **`presentation.html`** — Original 11-slide pitch deck. Business-focused for executive audience.
+- **`presentation-barry.html`** — 14-slide version restructured for CTO/dev team. Architecture-focused with API integration patterns, agent framework design, security posture.
+- **`agentic-platform-guide.html`** — Companion platform guide with detailed agent capabilities.
+
+All presentations: Apple HIG design, dark mode, scroll-snap navigation, keyboard controls (arrows/space/pageup/pagedown), nav dots, progress bar.
 
 ## Jira Project
 
@@ -158,8 +166,6 @@ npm run preview  # preview built output
 3. **ComingSoon placeholder** — `src/pages/ComingSoon.jsx` is still a 16-line placeholder.
 
 ### Demo Polish Remaining
-- Visual QA pass on all 65 DecisionQueue pages at 1280px and 1920px widths
-- AgentActivityFeed used on only ~5 pages — could add to more command pages for "agents are working" feel
 - Notification center integration with DecisionQueue (approved/escalated items could show as notifications)
-- Dark mode support (currently light mode only)
+- Agent action click-through on Agent Operations page (clicking an agent action row should open detail modal)
 - Mobile responsive refinement (tablet portrait is primary concern for facility admins)
