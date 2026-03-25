@@ -109,9 +109,12 @@ function AppRoutes() {
 
   if (isPresentation) {
     return (
-      <Suspense fallback={<PageSkeleton />}>
-        <Presentation />
-      </Suspense>
+      <iframe
+        src={`${import.meta.env.BASE_URL}presentation-barry.html`}
+        title="Presentation"
+        className="w-screen h-screen border-0"
+        style={{ position: 'fixed', inset: 0, zIndex: 9999 }}
+      />
     );
   }
 
