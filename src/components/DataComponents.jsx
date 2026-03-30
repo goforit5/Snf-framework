@@ -5,7 +5,7 @@ import { StatCard } from './Widgets';
 /* ─── AI Analysis Card ─── */
 export function AIAnalysisCard({ title = 'AI Analysis', children, icon: Icon = Bot, variant = 'blue' }) {
   const variantMap = {
-    blue: { bg: 'bg-blue-50/50', border: 'border-blue-100', header: 'text-blue-600', iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+    blue: { bg: 'bg-emerald-50/50', border: 'border-emerald-100', header: 'text-emerald-700', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-700' },
     green: { bg: 'bg-green-50/50', border: 'border-green-100', header: 'text-green-600', iconBg: 'bg-green-100', iconColor: 'text-green-600' },
     amber: { bg: 'bg-amber-50/50', border: 'border-amber-100', header: 'text-amber-600', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
     red: { bg: 'bg-red-50/50', border: 'border-red-100', header: 'text-red-600', iconBg: 'bg-red-100', iconColor: 'text-red-600' },
@@ -137,7 +137,7 @@ export function DataTable({
             aria-label="Search table"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+            className="w-full pl-9 pr-3 py-2 min-h-[44px] rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300 transition-all"
           />
           {searchQuery && (
             <button
@@ -169,8 +169,8 @@ export function DataTable({
                     {col.label}
                     {sortable && col.sortable !== false && sortKey === col.key && (
                       sortDir === 'asc'
-                        ? <ChevronUp size={12} className="text-blue-600" aria-hidden="true" />
-                        : <ChevronDown size={12} className="text-blue-600" aria-hidden="true" />
+                        ? <ChevronUp size={12} className="text-emerald-700" aria-hidden="true" />
+                        : <ChevronDown size={12} className="text-emerald-700" aria-hidden="true" />
                     )}
                   </div>
                 </th>

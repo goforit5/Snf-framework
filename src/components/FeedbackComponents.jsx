@@ -57,7 +57,7 @@ export function AlertCallout({ type = 'info', title, children, onDismiss, icon: 
     critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', iconColor: 'text-red-500', Icon: AlertCircle },
     warning: { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-800', iconColor: 'text-amber-500', Icon: AlertTriangle },
     success: { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', iconColor: 'text-green-500', Icon: CheckCircle2 },
-    info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', iconColor: 'text-blue-500', Icon: Info },
+    info: { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-900', iconColor: 'text-emerald-600', Icon: Info },
   };
   const config = typeConfig[type] || typeConfig.info;
   const DisplayIcon = CustomIcon || config.Icon;
@@ -172,7 +172,7 @@ export function ToastProvider({ children }) {
 const toastIcons = {
   success: { Icon: CheckCircle2, color: 'text-green-500' },
   error: { Icon: AlertCircle, color: 'text-red-500' },
-  info: { Icon: Info, color: 'text-blue-500' },
+  info: { Icon: Info, color: 'text-emerald-600' },
 };
 
 function ToastItem({ toast, onDismiss }) {
@@ -187,7 +187,7 @@ function ToastItem({ toast, onDismiss }) {
       {toast.action && (
         <button
           onClick={() => { toast.action.onClick?.(); onDismiss(); }}
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+          className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors whitespace-nowrap"
         >
           {toast.action.label}
         </button>
@@ -221,7 +221,7 @@ export function Toast({ message, type = 'info', action, duration = 5000, onDismi
       {action && (
         <button
           onClick={() => { action.onClick?.(); onDismiss?.(); }}
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors whitespace-nowrap"
+          className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition-colors whitespace-nowrap"
         >
           {action.label}
         </button>
@@ -244,7 +244,7 @@ export function ConfirmDialog({ isOpen, title, message, confirmLabel = 'Confirm'
   const variantConfig = {
     danger: { bg: 'bg-red-600 hover:bg-red-700', icon: AlertCircle, iconColor: 'text-red-500', iconBg: 'bg-red-50' },
     warning: { bg: 'bg-amber-600 hover:bg-amber-700', icon: AlertTriangle, iconColor: 'text-amber-500', iconBg: 'bg-amber-50' },
-    info: { bg: 'bg-blue-600 hover:bg-blue-700', icon: Info, iconColor: 'text-blue-500', iconBg: 'bg-blue-50' },
+    info: { bg: 'bg-emerald-700 hover:bg-emerald-800', icon: Info, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50' },
   };
   const config = variantConfig[variant] || variantConfig.info;
   const VIcon = config.icon;
@@ -325,7 +325,7 @@ export function BulkActionBar({ selectedCount, actions = [], onClear }) {
   if (!selectedCount || selectedCount === 0) return null;
 
   const variantClasses = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    primary: 'bg-emerald-700 hover:bg-emerald-800 text-white',
     success: 'bg-green-600 hover:bg-green-700 text-white',
     danger: 'bg-red-600 hover:bg-red-700 text-white',
     ghost: 'bg-white/20 hover:bg-white/30 text-white',

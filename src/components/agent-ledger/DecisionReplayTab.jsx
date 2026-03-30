@@ -59,11 +59,11 @@ export default function DecisionReplayTab({ open }) {
                 const isAgent = entry.actorType === 'agent';
                 return (
                   <div key={entry.id} className="relative pl-10">
-                    <div className={`absolute left-2.5 w-3.5 h-3.5 rounded-full border-2 border-white ${isAgent ? 'bg-blue-500' : 'bg-green-500'} shadow-sm`} style={{ top: '12px' }} />
+                    <div className={`absolute left-2.5 w-3.5 h-3.5 rounded-full border-2 border-white ${isAgent ? 'bg-emerald-600' : 'bg-green-500'} shadow-sm`} style={{ top: '12px' }} />
                     <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className={`w-5 h-5 rounded-md ${isAgent ? 'bg-blue-50' : 'bg-green-50'} flex items-center justify-center`}>
-                          {isAgent ? <Bot size={11} className="text-blue-600" /> : <User size={11} className="text-green-600" />}
+                        <div className={`w-5 h-5 rounded-md ${isAgent ? 'bg-emerald-50' : 'bg-green-50'} flex items-center justify-center`}>
+                          {isAgent ? <Bot size={11} className="text-emerald-700" /> : <User size={11} className="text-green-600" />}
                         </div>
                         <span className="text-xs font-semibold text-gray-900">{entry.actorName}</span>
                         <span className="text-[10px] text-gray-400 ml-auto">{formatDate(entry.timestamp)}</span>
@@ -118,7 +118,7 @@ export default function DecisionReplayTab({ open }) {
                 <p className="text-xs text-gray-600 mb-2">{chain.rootAction}</p>
                 <div className="flex items-center gap-3 flex-wrap">
                   <div className="flex items-center gap-1.5">
-                    <Bot size={11} className="text-blue-500" />
+                    <Bot size={11} className="text-emerald-600" />
                     <span className="text-[10px] text-gray-500">{chain.agents.length} agents</span>
                   </div>
                   {chain.humans.length > 0 && (

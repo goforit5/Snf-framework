@@ -112,13 +112,13 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
         )}
       </div>
       {aiSummary && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 border border-blue-100 dark:border-blue-800 rounded-2xl p-5">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-950/30 border border-emerald-100 dark:border-emerald-900 rounded-2xl p-5">
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
-              <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+              <Bot size={16} className="text-emerald-700 dark:text-emerald-400" />
             </div>
             <div>
-              <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">AI Analysis</p>
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 mb-1">AI Analysis</p>
               <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{aiSummary}</p>
             </div>
           </div>
@@ -131,7 +131,7 @@ export function PageHeader({ title, subtitle, aiSummary, riskLevel }) {
 /* ─── Stat Card ─── */
 export function StatCard({ label, value, change, changeType, icon: Icon, color = 'blue', onClick }) {
   const colorMap = {
-    blue: { bg: 'bg-blue-50 dark:bg-blue-900/30', icon: 'text-blue-600 dark:text-blue-400', ring: 'ring-blue-100' },
+    blue: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', icon: 'text-emerald-700 dark:text-emerald-400', ring: 'ring-emerald-100' },
     emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/30', icon: 'text-emerald-600 dark:text-emerald-400', ring: 'ring-emerald-100' },
     amber: { bg: 'bg-amber-50 dark:bg-amber-900/30', icon: 'text-amber-600 dark:text-amber-400', ring: 'ring-amber-100' },
     red: { bg: 'bg-red-50 dark:bg-red-900/30', icon: 'text-red-600 dark:text-red-400', ring: 'ring-red-100' },
@@ -226,7 +226,7 @@ export function PriorityBadge({ priority }) {
   const colors = {
     Critical: 'bg-red-50 text-red-700 border-red-200',
     High: 'bg-amber-50 text-amber-700 border-amber-200',
-    Medium: 'bg-blue-50 text-blue-700 border-blue-200',
+    Medium: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     Low: 'bg-gray-50 text-gray-600 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
   };
   return (
@@ -242,7 +242,7 @@ export function StatusBadge({ status }) {
     approved: 'bg-green-50 text-green-700',
     rejected: 'bg-red-50 text-red-700',
     completed: 'bg-green-50 text-green-700',
-    'in-progress': 'bg-blue-50 text-blue-700',
+    'in-progress': 'bg-emerald-50 text-emerald-800',
     'auto-approved': 'bg-green-50 text-green-700',
     exception: 'bg-red-50 text-red-700',
     'pending-approval': 'bg-amber-50 text-amber-700',
@@ -273,7 +273,7 @@ export function ConfidenceBar({ value }) {
 /* ─── Buttons ─── */
 export function ActionButton({ label, variant = 'primary', onClick, icon: Icon }) {
   const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm',
+    primary: 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm',
     success: 'bg-green-600 hover:bg-green-700 text-white shadow-sm',
     danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',
     ghost: 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300',
@@ -289,7 +289,7 @@ export function ActionButton({ label, variant = 'primary', onClick, icon: Icon }
 
 /* ─── Progress Bar ─── */
 export function ProgressBar({ value, label, color = 'blue' }) {
-  const colors = { blue: 'bg-blue-500', emerald: 'bg-emerald-500', amber: 'bg-amber-500', red: 'bg-red-500' };
+  const colors = { blue: 'bg-emerald-600', emerald: 'bg-emerald-500', amber: 'bg-amber-500', red: 'bg-red-500' };
   return (
     <div role="progressbar" aria-valuenow={value} aria-valuemin={0} aria-valuemax={100} aria-label={label ? `${label}: ${value}%` : `${value}%`}>
       {label && (
@@ -308,9 +308,9 @@ export function ProgressBar({ value, label, color = 'blue' }) {
 /* ─── Agent Badge ─── */
 export function EmptyAgentBadge({ agent }) {
   return (
-    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800">
-      <Bot size={12} className="text-blue-600 dark:text-blue-400" />
-      <span className="text-[11px] text-blue-700 dark:text-blue-300 font-medium">{agent}</span>
+    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-100 dark:border-emerald-900">
+      <Bot size={12} className="text-emerald-700 dark:text-emerald-400" />
+      <span className="text-[11px] text-emerald-800 dark:text-emerald-300 font-medium">{agent}</span>
     </div>
   );
 }
@@ -319,8 +319,8 @@ export function ActorBadge({ name, type }) {
   return (
     <div className="inline-flex items-center gap-1.5">
       {type === 'agent' ? (
-        <div className="w-5 h-5 rounded-md bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-          <Bot size={11} className="text-blue-600 dark:text-blue-400" />
+        <div className="w-5 h-5 rounded-md bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+          <Bot size={11} className="text-emerald-700 dark:text-emerald-400" />
         </div>
       ) : (
         <div className="w-5 h-5 rounded-md bg-green-50 dark:bg-green-900/30 flex items-center justify-center">
@@ -392,7 +392,7 @@ export function MiniChart({ data, height = 40 }) {
       {data.map((val, i) => (
         <div
           key={i}
-          className="flex-1 bg-blue-200 dark:bg-blue-700 rounded-t"
+          className="flex-1 bg-emerald-200 dark:bg-emerald-800 rounded-t"
           style={{ height: `${((val - min) / range) * 100}%`, minHeight: 2 }}
         />
       ))}
@@ -415,12 +415,12 @@ export function AgentHumanSplit({ agentCount, humanCount, agentLabel = 'Agent Ac
   const total = agentCount + humanCount;
   const agentPct = total > 0 ? (agentCount / total * 100).toFixed(0) : 0;
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 rounded-2xl p-5 border border-blue-100/50 dark:border-blue-800/50">
+    <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 rounded-2xl p-5 border border-emerald-100/50 dark:border-emerald-900/50">
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+          <Bot size={16} className="text-emerald-700 dark:text-emerald-400" />
           <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{agentLabel}</span>
-          <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{agentCount}</span>
+          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{agentCount}</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-green-600 dark:text-green-400">{humanCount}</span>
@@ -429,11 +429,11 @@ export function AgentHumanSplit({ agentCount, humanCount, agentLabel = 'Agent Ac
         </div>
       </div>
       <div className="h-3 bg-white dark:bg-gray-800 rounded-full overflow-hidden flex shadow-inner">
-        <div className="bg-blue-500 rounded-l-full transition-all" style={{ width: `${agentPct}%` }} />
+        <div className="bg-emerald-600 rounded-l-full transition-all" style={{ width: `${agentPct}%` }} />
         <div className="bg-green-500 rounded-r-full flex-1" />
       </div>
       <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-2">
-        Agents handle <span className="font-semibold text-blue-600 dark:text-blue-400">{agentPct}%</span> autonomously — humans approve exceptions
+        Agents handle <span className="font-semibold text-emerald-700 dark:text-emerald-400">{agentPct}%</span> autonomously — humans approve exceptions
       </p>
     </div>
   );

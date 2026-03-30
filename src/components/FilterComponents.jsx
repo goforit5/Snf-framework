@@ -23,7 +23,7 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
             aria-pressed={isActive}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-[0.97] ${
               isActive
-                ? 'bg-blue-600 text-white shadow-sm'
+                ? 'bg-emerald-700 text-white shadow-sm'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
@@ -31,7 +31,7 @@ export function QuickFilter({ filters = [], active = [], onChange }) {
             {filter.count != null && (
               <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums ${
                 isActive
-                  ? 'bg-blue-500 text-white'
+                  ? 'bg-emerald-600 text-white'
                   : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
               }`}>
                 {filter.count}
@@ -55,7 +55,7 @@ export function SearchInput({ placeholder = 'Search...', value = '', onChange, o
         aria-label={placeholder}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
-        className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+        className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300 transition-all"
       />
       {value && (
         <button
@@ -139,7 +139,7 @@ export function DateRangeFilter({ startDate, endDate, onChange, presets = defaul
           onClick={() => handlePreset(preset)}
           className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 active:scale-[0.97] ${
             activePreset === preset.value
-              ? 'bg-blue-600 text-white'
+              ? 'bg-emerald-700 text-white'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
@@ -153,7 +153,7 @@ export function DateRangeFilter({ startDate, endDate, onChange, presets = defaul
           aria-label="Start date"
           value={startDate || ''}
           onChange={(e) => handleDateChange('start', e.target.value)}
-          className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+          className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300 transition-all"
         />
         <span className="text-xs text-gray-400">to</span>
         <input
@@ -161,7 +161,7 @@ export function DateRangeFilter({ startDate, endDate, onChange, presets = defaul
           aria-label="End date"
           value={endDate || ''}
           onChange={(e) => handleDateChange('end', e.target.value)}
-          className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+          className="px-2 py-1.5 rounded-xl border border-gray-200 text-xs text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300 transition-all"
         />
       </div>
     </div>
@@ -185,12 +185,12 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
   }, [isOpen]);
 
   const scopeIcon = () => {
-    if (!currentScope) return <Globe size={14} className="text-blue-600" />;
+    if (!currentScope) return <Globe size={14} className="text-emerald-700" />;
     switch (currentScope.type) {
-      case 'enterprise': return <Globe size={14} className="text-blue-600" />;
+      case 'enterprise': return <Globe size={14} className="text-emerald-700" />;
       case 'region': return <MapPin size={14} className="text-violet-600" />;
       case 'facility': return <Building2 size={14} className="text-emerald-600" />;
-      default: return <Globe size={14} className="text-blue-600" />;
+      default: return <Globe size={14} className="text-emerald-700" />;
     }
   };
 
@@ -235,7 +235,7 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
                 aria-label="Search facilities"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all"
+                className="w-full pl-8 pr-3 py-2 rounded-lg border border-gray-200 text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300 transition-all"
                 autoFocus
               />
             </div>
@@ -245,7 +245,7 @@ export function ScopeSelector({ currentScope, facilities = [], regions = [], onC
             <button
               onClick={() => { onChange?.({ type: 'enterprise', id: null, label: 'Enterprise' }); setIsOpen(false); setSearch(''); }}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-left transition-colors ${
-                currentScope?.type === 'enterprise' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-50'
+                currentScope?.type === 'enterprise' ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-gray-700 hover:bg-gray-50'
               }`}
             >
               <Globe size={13} />

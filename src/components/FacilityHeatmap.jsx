@@ -75,8 +75,8 @@ export default function FacilityHeatmap() {
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center">
-            <Grid3X3 size={15} className="text-blue-600" />
+          <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <Grid3X3 size={15} className="text-emerald-700" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Portfolio Heatmap</h3>
@@ -98,7 +98,7 @@ export default function FacilityHeatmap() {
           <select
             value={regionFilter}
             onChange={(e) => setRegionFilter(e.target.value)}
-            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300"
+            className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300"
           >
             {REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
@@ -106,14 +106,14 @@ export default function FacilityHeatmap() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300"
+          className="text-xs bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1.5 text-gray-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-300"
         >
           {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
         {(regionFilter !== 'All Regions' || statusFilter !== 'All Statuses') && (
           <button
             onClick={() => { setRegionFilter('All Regions'); setStatusFilter('All Statuses'); }}
-            className="text-[11px] text-blue-600 hover:text-blue-700 font-medium"
+            className="text-[11px] text-emerald-700 hover:text-emerald-800 font-medium"
           >
             Clear filters
           </button>

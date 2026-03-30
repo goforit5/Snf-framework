@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ZAxis } from 'recharts';
 
 const AGENT_COLORS = [
-  '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444',
-  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#6366f1',
+  '#059669', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444',
+  '#06b6d4', '#ec4899', '#84cc16', '#f97316', '#0d9488',
 ];
 
 function SwimlaneTooltip({ active, payload }) {
@@ -16,7 +16,7 @@ function SwimlaneTooltip({ active, payload }) {
       {d.target && <p className="text-[10px] text-gray-400 mb-1">{d.target}</p>}
       <div className="flex items-center gap-3 mt-1.5">
         <span className="text-[10px] text-gray-500">{new Date(d.x).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true })}</span>
-        {d.confidence != null && <span className="text-[10px] font-mono text-blue-600">{(d.confidence * 100).toFixed(0)}%</span>}
+        {d.confidence != null && <span className="text-[10px] font-mono text-emerald-700">{(d.confidence * 100).toFixed(0)}%</span>}
       </div>
       {d.traceId && <p className="text-[10px] font-mono text-purple-500 mt-1">{d.traceId}</p>}
     </div>

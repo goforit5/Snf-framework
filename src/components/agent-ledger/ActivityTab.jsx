@@ -32,8 +32,8 @@ export default function ActivityTab({ search, setSearch, todayActivities, openDe
               <div key={activity.id} onClick={() => openDecisionReplay(activity.id)} className="rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995]">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-                  <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">
-                    <Bot size={13} className="text-blue-600" />
+                  <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <Bot size={13} className="text-emerald-700" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">

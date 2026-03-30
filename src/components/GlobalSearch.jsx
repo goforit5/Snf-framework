@@ -190,7 +190,7 @@ function searchPages(query) {
 
 /* ─── Category Badge ─── */
 const CATEGORY_COLORS = {
-  Facilities: 'bg-blue-50 text-blue-600',
+  Facilities: 'bg-emerald-50 text-emerald-700',
   Residents: 'bg-emerald-50 text-emerald-600',
   Staff: 'bg-amber-50 text-amber-600',
   Agents: 'bg-purple-50 text-purple-600',
@@ -396,16 +396,16 @@ export default function GlobalSearch({ isOpen, onClose }) {
                         onClick={() => handleSelect(result)}
                         onMouseEnter={() => setSelectedIndex(currentIdx)}
                         className={`w-full flex items-center gap-3 px-5 py-2.5 transition-colors text-left ${
-                          isSelected ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                          isSelected ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'hover:bg-gray-50 dark:hover:bg-gray-800'
                         }`}
                       >
                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-gray-100 dark:bg-gray-800'
+                          isSelected ? 'bg-emerald-100 dark:bg-emerald-950/50' : 'bg-gray-100 dark:bg-gray-800'
                         }`}>
-                          <Icon size={16} className={isSelected ? 'text-blue-600' : 'text-gray-500'} />
+                          <Icon size={16} className={isSelected ? 'text-emerald-700' : 'text-gray-500'} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'}`}>
+                          <p className={`text-sm font-medium truncate ${isSelected ? 'text-emerald-800 dark:text-emerald-300' : 'text-gray-900 dark:text-gray-100'}`}>
                             {result.name}
                           </p>
                           <p className="text-[11px] text-gray-400 truncate">{result.subtitle}</p>

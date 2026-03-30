@@ -5,8 +5,8 @@ import { useModal } from './WidgetUtils';
 /* ─── Governance Badge ─── */
 const governanceLevels = {
   0: { label: 'Auto', color: 'bg-green-50 text-green-700 border-green-200', icon: Zap },
-  1: { label: 'Notify', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: null },
-  2: { label: 'Confirm', color: 'bg-blue-50 text-blue-700 border-blue-200', icon: null },
+  1: { label: 'Notify', color: 'bg-emerald-50 text-emerald-800 border-emerald-200', icon: null },
+  2: { label: 'Confirm', color: 'bg-emerald-50 text-emerald-800 border-emerald-200', icon: null },
   3: { label: 'Review', color: 'bg-amber-50 text-amber-700 border-amber-200', icon: null },
   4: { label: 'Dual Approve', color: 'bg-orange-50 text-orange-700 border-orange-200', icon: null },
   5: { label: 'Executive', color: 'bg-red-50 text-red-700 border-red-200', icon: null },
@@ -27,11 +27,11 @@ export function EvidencePanel({ evidence = [], policies = [], agentReasoning }) 
   return (
     <div className="space-y-3">
       {agentReasoning && (
-        <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-100 dark:border-blue-800">
+        <div className="bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl p-3 border border-emerald-100 dark:border-emerald-900">
           <div className="flex items-start gap-2">
-            <Bot size={13} className="text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+            <Bot size={13} className="text-emerald-700 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Agent Reasoning</p>
+              <p className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider mb-1">Agent Reasoning</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{agentReasoning}</p>
             </div>
           </div>
@@ -75,7 +75,7 @@ const systemConfig = {
   PCC: { label: 'PointClickCare', color: 'text-blue-600', bg: 'bg-blue-50', border: 'border-blue-100' },
   Workday: { label: 'Workday', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-100' },
   'Microsoft 365': { label: 'Microsoft 365', color: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-100' },
-  SharePoint: { label: 'SharePoint', color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-100' },
+  SharePoint: { label: 'SharePoint', color: 'text-teal-600', bg: 'bg-teal-50', border: 'border-teal-100' },
   CMS: { label: 'CMS.gov', color: 'text-slate-600', bg: 'bg-slate-50', border: 'border-slate-100' },
   GL: { label: 'General Ledger', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-100' },
   PDPM: { label: 'PDPM Calculator', color: 'text-cyan-600', bg: 'bg-cyan-50', border: 'border-cyan-100' },
@@ -106,9 +106,9 @@ function DecisionDetailModal({
   const badgeColor = {
     critical: 'bg-red-50 text-red-700 border-red-200',
     high: 'bg-amber-50 text-amber-700 border-amber-200',
-    medium: 'bg-blue-50 text-blue-700 border-blue-200',
+    medium: 'bg-emerald-50 text-emerald-800 border-emerald-200',
     low: 'bg-gray-50 text-gray-600 border-gray-200',
-  }[priority?.toLowerCase()] || 'bg-blue-50 text-blue-700 border-blue-200';
+  }[priority?.toLowerCase()] || 'bg-emerald-50 text-emerald-800 border-emerald-200';
 
   const confidencePct = confidence != null ? (confidence * 100).toFixed(0) : null;
   const confidenceColor = confidence >= 0.9 ? 'text-green-600' : confidence >= 0.75 ? 'text-amber-600' : 'text-red-600';
@@ -178,15 +178,15 @@ function DecisionDetailModal({
 
         {/* Agent Analysis — only shows if reasoning differs from recommendation */}
         {analysisText && (
-          <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
+          <div className="bg-emerald-50/50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-100 dark:border-emerald-900">
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0">
-                <Bot size={16} className="text-blue-600 dark:text-blue-400" />
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center flex-shrink-0">
+                <Bot size={16} className="text-emerald-700 dark:text-emerald-400" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">{agent || 'AI Agent'}</p>
-                  <span className="text-[10px] text-blue-500 dark:text-blue-400 font-medium">Analysis</span>
+                  <p className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">{agent || 'AI Agent'}</p>
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Analysis</span>
                 </div>
                 <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed">{analysisText}</p>
               </div>
@@ -302,11 +302,11 @@ function DecisionDetailModal({
                 const isLast = i === displayTimeline.length - 1;
                 return (
                   <div key={i} className="relative flex items-start gap-3 pb-4 last:pb-0">
-                    <div className={`absolute left-[-18px] w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${isLast ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'}`}>
-                      {isLast ? <Activity size={8} className="text-blue-500" /> : <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />}
+                    <div className={`absolute left-[-18px] w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center ${isLast ? 'bg-emerald-50 border-emerald-300' : 'bg-white border-gray-200'}`}>
+                      {isLast ? <Activity size={8} className="text-emerald-600" /> : <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs leading-relaxed ${isLast ? 'font-semibold text-blue-700' : 'text-gray-600'}`}>{entry.event}</p>
+                      <p className={`text-xs leading-relaxed ${isLast ? 'font-semibold text-emerald-800' : 'text-gray-600'}`}>{entry.event}</p>
                       <p className="text-[10px] text-gray-400 mt-0.5">{entry.time}</p>
                     </div>
                   </div>
@@ -371,14 +371,14 @@ function DecisionDetailModal({
 const priorityBorders = {
   critical: 'border-l-red-500',
   high: 'border-l-amber-500',
-  medium: 'border-l-blue-500',
+  medium: 'border-l-emerald-600',
   low: 'border-l-gray-300',
 };
 
 const priorityBadges = {
   critical: 'bg-red-50 text-red-700 border-red-200',
   high: 'bg-amber-50 text-amber-700 border-amber-200',
-  medium: 'bg-blue-50 text-blue-700 border-blue-200',
+  medium: 'bg-emerald-50 text-emerald-800 border-emerald-200',
   low: 'bg-gray-50 text-gray-600 border-gray-200',
 };
 
@@ -556,8 +556,8 @@ export function DecisionCard({
             )}
             {agent && (
               <div className="flex items-center gap-2 text-xs">
-                <div className="w-5 h-5 rounded-md bg-blue-50 flex items-center justify-center">
-                  <Bot size={11} className="text-blue-600" />
+                <div className="w-5 h-5 rounded-md bg-emerald-50 flex items-center justify-center">
+                  <Bot size={11} className="text-emerald-700" />
                 </div>
                 <span className="text-gray-500">Agent:</span>
                 <span className="font-medium text-gray-700">{agent}</span>

@@ -4,20 +4,20 @@ import { Bot, Clock, Zap, ChevronDown, ChevronRight, CheckCircle2, AlertCircle, 
 /* ─── Agent Summary Bar ─── */
 export function AgentSummaryBar({ agentName, summary, itemsProcessed, exceptionsFound, timeSaved, lastRunTime }) {
   return (
-    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-100 dark:border-blue-800 rounded-2xl px-5 py-3 mb-6">
+    <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-950/20 border border-emerald-100 dark:border-emerald-900 rounded-2xl px-5 py-3 mb-6">
       <div className="flex items-center gap-3 flex-wrap">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-700 to-teal-600 flex items-center justify-center flex-shrink-0">
           <Bot size={14} className="text-white" />
         </div>
         <p className="text-sm text-gray-700 flex-1 min-w-0">
-          <span className="font-semibold text-blue-700 dark:text-blue-400">{agentName}</span>
+          <span className="font-semibold text-emerald-800 dark:text-emerald-400">{agentName}</span>
           {' — '}
           {summary}
         </p>
         <div className="flex items-center gap-3 lg:gap-4 flex-shrink-0 flex-wrap">
           {itemsProcessed != null && (
             <div className="flex items-center gap-1.5">
-              <Zap size={12} className="text-blue-500" />
+              <Zap size={12} className="text-emerald-600" />
               <span className="text-xs font-semibold text-gray-700 dark:text-gray-300 tabular-nums">{itemsProcessed}</span>
               <span className="text-[10px] text-gray-400">processed</span>
             </div>
@@ -88,8 +88,8 @@ export function AgentActivityFeed({ activities = [], maxItems = 10, showViewAll 
           >
             <div className="flex items-center gap-3 px-4 py-2.5">
               <div className={`w-2 h-2 rounded-full flex-shrink-0 ${statusDot(activity.status)}`} />
-              <div className="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center flex-shrink-0">
-                <Bot size={12} className="text-blue-600" />
+              <div className="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                <Bot size={12} className="text-emerald-700" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-700 truncate">
@@ -126,12 +126,12 @@ export function AgentActivityFeed({ activities = [], maxItems = 10, showViewAll 
                   )}
                   {activity.policiesChecked && activity.policiesChecked.length > 0 && (
                     <div className="flex items-start gap-2 text-xs">
-                      <Shield size={11} className="text-blue-500 mt-0.5" />
+                      <Shield size={11} className="text-emerald-600 mt-0.5" />
                       <div>
                         <span className="text-gray-500">Policies checked:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
                           {activity.policiesChecked.map((policy, i) => (
-                            <span key={i} className="px-1.5 py-0.5 rounded bg-blue-50 text-[10px] text-blue-700 font-medium">
+                            <span key={i} className="px-1.5 py-0.5 rounded bg-emerald-50 text-[10px] text-emerald-800 font-medium">
                               {policy}
                             </span>
                           ))}
@@ -148,7 +148,7 @@ export function AgentActivityFeed({ activities = [], maxItems = 10, showViewAll 
       {showViewAll && activities.length > maxItems && (
         <button
           onClick={onViewAll}
-          className="w-full text-center text-xs font-semibold text-blue-600 hover:text-blue-700 py-2 transition-colors"
+          className="w-full text-center text-xs font-semibold text-emerald-700 hover:text-emerald-800 py-2 transition-colors"
         >
           View all {activities.length} activities
         </button>
@@ -190,23 +190,23 @@ export function AgentStatusIndicator({ status, agentName, lastRun }) {
 
 /* ─── Agent Card ─── */
 const domainGradients = {
-  clinical: 'from-blue-600 to-indigo-600',
+  clinical: 'from-emerald-700 to-teal-600',
   finance: 'from-emerald-600 to-teal-600',
   workforce: 'from-violet-600 to-purple-600',
   operations: 'from-orange-600 to-amber-600',
   legal: 'from-slate-600 to-gray-600',
-  strategic: 'from-cyan-600 to-blue-600',
-  platform: 'from-indigo-600 to-violet-600',
+  strategic: 'from-cyan-600 to-emerald-700',
+  platform: 'from-teal-600 to-violet-600',
 };
 
 const domainBadgeColors = {
-  clinical: 'bg-blue-50 text-blue-700 border-blue-100',
+  clinical: 'bg-emerald-50 text-emerald-800 border-emerald-100',
   finance: 'bg-emerald-50 text-emerald-700 border-emerald-100',
   workforce: 'bg-violet-50 text-violet-700 border-violet-100',
   operations: 'bg-orange-50 text-orange-700 border-orange-100',
   legal: 'bg-slate-50 text-slate-700 border-slate-100',
   strategic: 'bg-cyan-50 text-cyan-700 border-cyan-100',
-  platform: 'bg-indigo-50 text-indigo-700 border-indigo-100',
+  platform: 'bg-teal-50 text-teal-700 border-teal-100',
 };
 
 export function AgentCard({ agent, onClick }) {

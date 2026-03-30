@@ -12,7 +12,7 @@ export default function AdminBriefing({ open }) {
   const f4Fac = facilityMap['f4'];
 
   const censusStats = [
-    { label: 'Current Census', value: censusChanges.currentCensus, icon: Bed, color: 'blue', change: `of ${censusChanges.capacity} beds` },
+    { label: 'Current Census', value: censusChanges.currentCensus, icon: Bed, color: 'emerald', change: `of ${censusChanges.capacity} beds` },
     { label: 'Admissions', value: censusChanges.admissions, icon: UserPlus, color: 'emerald', change: 'Expected today' },
     { label: 'Discharges', value: censusChanges.discharges, icon: UserMinus, color: 'amber', change: 'Expected today' },
     { label: 'Projected EOD', value: projectedEOD, icon: ArrowUpRight, color: 'cyan', change: `${(projectedEOD / censusChanges.capacity * 100).toFixed(0)}% occupancy` },
@@ -29,7 +29,7 @@ export default function AdminBriefing({ open }) {
   const admitColumns = [
     { key: 'name', label: 'Name', render: (v) => <span className="font-medium text-gray-900">{v}</span> },
     { key: 'room', label: 'Room' },
-    { key: 'payer', label: 'Payer', render: (v) => <span className={`text-[10px] px-1.5 py-0.5 rounded ${v === 'Medicare A' ? 'bg-blue-50 text-blue-600 border border-blue-100' : v === 'Medicaid' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>{v}</span> },
+    { key: 'payer', label: 'Payer', render: (v) => <span className={`text-[10px] px-1.5 py-0.5 rounded ${v === 'Medicare A' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : v === 'Medicaid' ? 'bg-purple-50 text-purple-600 border border-purple-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>{v}</span> },
     { key: 'diagnosis', label: 'Diagnosis' },
     { key: 'arrivalTime', label: 'Arrival', render: (v) => <span className="font-mono">{v}</span> },
   ];
@@ -67,7 +67,7 @@ export default function AdminBriefing({ open }) {
                       <div className="space-y-2">
                         {detail.steps.map((step, si) => (
                           <div key={si} className="flex items-start gap-3 p-2.5 bg-gray-50 rounded-lg border border-gray-100">
-                            <div className="w-5 h-5 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center flex-shrink-0 mt-0.5"><span className="text-[10px] font-bold text-blue-600">{si + 1}</span></div>
+                            <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center flex-shrink-0 mt-0.5"><span className="text-[10px] font-bold text-emerald-700">{si + 1}</span></div>
                             <p className="text-sm text-gray-700">{step}</p>
                           </div>
                         ))}

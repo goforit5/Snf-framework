@@ -16,7 +16,7 @@ export default function CFOBriefing({ open }) {
 
   const finStats = [
     { label: 'Cash Position', value: `$${(cashPosition.totalCash / 1000000).toFixed(1)}M`, icon: Banknote, color: 'emerald', change: 'Operating + reserves' },
-    { label: 'Total AR', value: `$${(arAgingSummary.totalAR / 1000000).toFixed(1)}M`, icon: Receipt, color: 'blue', change: `DSO: ${arAgingSummary.avgDSO} days` },
+    { label: 'Total AR', value: `$${(arAgingSummary.totalAR / 1000000).toFixed(1)}M`, icon: Receipt, color: 'emerald', change: `DSO: ${arAgingSummary.avgDSO} days` },
     { label: 'AR >90 Days', value: `$${(arAgingSummary.over90Total / 1000).toFixed(0)}K`, icon: FileWarning, color: 'red', change: `${((arAgingSummary.over90Total / arAgingSummary.totalAR) * 100).toFixed(1)}% of total` },
     { label: 'Budget Variance', value: `$${Math.abs(budgetVariance / 1000).toFixed(0)}K`, icon: budgetVariance >= 0 ? TrendingUp : TrendingDown, color: budgetVariance >= 0 ? 'emerald' : 'red', change: budgetVariance >= 0 ? 'Under budget' : 'Over budget' },
     { label: 'Collection Rate', value: `${arAgingSummary.collectionRate}%`, icon: DollarSign, color: 'emerald', change: 'Rolling 30-day' },
@@ -37,9 +37,9 @@ export default function CFOBriefing({ open }) {
       <Card title="Financial Alerts" badge={`${billingAlerts.length}`} className="mb-6">
         <div className="space-y-2">
           {billingAlerts.map((alert, i) => (
-            <ClickableRow key={i} onClick={() => open({ title: 'Financial Alert', content: <div className="space-y-3"><div className={`rounded-xl p-3 border ${alert.severity === 'critical' ? 'bg-red-50 border-red-200' : alert.severity === 'high' ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}><p className="text-sm text-gray-900 font-medium">{alert.title}</p></div><p className="text-sm text-gray-700 leading-relaxed">{alert.detail}</p></div>, actions: <><ActionButton label="View Details" variant="primary" /><ActionButton label="Acknowledge" variant="ghost" /></> })} className={alert.severity === 'critical' ? '!bg-red-50/50 !border-red-200' : alert.severity === 'high' ? '!bg-amber-50/50 !border-amber-200' : ''}>
+            <ClickableRow key={i} onClick={() => open({ title: 'Financial Alert', content: <div className="space-y-3"><div className={`rounded-xl p-3 border ${alert.severity === 'critical' ? 'bg-red-50 border-red-200' : alert.severity === 'high' ? 'bg-amber-50 border-amber-200' : 'bg-emerald-50 border-emerald-200'}`}><p className="text-sm text-gray-900 font-medium">{alert.title}</p></div><p className="text-sm text-gray-700 leading-relaxed">{alert.detail}</p></div>, actions: <><ActionButton label="View Details" variant="primary" /><ActionButton label="Acknowledge" variant="ghost" /></> })} className={alert.severity === 'critical' ? '!bg-red-50/50 !border-red-200' : alert.severity === 'high' ? '!bg-amber-50/50 !border-amber-200' : ''}>
               <div className="flex items-start gap-3">
-                <AlertTriangle size={14} className={`flex-shrink-0 mt-0.5 ${alert.severity === 'critical' ? 'text-red-500' : alert.severity === 'high' ? 'text-amber-500' : 'text-blue-500'}`} />
+                <AlertTriangle size={14} className={`flex-shrink-0 mt-0.5 ${alert.severity === 'critical' ? 'text-red-500' : alert.severity === 'high' ? 'text-amber-500' : 'text-emerald-600'}`} />
                 <p className="text-sm text-gray-700">{alert.title}</p>
               </div>
             </ClickableRow>

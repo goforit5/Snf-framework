@@ -13,7 +13,7 @@ export default function CEOBriefing({ open }) {
   const revenueVariance = ((totalRevenueMTD - totalRevenueBudget) / totalRevenueBudget * 100).toFixed(1);
 
   const kpiStats = [
-    { label: 'Enterprise Census', value: censusSummary.totalCensus, icon: Bed, color: 'blue', change: `${censusSummary.avgOccupancy}% occupancy` },
+    { label: 'Enterprise Census', value: censusSummary.totalCensus, icon: Bed, color: 'emerald', change: `${censusSummary.avgOccupancy}% occupancy` },
     { label: 'Revenue MTD', value: `$${(totalRevenueMTD / 1000000).toFixed(1)}M`, icon: DollarSign, color: revenueVariance >= 0 ? 'emerald' : 'amber', change: `${revenueVariance}% vs budget` },
     { label: 'Avg Star Rating', value: qualitySummary.avgOverallStars, icon: Star, color: qualitySummary.avgOverallStars >= 3.5 ? 'emerald' : 'amber', change: `${qualitySummary.fiveStarFacilities} at 5-star` },
     { label: 'Cash Position', value: `$${(cashPosition.totalCash / 1000000).toFixed(1)}M`, icon: Banknote, color: 'emerald', change: 'All covenants met' },
@@ -59,7 +59,7 @@ export default function CEOBriefing({ open }) {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-900">{deal.valuation}</p>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${deal.stage === 'Due Diligence' ? 'bg-blue-50 text-blue-600 border border-blue-100' : deal.stage === 'LOI Signed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>{deal.stage}</span>
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${deal.stage === 'Due Diligence' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : deal.stage === 'LOI Signed' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-100 text-gray-600 border border-gray-200'}`}>{deal.stage}</span>
                 </div>
               </div>
             ))}

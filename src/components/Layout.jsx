@@ -254,7 +254,7 @@ function RoleSwitcher() {
         aria-label={`Switch role, current: ${user.name}`}
         className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
       >
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm" aria-hidden="true">
+        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-700 to-teal-600 flex items-center justify-center text-[10px] font-bold text-white shadow-sm" aria-hidden="true">
           {user.avatarInitials}
         </div>
         <ChevronDown size={12} className={`text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -276,18 +276,18 @@ function RoleSwitcher() {
                 onClick={() => { switchRole(u.role); setIsOpen(false); }}
                 aria-current={user.id === u.id ? 'true' : undefined}
                 className={`w-full flex items-center gap-3 px-4 py-2 text-left transition-colors ${
-                  user.id === u.id ? 'bg-blue-50 dark:bg-blue-900/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
+                  user.id === u.id ? 'bg-emerald-50 dark:bg-emerald-950/30' : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`}
               >
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
                   user.id === u.id
-                    ? 'bg-gradient-to-br from-blue-600 to-indigo-600'
+                    ? 'bg-gradient-to-br from-emerald-700 to-teal-600'
                     : 'bg-gray-400'
                 }`}>
                   {u.avatarInitials}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm truncate ${user.id === u.id ? 'font-semibold text-blue-700 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{u.name}</p>
+                  <p className={`text-sm truncate ${user.id === u.id ? 'font-semibold text-emerald-800 dark:text-emerald-400' : 'text-gray-700 dark:text-gray-300'}`}>{u.name}</p>
                   <p className="text-[10px] text-gray-400 dark:text-gray-500 truncate">{u.title}</p>
                 </div>
               </button>
@@ -313,7 +313,7 @@ function NotificationBell({ onClick }) {
       {unreadCount > 0 && (
         <span
           className={`absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1 ${
-            criticalCount > 0 ? 'bg-red-500' : 'bg-blue-500'
+            criticalCount > 0 ? 'bg-red-500' : 'bg-emerald-600'
           }`}
           aria-hidden="true"
         >
@@ -443,13 +443,13 @@ export default function Layout({ children }) {
       {/* Logo */}
       <div className={`${full ? 'p-5' : 'p-3'} border-b border-gray-100 dark:border-gray-800`}>
         <div className={`flex items-center ${full ? 'gap-3' : 'justify-center'}`}>
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-sm flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-700 to-teal-600 flex items-center justify-center shadow-sm flex-shrink-0">
             <Bot size={18} className="text-white" />
           </div>
           {full && (
             <div>
-              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">AEOS</h1>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight font-medium">Enterprise Command</p>
+              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">Ensign</h1>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight font-medium">Agentic Platform</p>
             </div>
           )}
         </div>
@@ -471,7 +471,7 @@ export default function Layout({ children }) {
                   aria-label={`${section.title} section`}
                   className={`w-full flex items-center justify-between px-2 py-2 min-h-[44px] text-[10px] font-bold uppercase tracking-wider transition-colors rounded-lg ${
                     isCurrentSection
-                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-900/20'
+                      ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20'
                       : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                   }`}
                 >
@@ -488,7 +488,7 @@ export default function Layout({ children }) {
                     title={section.title}
                     className={`w-11 h-11 flex items-center justify-center rounded-xl transition-colors ${
                       isCurrentSection
-                        ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30'
+                        ? 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                   >
@@ -508,11 +508,11 @@ export default function Layout({ children }) {
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex items-center gap-2.5 px-3 py-2 min-h-[44px] rounded-xl text-sm transition-all ${
                           isActive
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold shadow-sm'
+                            ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-400 font-semibold shadow-sm'
                             : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200'
                         }`}
                       >
-                        <Icon size={16} className={isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'} aria-hidden="true" />
+                        <Icon size={16} className={isActive ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-400'} aria-hidden="true" />
                         {item.label}
                       </Link>
                     );
@@ -527,7 +527,7 @@ export default function Layout({ children }) {
       {/* User */}
       <div className={`${full ? 'p-4' : 'p-2'} border-t border-gray-100 dark:border-gray-800`}>
         <div className={`flex items-center ${full ? 'gap-3 px-2' : 'justify-center'}`}>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm flex-shrink-0">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-700 to-teal-600 flex items-center justify-center text-[11px] font-bold text-white shadow-sm flex-shrink-0">
             {user.avatarInitials}
           </div>
           {full && (

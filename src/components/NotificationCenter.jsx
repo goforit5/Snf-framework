@@ -37,10 +37,10 @@ const TYPE_CONFIG = {
   info: {
     label: 'Info',
     icon: Info,
-    dotColor: 'bg-blue-500',
-    badgeColor: 'bg-blue-50 text-blue-700 border-blue-200',
-    iconColor: 'text-blue-500',
-    tabActive: 'bg-blue-50 text-blue-700 border-blue-200',
+    dotColor: 'bg-emerald-600',
+    badgeColor: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    iconColor: 'text-emerald-600',
+    tabActive: 'bg-emerald-50 text-emerald-800 border-emerald-200',
   },
 };
 
@@ -267,7 +267,7 @@ export default function NotificationCenter({ isOpen, onClose }) {
           {!showArchived && unreadCount > 0 && (
             <button
               onClick={dismissAll}
-              className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors px-2 py-1 rounded-lg hover:bg-blue-50"
+              className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 hover:text-emerald-800 transition-colors px-2 py-1 rounded-lg hover:bg-emerald-50"
             >
               <CheckCheck size={14} />
               Mark all read

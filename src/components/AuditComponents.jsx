@@ -3,7 +3,7 @@ import { Bot, User, ChevronDown, ChevronRight, ArrowRight, Shield, FileText, Che
 
 /* ─── Audit Entry ─── */
 const actorTypeConfig = {
-  agent: { bg: 'bg-blue-50', dot: 'bg-blue-500', icon: Bot, iconColor: 'text-blue-600' },
+  agent: { bg: 'bg-emerald-50', dot: 'bg-emerald-600', icon: Bot, iconColor: 'text-emerald-700' },
   human: { bg: 'bg-green-50', dot: 'bg-green-500', icon: User, iconColor: 'text-green-600' },
   system: { bg: 'bg-gray-50', dot: 'bg-gray-400', icon: Bot, iconColor: 'text-gray-500' },
 };
@@ -13,7 +13,7 @@ const dispositionConfig = {
   rejected: { color: 'text-red-600', bg: 'bg-red-50', icon: XCircle },
   pending: { color: 'text-amber-600', bg: 'bg-amber-50', icon: Clock },
   deferred: { color: 'text-gray-500', bg: 'bg-gray-50', icon: Clock },
-  auto: { color: 'text-blue-600', bg: 'bg-blue-50', icon: CheckCircle2 },
+  auto: { color: 'text-emerald-700', bg: 'bg-emerald-50', icon: CheckCircle2 },
 };
 
 function formatTimestamp(timestamp) {
@@ -77,12 +77,12 @@ export function AuditEntry({ entry, isExpanded = false, onToggle }) {
           <div className="pt-3 space-y-2.5">
             {policies.length > 0 && (
               <div className="flex items-start gap-2 text-xs">
-                <Shield size={11} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                <Shield size={11} className="text-emerald-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <span className="text-gray-500">Policies:</span>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {policies.map((p, i) => (
-                      <span key={i} className="px-1.5 py-0.5 rounded bg-blue-50 text-[10px] text-blue-700 font-medium">{p}</span>
+                      <span key={i} className="px-1.5 py-0.5 rounded bg-emerald-50 text-[10px] text-emerald-800 font-medium">{p}</span>
                     ))}
                   </div>
                 </div>
@@ -198,11 +198,11 @@ export function AuditTimeline({ entries = [], groupBy = 'time' }) {
                     const aConfig = actorTypeConfig[entry.actorType] || actorTypeConfig.agent;
                     const isHighlighted = highlightedId === entry.id;
                     return (
-                      <div key={entry.id} id={'audit-entry-' + entry.id} className={'relative pl-10 transition-all duration-500' + (isHighlighted ? ' ring-2 ring-blue-300 rounded-xl' : '')}>
+                      <div key={entry.id} id={'audit-entry-' + entry.id} className={'relative pl-10 transition-all duration-500' + (isHighlighted ? ' ring-2 ring-emerald-300 rounded-xl' : '')}>
                         {/* Timeline dot — clickable */}
                         <div
                           onClick={(e) => handleDotClick(e, entry.id)}
-                          className={`absolute left-[13px] top-4 w-2.5 h-2.5 rounded-full ${aConfig.dot} ring-2 ring-white cursor-pointer hover:ring-blue-300 hover:scale-125 transition-all duration-200`}
+                          className={`absolute left-[13px] top-4 w-2.5 h-2.5 rounded-full ${aConfig.dot} ring-2 ring-white cursor-pointer hover:ring-emerald-300 hover:scale-125 transition-all duration-200`}
                           title={'Jump to ' + (entry.actor || entry.actorName || 'entry')}
                           role="button"
                           tabIndex={0}

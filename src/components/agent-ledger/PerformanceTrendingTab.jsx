@@ -31,7 +31,7 @@ export default function PerformanceTrendingTab() {
         <select
           value={selectedAgent}
           onChange={e => setSelectedAgent(e.target.value)}
-          className="w-full max-w-sm px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="w-full max-w-sm px-3 py-2 rounded-xl border border-gray-200 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
         >
           {agentRegistry.map(a => (
             <option key={a.id} value={a.id}>{a.displayName} ({domainLabels[a.domain] || a.domain})</option>
@@ -65,7 +65,7 @@ export default function PerformanceTrendingTab() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 12 }} />
               <ReferenceLine y={avgResponse} stroke="#94A3B8" strokeDasharray="4 4" label={{ value: 'baseline', fill: '#94A3B8', fontSize: 10 }} />
-              <Line type="monotone" dataKey="responseMs" stroke="#3B82F6" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="responseMs" stroke="#059669" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </Card>

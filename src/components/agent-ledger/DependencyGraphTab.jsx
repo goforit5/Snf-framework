@@ -5,12 +5,12 @@ import { agentRegistry, agentById, agentDependencies, dataSources, domainLabels 
 import { Card, SectionLabel } from '../Widgets';
 
 const DOMAIN_COLORS = {
-  'clinical': '#3B82F6',
+  'clinical': '#059669',
   'revenue-cycle': '#10B981',
   'workforce': '#8B5CF6',
   'operations': '#F97316',
   'quality-compliance': '#EAB308',
-  'legal-strategic': '#6366F1',
+  'legal-strategic': '#0d9488',
   'vendor': '#14B8A6',
   'orchestration': '#EC4899',
   'meta': '#64748B',
@@ -106,7 +106,7 @@ export default function DependencyGraphTab() {
               const toAgent = agentById[dep.to];
               if (!fromAgent || !toAgent) return null;
               const typeColors = {
-                triggers: 'bg-blue-50 text-blue-700 border-blue-100',
+                triggers: 'bg-emerald-50 text-emerald-800 border-emerald-100',
                 cascades: 'bg-violet-50 text-violet-700 border-violet-100',
                 coordinates: 'bg-cyan-50 text-cyan-700 border-cyan-100',
                 blocks: 'bg-red-50 text-red-700 border-red-100',
