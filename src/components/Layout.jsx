@@ -448,8 +448,8 @@ export default function Layout({ children }) {
           </div>
           {full && (
             <div>
-              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">Ensign</h1>
-              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight font-medium">Agentic Framework</p>
+              <h1 className="text-sm font-bold text-gray-900 dark:text-gray-100 tracking-tight">AEOS</h1>
+              <p className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight font-medium">Enterprise Command</p>
             </div>
           )}
         </div>
