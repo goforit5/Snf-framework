@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo, useContext } from 'react';
 import { ToastContext } from '../components/FeedbackUtils';
+import { NotificationContext } from '../providers/NotificationProvider';
 
 const TOAST_MESSAGES = {
   approved: { label: 'Approved', type: 'success' },
@@ -8,8 +9,16 @@ const TOAST_MESSAGES = {
   deferred: { label: 'Deferred', type: 'info' },
 };
 
+const NOTIFICATION_CONFIG = {
+  approved: { type: 'agent-update', verb: 'Approved' },
+  overridden: { type: 'decision-required', verb: 'Overridden' },
+  escalated: { type: 'critical', verb: 'Escalated' },
+  deferred: { type: 'info', verb: 'Deferred' },
+};
+
 export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
   const toastCtx = useContext(ToastContext);
+  const notifCtx = useContext(NotificationContext);
   const [decisions, setDecisions] = useState(() =>
     initialDecisions.map(d => ({ ...d, _status: 'pending' }))
   );
@@ -32,7 +41,16 @@ export function useDecisionQueue(initialDecisions = [], { onAction } = {}) {
       const cfg = TOAST_MESSAGES[action] || TOAST_MESSAGES.approved;
       toastCtx.toast({ message: `${cfg.label}: ${decision.title}`, type: cfg.type });
     }
-  }, [onAction, toastCtx]);
+    if (notifCtx && decision) {
+      const ncfg = NOTIFICATION_CONFIG[action] || NOTIFICATION_CONFIG.approved;
+      notifCtx.addNotification({
+        type: ncfg.type,
+        title: `${ncfg.verb}: ${decision.title}`,
+        message: decision.description || `Decision ${action} by operator.`,
+        agentId: decision.agent || 'decision-queue',
+      });
+    }
+  }, [onAction, toastCtx, notifCtx]);
 
   const approve = useCallback((id) => {
     const decision = findDecision(id);

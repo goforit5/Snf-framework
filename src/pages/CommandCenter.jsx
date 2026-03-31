@@ -185,7 +185,7 @@ export default function CommandCenter() {
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="max-w-[1600px] mx-auto">
       <PageHeader
         title="Global Command Center"
         subtitle="Ensign Agentic Framework — Portfolio Overview"

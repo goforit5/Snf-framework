@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Zap, Timer, Shield, AlertTriangle, Activity, Database, BarChart3, GitBranch, Bot, User, CheckCircle2, Eye, ArrowRight } from 'lucide-react';
+import { Zap, Timer, Shield, AlertTriangle, Activity, Database, BarChart3, GitBranch, Bot, User, CheckCircle2, Eye, ArrowRight, Clock, DollarSign, MapPin, Crosshair } from 'lucide-react';
 import { agentActivity, agentRegistry, agentById, auditLog, getTraceChain, agentPerformance, detectAnomalies } from '../data/agents';
 import { PageHeader, ConfidenceBar, AgentHumanSplit, ActionButton } from '../components/Widgets';
 import { useModal } from '../components/WidgetUtils';
@@ -80,7 +80,138 @@ export default function AgentWorkLedger() {
   const agentCount = todayAudit.filter(e => e.actorType === 'agent').length;
   const humanCount = todayAudit.filter(e => e.actorType === 'human').length;
 
-  function openReplay(traceId) {
+  function openActionDetail(activity) {
+    const agent = agentById[activity.agentId];
+    const agentName = agent?.displayName || activity.agentId;
+    const domainColors = {
+      clinical: 'from-blue-600 to-indigo-600',
+      finance: 'from-emerald-600 to-teal-600',
+      workforce: 'from-violet-600 to-purple-600',
+      operations: 'from-orange-600 to-amber-600',
+      legal: 'from-slate-600 to-gray-600',
+      strategic: 'from-cyan-600 to-blue-600',
+      platform: 'from-indigo-600 to-violet-600',
+    };
+    const gradient = domainColors[agent?.domain] || domainColors.platform;
+    const statusColors = {
+      completed: 'bg-green-50 text-green-700 border-green-100',
+      'in-progress': 'bg-violet-50 text-violet-700 border-violet-100',
+      failed: 'bg-red-50 text-red-700 border-red-100',
+    };
+    const statusStyle = statusColors[activity.status] || statusColors.completed;
+
+    open({
+      title: 'Action Detail',
+      content: (
+        <div className="space-y-5">
+          {/* Agent header */}
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center flex-shrink-0`}>
+              <Bot size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-semibold text-gray-900">{agentName}</h3>
+              <div className="flex items-center gap-2 mt-0.5">
+                {agent?.domain && (
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-gray-100 text-gray-600 border border-gray-200">{agent.domain}</span>
+                )}
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${statusStyle}`}>
+                  {activity.status}
+                </span>
+              </div>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+              {activity.facilityId && (
+                <p className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1 justify-end">
+                  <MapPin size={9} />{activity.facilityId === 'all' ? 'Enterprise-wide' : `Facility ${activity.facilityId}`}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Trigger */}
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Crosshair size={12} className="text-amber-600" />
+              <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wider">Trigger</p>
+            </div>
+            <p className="text-sm text-gray-800">{activity.trigger}</p>
+          </div>
+
+          {/* Action taken */}
+          <div>
+            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Action Taken</p>
+            <p className="text-sm text-gray-800 leading-relaxed">{activity.action}</p>
+          </div>
+
+          {/* Result / Outcome */}
+          {activity.result && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
+              <p className="text-[10px] font-semibold text-blue-700 uppercase tracking-wider mb-1">Outcome</p>
+              <p className="text-sm text-gray-800 leading-relaxed">{activity.result}</p>
+            </div>
+          )}
+
+          {/* Details (the deep analysis) */}
+          {activity.details && (
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Analysis Details</p>
+              <p className="text-xs text-gray-700 leading-relaxed">{activity.details}</p>
+            </div>
+          )}
+
+          {/* Metrics row */}
+          <div className="grid grid-cols-3 gap-3">
+            {activity.confidence != null && (
+              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+                <p className="text-lg font-bold text-gray-900">{(activity.confidence * 100).toFixed(0)}%</p>
+                <p className="text-[10px] text-gray-400">Confidence</p>
+              </div>
+            )}
+            {activity.timeSaved && (
+              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <Clock size={12} className="text-emerald-500" />
+                  <p className="text-lg font-bold text-gray-900">{activity.timeSaved}</p>
+                </div>
+                <p className="text-[10px] text-gray-400">Time Saved</p>
+              </div>
+            )}
+            {activity.costImpact && (
+              <div className="bg-white border border-gray-100 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  <DollarSign size={12} className="text-blue-500" />
+                  <p className="text-sm font-bold text-gray-900">{activity.costImpact}</p>
+                </div>
+                <p className="text-[10px] text-gray-400">Cost Impact</p>
+              </div>
+            )}
+          </div>
+
+          {/* Policies checked */}
+          {activity.policiesChecked && activity.policiesChecked.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Shield size={12} className="text-green-600" />
+                <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Policies Verified</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {activity.policiesChecked.map((policy, i) => (
+                  <span key={i} className="px-2 py-1 rounded-lg bg-green-50 text-[11px] text-green-700 font-medium border border-green-100">
+                    <CheckCircle2 size={10} className="inline mr-1" />{policy}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ),
+      actions: <ActionButton label="Close" variant="ghost" />,
+    });
+  }
+
+  function _openReplay(traceId) {
     const chain = getTraceChain(traceId);
     if (!chain.length) return;
     const traceLabel = chain[0]?.target || traceId;
@@ -178,7 +309,7 @@ export default function AgentWorkLedger() {
         <TabButton label="Anomaly Detection" icon={AlertTriangle} active={activeTab === 'anomalies'} onClick={() => setActiveTab('anomalies')} badge={allAnomalies.length > 0 ? allAnomalies.length : null} />
       </div>
 
-      {activeTab === 'activity' && <ActivityTab search={search} setSearch={setSearch} todayActivities={todayActivities} openDecisionReplay={openReplay} />}
+      {activeTab === 'activity' && <ActivityTab search={search} setSearch={setSearch} todayActivities={todayActivities} openActionDetail={openActionDetail} />}
       {activeTab === 'replay' && <DecisionReplayTab open={open} />}
       {activeTab === 'graph' && <DependencyGraphTab />}
       {activeTab === 'performance' && <PerformanceTrendingTab />}

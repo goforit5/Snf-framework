@@ -7,7 +7,7 @@ function formatTime(ts) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-export default function ActivityTab({ search, setSearch, todayActivities, openDecisionReplay }) {
+export default function ActivityTab({ search, setSearch, todayActivities, openActionDetail }) {
   const filtered = search.trim()
     ? todayActivities.filter(a => {
         const q = search.toLowerCase();
@@ -29,7 +29,7 @@ export default function ActivityTab({ search, setSearch, todayActivities, openDe
           {filtered.slice(0, 20).map(activity => {
             const agent = agentById[activity.agentId];
             return (
-              <div key={activity.id} onClick={() => openDecisionReplay(activity.id)} className="rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995]">
+              <div key={activity.id} onClick={() => openActionDetail(activity)} className="rounded-xl p-4 bg-gray-50/50 border border-gray-100 hover:bg-white hover:shadow-sm hover:border-gray-200 transition-all cursor-pointer active:scale-[0.995]">
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
                   <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center flex-shrink-0">

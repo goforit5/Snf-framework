@@ -387,14 +387,15 @@ export default function Layout({ children }) {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- conditional on prev !== current, not cascading
   useEffect(() => { setMobileMenuOpen(prev => prev ? false : prev); }, [location.pathname]);
 
-  // Close mobile menu when resizing away from mobile
+  // Close mobile/tablet menu overlay when resizing to desktop
   // eslint-disable-next-line react-hooks/set-state-in-effect -- conditional, only fires on breakpoint change
-  useEffect(() => { if (responsiveMode !== 'mobile') setMobileMenuOpen(prev => prev ? false : prev); }, [responsiveMode]);
+  useEffect(() => { if (responsiveMode === 'full') setMobileMenuOpen(prev => prev ? false : prev); }, [responsiveMode]);
 
   const currentSectionKey = findCurrentSection(location.pathname);
   const breadcrumb = buildBreadcrumb(location.pathname);
 
-  const isIconsOnly = responsiveMode === 'icons' || (responsiveMode === 'full' && !sidebarOpen);
+  const isTablet = responsiveMode === 'icons';
+  const isIconsOnly = isTablet || (responsiveMode === 'full' && !sidebarOpen);
   const isMobile = responsiveMode === 'mobile';
 
   // Initialize collapsed state: current section + platform expanded, rest collapsed
@@ -409,19 +410,16 @@ export default function Layout({ children }) {
   });
 
   // Auto-expand current section on navigation — but respect manual toggles
-  const prevSectionRef = useRef(currentSectionKey);
-  const expandedSections = useMemo(() => {
-    // Only auto-expand when navigating to a NEW section, not on re-render
-    if (currentSectionKey !== prevSectionRef.current) {
-      prevSectionRef.current = currentSectionKey;
-      if (!userExpandedSections[currentSectionKey]) {
-        const merged = { ...userExpandedSections, [currentSectionKey]: true };
-        saveCollapsedState(merged);
-        return merged;
-      }
+  const [prevSectionKey, setPrevSectionKey] = useState(currentSectionKey);
+  if (currentSectionKey !== prevSectionKey) {
+    setPrevSectionKey(currentSectionKey);
+    if (!userExpandedSections[currentSectionKey]) {
+      const merged = { ...userExpandedSections, [currentSectionKey]: true };
+      saveCollapsedState(merged);
+      setUserExpandedSections(merged);
     }
-    return userExpandedSections;
-  }, [userExpandedSections, currentSectionKey]);
+  }
+  const expandedSections = userExpandedSections;
 
   const toggleSection = (key) => {
     setUserExpandedSections(prev => {
@@ -548,8 +546,8 @@ export default function Layout({ children }) {
         Skip to main content
       </a>
 
-      {/* Mobile sidebar overlay */}
-      {isMobile && mobileMenuOpen && (
+      {/* Mobile/tablet sidebar overlay */}
+      {(isMobile || isTablet) && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
           <aside className="relative w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-xl">
@@ -578,7 +576,7 @@ export default function Layout({ children }) {
         <header className="h-14 border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl flex items-center justify-between px-4 flex-shrink-0">
           {/* Left: hamburger + breadcrumb */}
           <div className="flex items-center gap-3">
-            {isMobile ? (
+            {isMobile || isTablet ? (
               <button
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open menu"

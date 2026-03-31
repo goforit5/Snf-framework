@@ -2,7 +2,6 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Shield, CheckCircle2, Bot, User, GitBranch, Clock, BarChart3 } from 'lucide-react';
 import { auditLog, traceIds } from '../data/agents/auditLog';
 import { PageHeader, Card, AgentHumanSplit } from '../components/Widgets';
-import { useModal } from '../components/WidgetUtils';
 import { AgentSummaryBar } from '../components/AgentComponents';
 import { StatGrid } from '../components/DataComponents';
 import { AuditTimeline, TraceView } from '../components/AuditComponents';
@@ -27,7 +26,6 @@ function useDebouncedValue(value, delay = 250) {
 }
 
 export default function AuditTrail() {
-  const { open } = useModal();
   const [actorFilters, setActorFilters] = useState([]);
   const [actionFilters, setActionFilters] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,13 +113,6 @@ export default function AuditTrail() {
       return new Date(b[1][0].timestamp) - new Date(a[1][0].timestamp);
     });
   }, [filtered]);
-
-  const dispositionColor = (disp) => {
-    if (disp.includes('Auto-approved') || disp.includes('Approved')) return 'text-green-700 bg-green-50 border border-green-100';
-    if (disp.includes('Critical') || disp.includes('required')) return 'text-red-700 bg-red-50 border border-red-100';
-    if (disp.includes('Pending') || disp.includes('Escalated')) return 'text-amber-700 bg-amber-50 border border-amber-100';
-    return 'text-blue-700 bg-blue-50 border border-blue-100';
-  };
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto">

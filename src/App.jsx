@@ -8,7 +8,7 @@ import { NotificationProvider } from './providers/NotificationProvider';
 import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
 import { useDarkMode, DarkModeContext } from './hooks/useDarkMode';
 import Layout from './components/Layout';
-import ComingSoon from './pages/ComingSoon';
+const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 
 /* ─── Presentation (renders outside Layout) ─── */
 const Presentation = lazy(() => import('./pages/Presentation'));

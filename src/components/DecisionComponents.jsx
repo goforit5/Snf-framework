@@ -96,7 +96,7 @@ function inferSourceSystem(label) {
 
 /* ─── Decision Detail Modal Content ─── */
 function DecisionDetailModal({
-  title, description, facility, priority, agent, confidence,
+  _title, description, facility, priority, agent, confidence,
   recommendation, evidence = [], impact, governanceLevel,
   agentReasoning, policies = [], sourceSystems = [], timeline = [],
   onApprove, onOverride, onEscalate, onDefer, closeModal,
@@ -318,11 +318,11 @@ function DecisionDetailModal({
       </div>
 
       {/* Sticky action bar */}
-      <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 rounded-b-2xl" role="group" aria-label="Decision actions">
+      <div className="sticky bottom-0 left-0 right-0 px-4 sm:px-6 py-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 flex-wrap rounded-b-2xl" role="group" aria-label="Decision actions">
         {onApprove && (
           <button
             onClick={() => handleAction(onApprove)}
-            className="px-5 py-2.5 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white shadow-sm transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-5 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white shadow-sm transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <CheckCircle2 size={14} />
             Approve
@@ -331,7 +331,7 @@ function DecisionDetailModal({
         {onOverride && (
           <button
             onClick={() => handleAction(onOverride)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <XCircle size={14} />
             Override
@@ -340,7 +340,7 @@ function DecisionDetailModal({
         {onEscalate && (
           <button
             onClick={() => handleAction(onEscalate)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <ArrowUp size={14} />
             Escalate
@@ -349,7 +349,7 @@ function DecisionDetailModal({
         {onDefer && (
           <button
             onClick={() => handleAction(onDefer)}
-            className="px-4 py-2.5 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+            className="px-4 py-2.5 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
           >
             <Clock size={14} />
             Defer
@@ -500,7 +500,7 @@ export function DecisionCard({
             {onApprove && (
               <button
                 onClick={handleApprove}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97]"
+                className="px-2.5 py-1.5 min-h-[44px] min-w-[44px] rounded-xl text-[11px] font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center justify-center"
                 aria-label={`Approve: ${title}`}
               >
                 Approve
@@ -509,7 +509,7 @@ export function DecisionCard({
             {onOverride && (
               <button
                 onClick={handleDismissAction(onOverride)}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] hidden lg:block"
+                className="px-2.5 py-1.5 min-h-[44px] min-w-[44px] rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] hidden lg:flex items-center justify-center"
                 aria-label={`Override: ${title}`}
               >
                 Override
@@ -518,7 +518,7 @@ export function DecisionCard({
             {onEscalate && (
               <button
                 onClick={(e) => { e.stopPropagation(); onEscalate(); }}
-                className="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97]"
+                className="px-2.5 py-1.5 min-h-[44px] min-w-[44px] rounded-xl text-[11px] font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center justify-center"
                 aria-label={`Escalate: ${title}`}
               >
                 <ArrowUp size={12} aria-hidden="true" />
@@ -529,7 +529,7 @@ export function DecisionCard({
             onClick={onToggle}
             aria-expanded={isExpanded}
             aria-label={`${isExpanded ? 'Collapse' : 'Expand'} details for: ${title}`}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             {isExpanded ? <ChevronDown size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" /> : <ChevronRight size={14} className="text-gray-400 transition-transform duration-200" aria-hidden="true" />}
           </button>
@@ -582,12 +582,12 @@ export function DecisionCard({
               View Full Detail
             </button>
             {/* Action buttons repeated in expanded view for accessibility */}
-            <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-800" role="group" aria-label="Decision actions">
+            <div className="flex items-center gap-2 flex-wrap pt-2 border-t border-gray-100 dark:border-gray-800" role="group" aria-label="Decision actions">
               {onApprove && (
                 <button
                   onClick={handleApprove}
                   aria-label={`Approve: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-green-600 hover:bg-green-700 text-white transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <CheckCircle2 size={13} aria-hidden="true" />
                   Approve
@@ -597,7 +597,7 @@ export function DecisionCard({
                 <button
                   onClick={handleDismissAction(onOverride)}
                   aria-label={`Override: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <XCircle size={13} aria-hidden="true" />
                   Override
@@ -607,7 +607,7 @@ export function DecisionCard({
                 <button
                   onClick={onEscalate}
                   aria-label={`Escalate: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <ArrowUp size={13} aria-hidden="true" />
                   Escalate
@@ -617,7 +617,7 @@ export function DecisionCard({
                 <button
                   onClick={onDefer}
                   aria-label={`Defer: ${title}`}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
+                  className="px-3.5 py-2 min-h-[44px] rounded-xl text-xs font-semibold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-all duration-200 active:scale-[0.97] flex items-center gap-1.5"
                 >
                   <Clock size={13} aria-hidden="true" />
                   Defer

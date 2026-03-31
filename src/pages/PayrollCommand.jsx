@@ -54,42 +54,6 @@ export default function PayrollCommand() {
 
   const { decisions, approve, escalate } = useDecisionQueue(decisionData);
 
-  const openExceptionModal = (id) => {
-    const idx = parseInt(id.replace('payroll-', ''));
-    const exc = exceptions[idx];
-    open({
-      title: `Payroll Exception — ${exc.employee}`,
-      content: (
-        <div className="space-y-5">
-          <div className="flex items-center justify-between">
-            <div><p className="text-lg font-semibold text-gray-900">{exc.employee}</p><p className="text-sm text-gray-500">{exc.facility}</p></div>
-            <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${exc.severity === 'critical' ? 'bg-red-50 text-red-700 border-red-200' : exc.severity === 'high' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>{exc.severity.toUpperCase()}</span>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100"><p className="text-[10px] text-gray-400 uppercase">Type</p><p className="text-sm font-medium text-gray-900 mt-0.5">{exc.type}</p></div>
-            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100"><p className="text-[10px] text-gray-400 uppercase">Hours</p><p className="text-sm font-medium text-gray-900 font-mono mt-0.5">{exc.hours || 'N/A'}</p></div>
-            <div className="bg-gray-50 rounded-xl p-3 border border-gray-100"><p className="text-[10px] text-gray-400 uppercase">Facility</p><p className="text-sm font-medium text-gray-900 mt-0.5">{exc.facility.split(' ').slice(0, 2).join(' ')}</p></div>
-          </div>
-          <div><p className="text-xs text-gray-500 uppercase font-medium mb-2">Issue Identified</p><div className="bg-red-50 border border-red-200 rounded-xl p-4"><div className="flex items-start gap-2"><AlertTriangle size={14} className="text-red-600 mt-0.5 flex-shrink-0" /><p className="text-sm text-gray-800">{exc.issue}</p></div></div></div>
-          <div><p className="text-xs text-gray-500 uppercase font-medium mb-2">Agent Analysis</p>
-            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4"><div className="flex items-start gap-2"><Bot size={14} className="text-blue-600 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-gray-700">
-                {exc.type === 'Overtime' && `Employee logged ${exc.hours} hours against a 60-hour weekly cap. Caused by 3 consecutive agency-unfilled call-offs. All hours verified via badge-in/badge-out data.`}
-                {exc.type === 'Missing Punch' && 'No clock-out recorded. Cross-referenced schedule (3P-11P shift) and badge access logs (last activity 11:12 PM). Recommend 11:00 PM clock-out.'}
-                {exc.type === 'Rate Mismatch' && 'Active LPN license but CNA rate applied. Data sync issue from credential update on 2/28. Retro adjustment calculated.'}
-                {exc.type === 'Meal Break' && 'Continuous work from clock-in through clock-out with no break on 12-hour shift. Premium pay of 1 hour at regular rate required.'}
-                {exc.type === 'Duplicate Shift' && 'Clock-in records at 2 facilities on same day. 16-hour total triggers overtime review. Review biometric data for verification.'}
-              </p>
-            </div></div>
-          </div>
-          <div><p className="text-xs text-gray-500 uppercase font-medium mb-2">Agent Confidence</p><div className="max-w-xs"><ConfidenceBar value={severityToConfidence[exc.severity] || 0.85} /></div></div>
-          <div><p className="text-xs text-gray-500 uppercase font-medium mb-2">Evidence Reviewed</p><div className="flex flex-wrap gap-2">{['Timecard record', 'Schedule data', 'Badge access log'].map((ev, j) => (<span key={j} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700"><FileWarning size={12} className="text-gray-400" />{ev}</span>))}</div></div>
-        </div>
-      ),
-      actions: (<><ActionButton label="Escalate" variant="ghost" /><ActionButton label="Add Note" variant="outline" /><ActionButton label="Resolve" variant="primary" /></>),
-    });
-  };
-
   const actionItems = [
     { action: 'Investigate Sarah Wilson duplicate shift — clocked in at 2 facilities same day', priority: 'Critical', owner: 'Payroll Admin', deadline: 'Immediately', detail: 'Sarah Wilson shows clock-in records at both Bayview Rehabilitation (6:45 AM) and Pacific Gardens SNF (7:00 AM) on March 10.' },
     { action: 'Review Maria Santos overtime — 68.5 hrs exceeds 60hr weekly cap at Meadowbrook', priority: 'High', owner: 'Facility Administrator', deadline: 'Today', detail: 'Maria Santos logged 68.5 hours this pay period against a 60-hour weekly cap.' },

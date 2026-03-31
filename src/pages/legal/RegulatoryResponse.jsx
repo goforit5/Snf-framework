@@ -34,7 +34,6 @@ export default function RegulatoryResponse() {
       recommendation: 'Submit supplemental documentation to CMS by March 21 (CMS gave 7-day turnaround). Package must include: (1) Updated fall risk assessment protocol (revised March 5 by DON Patricia Alvarez), (2) Staff re-education sign-in sheets from March 8-10 sessions (42 of 44 staff completed — 2 on PTO scheduled for March 19), (3) B-Wing environmental assessment with 6 corrective actions documented (grab bars installed, lighting upgraded, non-slip flooring in 3 areas). Attorney Rebecca Torres to review package before submission. If CMS accepts POC: IJ is abated and CMP stops accruing.',
       impact: 'CMP is accruing at $3,050/day since February 28 — current total: $48,800 through March 15. Each day of delay adds $3,050. If POC is rejected: CMS may impose additional sanctions including denial of payment for new admissions. Heritage Oaks\' Five-Star rating will drop from 3 to 1 star when the IJ is published on CMS Care Compare (30-day lag).',
       evidence: [{ label: 'CMS survey finding', detail: 'F-0689 Immediate Jeopardy, issued 2/28/2026, Heritage Oaks (CCN: 03-5142)' }, { label: 'POC submission', detail: 'Filed 3/7/2026, CMS reviewer requested supplemental docs 3/14, deadline 3/21' }, { label: 'CMP calculation', detail: '$3,050/day from 2/28 — $48,800 accrued through 3/15, ongoing until IJ abated' }],
-      governanceLevel: 4,
     },
     {
       id: 'reg-d2', title: 'Desert Springs staffing waiver — CMS regional office confirmation needed',
@@ -44,7 +43,6 @@ export default function RegulatoryResponse() {
       recommendation: 'Contact CMS Region IX (San Francisco office, Compliance Division) by phone to confirm receipt of waiver #WVR-2026-DS-001 and request estimated review timeline. If not received: re-submit via certified mail with delivery confirmation. Simultaneously: accelerate CNA recruitment — HR has 4 candidates in final interview stage. If even 2 are hired and onboarded by April 1, HPRD rises to 3.41 (still below requirement but demonstrates good faith effort, which CMS considers in waiver decisions).',
       impact: 'Without waiver: Desert Springs is technically non-compliant at 3.22 HPRD. If surveyed before waiver approval: F-0725 citation with mandatory POC. With waiver: 90-day protection while recruitment ramps up. PBJ data submission for Q1 2026 (due May 15) will show the staffing shortfall — CMS automated monitoring may flag this independently.',
       evidence: [{ label: 'Waiver filing #WVR-2026-DS-001', detail: 'Submitted 3/1/2026 to CMS Region IX, no acknowledgment received as of 3/15' }, { label: 'PBJ staffing data', detail: 'Desert Springs Q1 avg: 3.22 HPRD vs 3.48 required. 4 CNA vacancies since 1/15' }, { label: 'NV workforce data', detail: '14% CNA vacancy rate statewide, Las Vegas metro: 18% vacancy rate (DETR report Feb 2026)' }],
-      governanceLevel: 3,
     },
     {
       id: 'reg-d3', title: 'Bayview licensure renewal — California DPH application due April 30',
@@ -54,7 +52,6 @@ export default function RegulatoryResponse() {
       recommendation: 'Pre-assemble all available renewal documents now. Contact insurance broker (Marsh & McLennan, rep Sandra Ortiz) to confirm April 1 policy renewal and request same-day certificate issuance. Target submission date: April 7 (23 days before deadline). Attorney James Chen to review completed package. Mark April 15 as escalation date if certificate not received. Renewal fee of $2,400 — submit check request to AP by April 1.',
       impact: 'If renewal application is late: California DPH can impose a $500/day late penalty and, after 30 days, initiate provisional license proceedings. Bayview has had uninterrupted licensure for 12 years — a lapse would trigger immediate notification to all payer sources and could delay new admissions.',
       evidence: [{ label: 'License #SNF-CA-2024-5892', detail: 'Expires 6/30/2026, renewal application due 4/30/2026 (60-day requirement)' }, { label: 'Renewal checklist', detail: 'Fire clearance: obtained 3/10. Insurance cert: pending 4/1 renewal. NHA doc: ready. Fee: $2,400' }, { label: 'Insurance renewal', detail: 'Marsh & McLennan policy #ENS-GL-2025-001, renews 4/1/2026, $5M/occurrence' }],
-      governanceLevel: 2,
     },
   ];
   const dynamicDecisions = approachingDeadlines.slice(0, 2).map((f) => ({

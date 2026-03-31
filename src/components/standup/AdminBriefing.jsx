@@ -1,7 +1,5 @@
 import { AlertTriangle, Bed, UserPlus, UserMinus, ArrowUpRight, Activity } from 'lucide-react';
 import { facilityMap } from '../../data/entities/facilities';
-import { censusByFacility } from '../../data/operations/census';
-import { budgetByFacility } from '../../data/financial/budgetData';
 import { morningStandup } from '../../data/mockData';
 import { Card, StatusBadge, ClickableRow, ActionButton } from '../Widgets';
 import { StatGrid, DataTable } from '../DataComponents';

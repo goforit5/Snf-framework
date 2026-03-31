@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Database, ArrowRight } from 'lucide-react';
 import { Treemap, ResponsiveContainer } from 'recharts';
 import { agentRegistry, agentById, agentDependencies, dataSources, domainLabels } from '../../data/agents';

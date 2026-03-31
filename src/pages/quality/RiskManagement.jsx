@@ -77,7 +77,6 @@ const staticDecisions = [
     evidence: [{ label: 'Security system log', detail: 'B-Wing exit alarm activated 3:37 PM, Dorothy exited, found in parking lot 3:40 PM by Carlos Rivera' }, { label: 'WanderGuard inspection', detail: 'B-Wing receiver battery depleted, last replaced July 2025 (8 months ago, recommended: q6 months)' }, { label: 'PCC care plan', detail: 'Evans, Dorothy: moderate Alzheimer\'s, WanderGuard ordered, elopement risk: high' }, { label: 'Weather data', detail: 'Las Vegas 3/13/2026: high 94F at 3:40 PM, extreme heat advisory in effect' }],
   },
 ];
-const openEvents = riskEvents.filter(e => e.status !== 'resolved');
 const decisionData = staticDecisions;
 
 const eventColumns = [
