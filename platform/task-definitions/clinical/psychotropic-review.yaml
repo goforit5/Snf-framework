@@ -16,6 +16,16 @@ description: >
   indications, or with excessive PRN utilization. Critical for CMS survey
   readiness — psychotropic use is a top-5 deficiency area nationally.
 
+model: opus
+tools:
+  - pcc_get_medications
+  - pcc_get_orders
+  - pcc_get_assessments
+  - pcc_get_resident
+  - pcc_get_census
+  - pcc_get_care_plan
+maxTurns: 15
+
 trigger:
   type: schedule
   config:

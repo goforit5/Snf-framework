@@ -13,6 +13,15 @@ description: >
   complete, and assesses MDS coding accuracy. Facilities are surveyed every
   9-15 months — perpetual readiness is the only strategy.
 
+model: sonnet
+tools:
+  - cms_get_survey_results
+  - cms_get_facility_quality
+  - cms_get_penalties
+  - pcc_get_census
+  - pcc_get_incidents
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

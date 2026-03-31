@@ -14,6 +14,14 @@ description: >
   Response time is the #1 factor in referral conversion — hospitals send to
   whoever responds first. Target: evaluate and respond within 60 minutes.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_census
+  - pcc_get_assessments
+  - pcc_get_orders
+maxTurns: 10
+
 trigger:
   type: event
   config:

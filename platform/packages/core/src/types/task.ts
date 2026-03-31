@@ -1,9 +1,12 @@
 import { GovernanceLevel } from './governance.js';
-import type { AgentDomain } from './agent.js';
+import type { AgentDomain, ClaudeModel } from './agent.js';
 
 /**
  * Task definitions — tasks are data, not code.
  * Adding a task = adding a YAML file. TaskRegistry loads and validates them.
+ *
+ * Each task specifies its model and tools — aligned with Anthropic Agent SDK.
+ * Agents should ONLY have access to tools required for that specific task.
  */
 
 export interface TaskDefinition {
@@ -13,6 +16,19 @@ export interface TaskDefinition {
   domain: AgentDomain;
   agentId: string;
   description: string;
+
+  /** Claude model for this task — can override agent default */
+  model: ClaudeModel;
+
+  /**
+   * MCP tools available for this task — principle of least privilege.
+   * Scoped per-task, not per-agent. A pharmacy agent running a
+   * formulary audit needs different tools than a drug interaction check.
+   */
+  tools: string[];
+
+  /** Maximum conversation turns for this task */
+  maxTurns: number;
 
   // Trigger
   trigger: TaskTrigger;

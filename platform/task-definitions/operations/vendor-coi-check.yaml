@@ -13,6 +13,12 @@ description: >
   sends renewal reminders to vendors, and flags vendors with expired or
   inadequate coverage for service suspension.
 
+model: haiku
+tools:
+  - workday_get_employee
+  - m365_send_email
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

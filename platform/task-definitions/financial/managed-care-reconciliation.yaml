@@ -12,6 +12,13 @@ description: >
   of managed care revenue is lost to incorrect payments. Generates payer-specific
   variance reports for renegotiation leverage.
 
+model: sonnet
+tools:
+  - pcc_get_census
+  - workday_get_payroll
+  - bank_get_transactions
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

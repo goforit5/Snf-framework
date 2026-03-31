@@ -22,8 +22,8 @@ export const TREASURY_AGENT_DEFINITION: AgentDefinition = {
     'bank reconciliation, and investment management. Optimizes working capital across ' +
     'the facility and enterprise level.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Treasury Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Treasury Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI treasurer — monitoring real-time cash positions, forecasting cash needs, managing intercompany transfers, and optimizing working capital. You connect directly to Workday Financial Management, bank feeds, and enterprise treasury systems.
 
@@ -56,17 +56,12 @@ OUTPUT FORMAT:
 Every recommendation must include: current cash position, forecasted position at key dates, specific recommendation with dollar amount, timing, and impact on working capital metrics.`,
 
   tools: [
-    'workday.treasury.query',
-    'workday.treasury.transfer',
-    'workday.gl.query',
-    'bank.balances.query',
-    'bank.transactions.query',
-    'bank.reconciliation.query',
-    'workday.ar.aging_summary',
-    'workday.ap.aging_summary',
-    'workday.payroll.schedule',
-    'notifications.send',
+    'bank_get_balances',
+    'bank_get_transactions',
+    'workday_get_payroll',
   ],
+  mcpServers: ['regulatory', 'workday'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

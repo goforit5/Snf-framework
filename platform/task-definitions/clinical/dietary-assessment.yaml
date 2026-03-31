@@ -12,6 +12,15 @@ description: >
   F692 requires facilities to ensure residents maintain acceptable nutritional
   status. Generates dietitian referrals and meal plan modification recommendations.
 
+model: sonnet
+tools:
+  - pcc_get_vitals
+  - pcc_get_orders
+  - pcc_get_lab_results
+  - pcc_get_assessments
+  - pcc_get_census
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

@@ -12,6 +12,12 @@ description: >
   CMS F-tags F725/F726 require documented training — surveyors routinely cite
   incomplete training records.
 
+model: haiku
+tools:
+  - workday_get_employee
+  - workday_search_employees
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

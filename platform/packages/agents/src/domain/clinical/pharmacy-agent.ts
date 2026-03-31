@@ -49,30 +49,21 @@ export function createPharmacyAgentDefinition(
       'CMS F-tag aware (F756, F757, F758). Integrates with PCC for medication data, orders, ' +
       'labs, and clinical assessments.',
 
-    // Claude config
-    modelId: 'claude-sonnet-4-20250514',
-    systemPrompt: PHARMACY_SYSTEM_PROMPT,
+    // Claude config — opus for complex drug interaction reasoning and psychotropic review
+    model: 'opus',
+    prompt: PHARMACY_SYSTEM_PROMPT,
     tools: [
-      // PCC connector tools (platform-level)
-      PCC_TOOLS.GET_MEDICATIONS,
-      PCC_TOOLS.GET_ORDERS,
-      PCC_TOOLS.GET_ASSESSMENTS,
-      PCC_TOOLS.GET_LAB_RESULTS,
-      PCC_TOOLS.GET_RESIDENT,
-      PCC_TOOLS.GET_ALLERGIES,
-      PCC_TOOLS.GET_DIAGNOSES,
-      PCC_TOOLS.GET_DOCUMENTS,
-      PCC_TOOLS.GET_CENSUS,
-      PCC_TOOLS.GET_BEHAVIORAL_MONITORING,
-      PCC_TOOLS.GET_GDR_HISTORY,
-      PCC_TOOLS.GET_PRN_UTILIZATION,
-      // Pharmacy-specific analytical tools
-      TOOL_NAMES.CHECK_DRUG_INTERACTIONS,
-      TOOL_NAMES.VERIFY_FORMULARY_STATUS,
-      TOOL_NAMES.CALCULATE_RENAL_DOSING,
-      TOOL_NAMES.CHECK_BEERS_CRITERIA,
-      TOOL_NAMES.ASSESS_PSYCHOTROPIC_NECESSITY,
+      'pcc_get_medications',
+      'pcc_get_orders',
+      'pcc_get_assessments',
+      'pcc_get_lab_results',
+      'pcc_get_resident',
+      'pcc_search_residents',
+      'pcc_get_vitals',
+      'pcc_get_census',
     ],
+    mcpServers: ['pcc'],
+    maxTurns: 12,
     maxTokens: 4096,
 
     // Governance — pharmacy uses conservative thresholds given clinical safety implications

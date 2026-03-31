@@ -14,6 +14,15 @@ description: >
   determines whether to advance to full diligence. Ensign has acquired 330+
   facilities — speed and rigor in screening creates competitive advantage.
 
+model: opus
+tools:
+  - cms_get_facility_quality
+  - cms_get_survey_results
+  - cms_get_penalties
+  - oig_exclusion_check
+  - sam_debarment_check
+maxTurns: 15
+
 trigger:
   type: event
   config:

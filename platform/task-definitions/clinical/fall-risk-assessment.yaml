@@ -13,6 +13,15 @@ description: >
   to ensure residents receive adequate supervision and assistance to prevent
   accidents. High-risk residents trigger immediate care plan updates.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_incidents
+  - pcc_get_medications
+  - pcc_get_assessments
+  - pcc_get_vitals
+maxTurns: 10
+
 trigger:
   type: event
   config:

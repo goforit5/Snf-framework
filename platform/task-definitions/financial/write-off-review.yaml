@@ -12,6 +12,12 @@ description: >
   (uncollectible, contractual, administrative) and calculates bad debt expense
   impact. Ensures compliance with Medicare bad debt recovery rules (42 CFR 413.89).
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - bank_get_transactions
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

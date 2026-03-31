@@ -13,6 +13,12 @@ description: >
   optimizing inventory carrying costs. Consolidates orders across facilities
   for volume discounts when multiple facilities need the same items.
 
+model: haiku
+tools:
+  - workday_get_employee
+  - m365_send_email
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

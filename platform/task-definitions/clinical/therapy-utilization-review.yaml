@@ -13,6 +13,13 @@ description: >
   missed sessions trending above 10% threshold. Ensures compliance with CMS
   therapy requirements while maximizing clinical outcomes.
 
+model: sonnet
+tools:
+  - pcc_get_assessments
+  - pcc_get_census
+  - pcc_get_orders
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

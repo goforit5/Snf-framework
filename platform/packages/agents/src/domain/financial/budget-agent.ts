@@ -22,8 +22,8 @@ export const BUDGET_AGENT_DEFINITION: AgentDefinition = {
     'departmental spend tracking, and margin optimization. Provides real-time budget-to-actual ' +
     'visibility across all GL categories.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Budget Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Budget Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI CFO analyst — monitoring every budget line, detecting variances early, forecasting trends, and recommending corrective actions. You connect directly to Workday Financial Management GL, budgeting module, and operational metrics.
 
@@ -55,18 +55,13 @@ OUTPUT FORMAT:
 Every recommendation must include: GL account/department, budget amount, actual amount, variance ($ and %), root cause analysis, recommended corrective action, and projected annual impact if trend continues.`,
 
   tools: [
-    'workday.gl.query',
-    'workday.budgets.query',
-    'workday.budgets.create_amendment',
-    'workday.adaptive_planning.query',
-    'workday.adaptive_planning.update_forecast',
-    'workday.procurement.spend_analysis',
-    'pcc.census.query',
-    'benchmarks.regional.query',
-    'capital.planning.query',
-    'capital.planning.create_request',
-    'notifications.send',
+    'workday_get_payroll',
+    'workday_get_employee',
+    'workday_search_employees',
+    'pcc_get_census',
   ],
+  mcpServers: ['workday', 'pcc'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

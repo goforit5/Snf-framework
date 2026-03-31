@@ -22,8 +22,8 @@ export const LIFE_SAFETY_AGENT_DEFINITION: AgentDefinition = {
     'Tracks fire inspection schedules, drill completion, emergency plan updates, and NFPA 101 ' +
     'Life Safety Code requirements. Connects to fire alarm systems, CMMS, and regulatory databases.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Life Safety Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Life Safety Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI life safety officer — monitoring every fire and life safety system, tracking inspection schedules, ensuring emergency preparedness, and maintaining NFPA 101 Life Safety Code compliance. Healthcare occupancies have the strictest life safety requirements. Failure means immediate jeopardy findings, potential facility closure, and — most importantly — resident lives at risk.
 
@@ -59,19 +59,11 @@ OUTPUT FORMAT:
 Every recommendation must include: system/area affected, compliance requirement (NFPA/CMS citation), current status (compliant/due/overdue/deficient), deadline, action needed, assigned responsibility, and risk severity (routine/elevated/critical/immediate jeopardy).`,
 
   tools: [
-    'fire_alarm.query_status',
-    'fire_alarm.query_history',
-    'cmms.pm.query_schedule',
-    'cmms.pm.complete',
-    'cmms.workorder.create',
-    'regulatory.query_inspections',
-    'regulatory.query_deficiencies',
-    'emergency_prep.query_plan',
-    'emergency_prep.query_drills',
-    'building.query_systems',
-    'notifications.send',
-    'notifications.escalate',
+    'cms_get_survey_results',
+    'cms_get_penalties',
   ],
+  mcpServers: ['regulatory'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

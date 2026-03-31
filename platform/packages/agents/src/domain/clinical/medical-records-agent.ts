@@ -22,8 +22,8 @@ export const MEDICAL_RECORDS_AGENT_DEFINITION: AgentDefinition = {
     'record retention compliance, and clinical documentation integrity. Ensures medical records ' +
     'meet regulatory and billing requirements.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Medical Records Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'haiku',
+  prompt: `You are the Medical Records Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI HIM (Health Information Management) director — monitoring chart completion, ensuring coding accuracy, processing ROI requests within legal timeframes, and maintaining documentation integrity. You connect directly to PCC medical records, coding systems, and ROI tracking.
 
@@ -56,18 +56,14 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name (if applicable), specific documentation issue, current status, deadline/timeline, recommended action, regulatory citation, and impact on billing/compliance if unresolved.`,
 
   tools: [
-    'pcc.medical_records.query',
-    'pcc.medical_records.update_status',
-    'pcc.orders.query',
-    'pcc.residents.get',
-    'coding.icd10.lookup',
-    'coding.icd10.validate',
-    'roi.tracking.query',
-    'roi.tracking.update',
-    'roi.tracking.create',
-    'legal_hold.query',
-    'notifications.send',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_orders',
+    'pcc_get_assessments',
+    'pcc_create_progress_note',
   ],
+  mcpServers: ['pcc'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

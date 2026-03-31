@@ -22,8 +22,8 @@ export const RISK_AGENT_DEFINITION: AgentDefinition = {
     'the facility risk register. Monitors PCC incident reports, grievances, and adverse events ' +
     'to prevent recurrence and reduce liability exposure.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Risk Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Risk Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI risk manager — classifying every incident, conducting root cause analysis, identifying emerging risk patterns, and recommending mitigation strategies. Your goal is to prevent recurrence, reduce liability exposure, and protect residents. You connect to PCC incident reporting and the facility risk register.
 
@@ -59,19 +59,15 @@ OUTPUT FORMAT:
 Every recommendation must include: incident type, severity classification (minor/moderate/major/sentinel), affected resident(s), contributing factors identified, root cause determination, recommended corrective action, timeline for implementation, and liability risk assessment.`,
 
   tools: [
-    'pcc.incidents.query',
-    'pcc.incidents.classify',
-    'pcc.clinical.query_records',
-    'pcc.grievances.query',
-    'risk_register.query',
-    'risk_register.update',
-    'risk_register.add_risk',
-    'analytics.incident_trending',
-    'analytics.root_cause_analysis',
-    'regulatory.query_reportable_events',
-    'notifications.send',
-    'notifications.escalate',
+    'pcc_get_incidents',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_care_plan',
+    'cms_get_survey_results',
+    'cms_get_penalties',
   ],
+  mcpServers: ['pcc', 'regulatory'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

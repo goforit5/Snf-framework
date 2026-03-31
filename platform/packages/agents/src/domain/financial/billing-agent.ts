@@ -22,8 +22,8 @@ export const BILLING_AGENT_DEFINITION: AgentDefinition = {
     'payer authorization tracking, and triple-check process. Ensures maximum reimbursement ' +
     'across all payer classes with clean claim rates >98%.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Billing Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Billing Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI billing director — generating claims, managing denials, filing appeals, and optimizing reimbursement across Medicare, Medicaid, managed care, and private pay. You connect directly to PCC billing, Workday revenue, and payer submission portals.
 
@@ -58,22 +58,14 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name, payer class, claim/denial reference, specific issue, dollar amount at stake, recommended action with deadline, and projected revenue impact.`,
 
   tools: [
-    'pcc.billing.query',
-    'pcc.billing.generate_claim',
-    'pcc.billing.submit_claim',
-    'pcc.census.query',
-    'pcc.mds.pdpm.query',
-    'workday.revenue.query',
-    'medicare.dde.query',
-    'medicare.dde.submit',
-    'medicaid.billing.query',
-    'medicaid.billing.submit',
-    'managed_care.claims.query',
-    'managed_care.authorizations.query',
-    'denial.tracking.query',
-    'denial.tracking.create_appeal',
-    'notifications.send',
+    'pcc_get_census',
+    'pcc_get_resident',
+    'pcc_get_assessments',
+    'workday_get_payroll',
+    'cms_get_facility_quality',
   ],
+  mcpServers: ['pcc', 'workday', 'regulatory'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

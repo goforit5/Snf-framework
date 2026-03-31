@@ -12,6 +12,14 @@ description: >
   it impacts the CMS Five-Star rating, and recommends targeted interventions.
   A 1-star drop in quality rating reduces referrals by 15-25%.
 
+model: sonnet
+tools:
+  - pcc_get_assessments
+  - pcc_get_census
+  - cms_get_facility_quality
+  - cms_get_survey_results
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

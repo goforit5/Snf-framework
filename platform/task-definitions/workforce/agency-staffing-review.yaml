@@ -13,6 +13,14 @@ description: >
   mandate agency usage disclosure. This task drives the strategy to reduce
   agency dependency while maintaining adequate staffing.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - workday_get_positions
+  - workday_get_timecards
+  - workday_get_payroll
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

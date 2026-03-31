@@ -14,6 +14,14 @@ description: >
   are the #1 cause of claim denials in managed care SNF admissions — each
   denied day is $400-800 in lost revenue.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_orders
+  - pcc_get_assessments
+  - pcc_get_care_plan
+maxTurns: 10
+
 trigger:
   type: event
   config:

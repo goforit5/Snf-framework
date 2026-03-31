@@ -12,6 +12,15 @@ description: >
   and flags when rates exceed baseline thresholds. CMS F-tag F880 requires
   infection prevention and control programs. Critical for CMS Five-Star rating.
 
+model: sonnet
+tools:
+  - pcc_get_vitals
+  - pcc_get_lab_results
+  - pcc_get_medications
+  - pcc_get_incidents
+  - pcc_get_census
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

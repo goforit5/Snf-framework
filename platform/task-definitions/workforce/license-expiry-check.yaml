@@ -12,6 +12,12 @@ description: >
   schedule. CMS Conditions of Participation require all clinical staff to
   maintain current licensure — a single lapse triggers deficiency citations.
 
+model: haiku
+tools:
+  - workday_get_employee
+  - workday_search_employees
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

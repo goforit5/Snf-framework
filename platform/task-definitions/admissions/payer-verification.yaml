@@ -13,6 +13,11 @@ description: >
   unbillable days. A single missed eligibility verification can result in
   $15K-50K in unrecoverable revenue depending on length of stay.
 
+model: haiku
+tools:
+  - pcc_get_resident
+maxTurns: 6
+
 trigger:
   type: event
   config:

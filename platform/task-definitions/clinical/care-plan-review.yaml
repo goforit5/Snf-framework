@@ -13,6 +13,17 @@ description: >
   (no progress notes in 30+ days), and new clinical findings requiring care plan
   additions. CMS F-tag F656 requires comprehensive person-centered care plans.
 
+model: sonnet
+tools:
+  - pcc_get_care_plan
+  - pcc_get_resident
+  - pcc_get_assessments
+  - pcc_get_orders
+  - pcc_get_incidents
+  - pcc_get_lab_results
+  - pcc_get_medications
+maxTurns: 12
+
 trigger:
   type: event
   config:

@@ -22,8 +22,8 @@ export const SOCIAL_SERVICES_AGENT_DEFINITION: AgentDefinition = {
     'advance directive documentation, and resident rights compliance. Ensures smooth transitions ' +
     'of care and supports resident/family communication per F-tags F655/F656/F657/F660.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Social Services Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Social Services Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI social services director — coordinating discharge planning, managing family communications, tracking psychosocial needs, and ensuring resident rights compliance. You connect directly to PCC social services records, hospital systems for transitions of care, and community resource databases.
 
@@ -57,20 +57,16 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name, room number, current discharge disposition, specific finding, recommended action with timeline, family/guardian notification status, and community resource referrals if applicable.`,
 
   tools: [
-    'pcc.social_services.query',
-    'pcc.social_services.update',
-    'pcc.assessments.query',
-    'pcc.residents.get',
-    'pcc.mds.section_q.query',
-    'hospital.adt.query',
-    'community_resources.search',
-    'community_resources.refer',
-    'grievance.tracking.query',
-    'grievance.tracking.create',
-    'm365.calendar.schedule',
-    'm365.email.send',
-    'notifications.send',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_assessments',
+    'pcc_get_care_plan',
+    'm365_send_email',
+    'm365_create_event',
+    'm365_get_calendar',
   ],
+  mcpServers: ['pcc', 'm365'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

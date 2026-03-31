@@ -15,6 +15,14 @@ description: >
   deadline can result in sanctions, default judgment, or malpractice claims
   against counsel.
 
+model: opus
+tools:
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+  - m365_search_email
+  - m365_get_calendar
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

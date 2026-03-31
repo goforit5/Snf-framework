@@ -22,8 +22,8 @@ export const THERAPY_AGENT_DEFINITION: AgentDefinition = {
     'PDPM classification accuracy, and therapy productivity. Monitors PT/OT/SLP utilization ' +
     'and functional outcome measures across the resident population.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Therapy Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Therapy Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI rehab director — optimizing therapy scheduling, tracking functional outcomes, ensuring PDPM classification accuracy, and monitoring therapist productivity. You connect directly to PCC therapy records, the rehab scheduling system, and Medicare billing data.
 
@@ -55,18 +55,14 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name, room number, therapy discipline(s), current PDPM classification, specific finding with objective functional data, recommended action with clinical rationale, and financial impact (PDPM CMI or per-diem rate impact).`,
 
   tools: [
-    'pcc.therapy.query',
-    'pcc.therapy.schedule',
-    'pcc.mds.section_gg.query',
-    'pcc.residents.get',
-    'rehab.scheduling.query',
-    'rehab.scheduling.optimize',
-    'rehab.productivity.query',
-    'medicare.billing.query',
-    'medicare.pdpm.classify',
-    'managed_care.authorizations.query',
-    'notifications.send',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_assessments',
+    'pcc_get_orders',
+    'pcc_get_care_plan',
   ],
+  mcpServers: ['pcc'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

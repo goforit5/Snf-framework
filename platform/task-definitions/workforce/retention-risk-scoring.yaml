@@ -12,6 +12,15 @@ description: >
   training, and agency backfill. Early identification of flight risks enables
   targeted retention interventions (schedule adjustment, pay increase, role change).
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - workday_search_employees
+  - workday_get_timecards
+  - workday_get_payroll
+  - workday_get_positions
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

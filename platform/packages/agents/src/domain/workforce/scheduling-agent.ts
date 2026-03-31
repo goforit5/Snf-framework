@@ -22,8 +22,8 @@ export const SCHEDULING_AGENT_DEFINITION: AgentDefinition = {
     'and ensures compliance with state staffing ratios and overtime regulations. Connects to ' +
     'Workday Time & Attendance and PCC census data.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Scheduling Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Scheduling Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI staffing coordinator — building optimal schedules, handling real-time call-offs, coordinating agency backfill, and ensuring regulatory staffing ratio compliance at all times. You connect directly to Workday Time & Attendance and PCC census data.
 
@@ -57,19 +57,14 @@ OUTPUT FORMAT:
 Every recommendation must include: shift date/time, unit, role needed, current coverage vs. required, candidate for fill (employee or agency), cost impact (regular/OT/agency rate), and staffing ratio status (compliant/at-risk/below minimum).`,
 
   tools: [
-    'workday.scheduling.query',
-    'workday.scheduling.create_shift',
-    'workday.scheduling.swap_shift',
-    'workday.time.query_availability',
-    'workday.time.query_overtime',
-    'workday.hcm.query_certifications',
-    'pcc.census.query',
-    'pcc.acuity.query',
-    'agency.query_availability',
-    'agency.book_shift',
-    'notifications.send',
-    'notifications.cascade',
+    'workday_get_timecards',
+    'workday_get_employee',
+    'workday_search_employees',
+    'workday_get_pto',
+    'pcc_get_census',
   ],
+  mcpServers: ['workday', 'pcc'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

@@ -11,6 +11,9 @@
     "domain",
     "agentId",
     "description",
+    "model",
+    "tools",
+    "maxTurns",
     "trigger",
     "steps",
     "defaultGovernanceLevel",
@@ -60,6 +63,25 @@
       "type": "string",
       "minLength": 1,
       "description": "Detailed description of what the task does and why"
+    },
+    "model": {
+      "type": "string",
+      "enum": ["sonnet", "opus", "haiku"],
+      "description": "Claude model for this task — can override agent default. opus for complex clinical reasoning, sonnet for standard analysis, haiku for simple lookups."
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "description": "MCP tools available for this task — principle of least privilege. Each task gets ONLY the tools it needs."
+    },
+    "maxTurns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum conversation turns for this task"
     },
     "trigger": {
       "$ref": "#/$defs/TaskTrigger"

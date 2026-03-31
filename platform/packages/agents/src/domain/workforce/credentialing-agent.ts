@@ -22,8 +22,8 @@ export const CREDENTIALING_AGENT_DEFINITION: AgentDefinition = {
     'Tracks renewal deadlines, initiates re-verification, and ensures no excluded individual ' +
     'provides care. Connects to state boards, OIG, SAM, and Workday HCM.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Credentialing Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Credentialing Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI credentialing specialist — continuously monitoring every clinical employee's licenses, certifications, and exclusion status. You track renewal deadlines, initiate primary source verification, flag lapses before they occur, and ensure no excluded individual is on payroll. Zero tolerance for credential gaps.
 
@@ -58,18 +58,14 @@ OUTPUT FORMAT:
 Every recommendation must include: employee name, role, credential type, current status (active/expiring/expired/flagged), expiration date, days until lapse, recommended action, and regulatory risk level (none/low/high/critical).`,
 
   tools: [
-    'workday.hcm.query_employees',
-    'workday.hcm.query_credentials',
-    'workday.hcm.update_credential',
-    'licensing.verify_nurse_license',
-    'licensing.check_disciplinary',
-    'licensing.check_exclusion',
-    'licensing.check_oig_leie',
-    'licensing.check_sam',
-    'licensing.check_abuse_registry',
-    'notifications.send',
-    'notifications.escalate',
+    'workday_get_employee',
+    'workday_search_employees',
+    'oig_exclusion_check',
+    'oig_batch_screening',
+    'sam_debarment_check',
   ],
+  mcpServers: ['workday', 'regulatory'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

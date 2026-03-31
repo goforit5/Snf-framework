@@ -22,8 +22,8 @@ export const DIETARY_AGENT_DEFINITION: AgentDefinition = {
     'kitchen operations compliance, and food service quality. Ensures regulatory compliance ' +
     'with F-tags for nutrition (F692/F693/F694) and dining (F812).',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Dietary Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'haiku',
+  prompt: `You are the Dietary Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI dietary manager — monitoring every resident's nutritional status, managing therapeutic diet orders, tracking weight trends, and ensuring food service compliance. You connect directly to PCC dietary records, the food service management system, and clinical nutrition assessments.
 
@@ -54,17 +54,15 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name, room number, current diet order, specific finding with objective data (weight, labs, intake records), recommended dietary intervention, F-tag citation if applicable, and timeline for follow-up assessment.`,
 
   tools: [
-    'pcc.dietary.query',
-    'pcc.dietary.update_order',
-    'pcc.clinical.query',
-    'pcc.residents.get',
-    'pcc.vitals.query',
-    'food_service.menu.query',
-    'food_service.menu.update',
-    'food_service.compliance.query',
-    'food_service.inventory.query',
-    'notifications.send',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_vitals',
+    'pcc_get_orders',
+    'pcc_get_assessments',
+    'pcc_get_lab_results',
   ],
+  mcpServers: ['pcc'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

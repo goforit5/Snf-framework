@@ -14,6 +14,14 @@ description: >
   A missed termination notice window on a bad contract can lock the facility
   into unfavorable terms for another 1-3 years.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+  - m365_send_email
+maxTurns: 8
+
 trigger:
   type: schedule
   config:

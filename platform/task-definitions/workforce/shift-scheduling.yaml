@@ -11,6 +11,15 @@ description: >
   system. Ensures RN/LPN/CNA ratios meet state minimums and flags shifts that
   are under-staffed 72 hours in advance so facility admins can act proactively.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - workday_get_positions
+  - workday_get_timecards
+  - workday_get_pto
+  - pcc_get_census
+maxTurns: 12
+
 trigger:
   type: schedule
   config:

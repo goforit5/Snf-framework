@@ -45,6 +45,7 @@ export class RunManager {
       agentId,
       traceId: randomUUID(),
       taskDefinitionId: taskId,
+      model: 'sonnet',
       startedAt: new Date().toISOString(),
       completedAt: null,
       status: 'running',

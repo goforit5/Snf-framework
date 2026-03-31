@@ -14,6 +14,13 @@ description: >
   the leadership team need a single daily feed replacing dozens of manual
   information sources.
 
+model: sonnet
+tools:
+  - cms_get_facility_quality
+  - cms_get_survey_results
+  - m365_search_email
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

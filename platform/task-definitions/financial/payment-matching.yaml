@@ -12,6 +12,13 @@ description: >
   allowances. Ensures timely posting to minimize AR days and maintain accurate
   facility financials.
 
+model: haiku
+tools:
+  - pcc_get_resident
+  - bank_get_transactions
+  - bank_get_balances
+maxTurns: 8
+
 trigger:
   type: event
   config:

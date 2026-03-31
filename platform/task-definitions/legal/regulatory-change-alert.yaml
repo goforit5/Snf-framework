@@ -14,6 +14,13 @@ description: >
   rules per year affecting long-term care. Missing a regulatory change can
   result in survey deficiencies or payment penalties.
 
+model: sonnet
+tools:
+  - cms_get_facility_quality
+  - cms_get_survey_results
+  - cms_get_penalties
+maxTurns: 8
+
 trigger:
   type: schedule
   config:

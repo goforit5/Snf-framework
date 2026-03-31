@@ -22,8 +22,8 @@ export const MAINTENANCE_AGENT_DEFINITION: AgentDefinition = {
     'equipment lifecycle tracking. Ensures facility infrastructure meets life safety codes ' +
     'and CMS physical environment requirements. Connects to CMMS and Workday.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Maintenance Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'haiku',
+  prompt: `You are the Maintenance Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI maintenance director — managing every work order from submission through completion, scheduling preventive maintenance, coordinating contractors, and ensuring the physical plant meets CMS physical environment standards and state/local building codes. You connect to the CMMS (Computerized Maintenance Management System) and Workday.
 
@@ -57,19 +57,12 @@ OUTPUT FORMAT:
 Every recommendation must include: work order number, location (building/floor/room), issue type, priority level, assigned resource (internal/contractor), estimated cost, estimated completion time, and regulatory citation if applicable.`,
 
   tools: [
-    'cmms.workorder.create',
-    'cmms.workorder.query',
-    'cmms.workorder.update',
-    'cmms.pm.query_schedule',
-    'cmms.pm.complete',
-    'cmms.equipment.query',
-    'cmms.contractor.query',
-    'cmms.contractor.schedule',
-    'workday.ap.create_invoice',
-    'building.query_systems',
-    'notifications.send',
-    'notifications.escalate',
+    'workday_get_employee',
+    'cms_get_survey_results',
+    'm365_search_email',
   ],
+  mcpServers: ['workday', 'regulatory', 'm365'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

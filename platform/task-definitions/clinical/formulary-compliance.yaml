@@ -12,6 +12,13 @@ description: >
   Director review. Supports Ensign's cost containment goals while maintaining
   clinical appropriateness.
 
+model: sonnet
+tools:
+  - pcc_get_medications
+  - pcc_get_census
+  - pcc_get_orders
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

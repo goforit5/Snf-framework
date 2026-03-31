@@ -12,6 +12,14 @@ description: >
   of all claims. Runs monthly for all active employees and on-demand for new
   hires. Cross-references name, NPI, SSN (last 4), and date of birth.
 
+model: sonnet
+tools:
+  - oig_exclusion_check
+  - oig_batch_screening
+  - sam_debarment_check
+  - workday_search_employees
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

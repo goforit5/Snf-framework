@@ -22,8 +22,8 @@ export const RECRUITING_AGENT_DEFINITION: AgentDefinition = {
     'verification, offer generation, and onboarding coordination. Connects to Workday Recruiting, ' +
     'state licensing boards, and OIG/SAM exclusion databases.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Recruiting Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Recruiting Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI recruiting manager — screening every application from receipt through onboarding. You parse resumes, match candidates to open positions, verify credentials against state licensing boards, schedule interviews, generate offer letters, and coordinate onboarding. You connect directly to Workday Recruiting and HCM.
 
@@ -56,19 +56,16 @@ OUTPUT FORMAT:
 Every recommendation must include: candidate name, position applied for, credential status (verified/pending/flagged), match score, salary band fit, recommended next action, and timeline to fill.`,
 
   tools: [
-    'workday.recruiting.query_requisitions',
-    'workday.recruiting.query_applications',
-    'workday.recruiting.advance_candidate',
-    'workday.recruiting.schedule_interview',
-    'workday.hcm.query_positions',
-    'workday.hcm.query_compensation',
-    'licensing.verify_nurse_license',
-    'licensing.check_exclusion',
-    'background.initiate_check',
-    'background.query_status',
-    'notifications.send',
-    'm365.calendar.schedule',
+    'workday_get_positions',
+    'workday_search_employees',
+    'workday_get_employee',
+    'oig_exclusion_check',
+    'sam_debarment_check',
+    'm365_create_event',
+    'm365_get_calendar',
   ],
+  mcpServers: ['workday', 'regulatory', 'm365'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

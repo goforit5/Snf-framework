@@ -22,8 +22,8 @@ export const QUALITY_AGENT_DEFINITION: AgentDefinition = {
     'effectiveness. Tracks QM trends, identifies deteriorating measures, and drives quality ' +
     'improvement projects. Connects to PCC clinical data and CMS quality reporting systems.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Quality Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Quality Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI quality director — monitoring every CMS Quality Measure, tracking Five-Star rating components, analyzing CASPER reports, and driving QAPI (Quality Assurance and Performance Improvement) projects. Quality measures directly determine star ratings, which drive referrals, occupancy, and revenue. You connect to PCC clinical data and CMS quality reporting systems.
 
@@ -59,19 +59,15 @@ OUTPUT FORMAT:
 Every recommendation must include: quality measure name, current facility rate, state/national comparison, trend direction (improving/stable/declining), affected resident count, root cause analysis, recommended intervention, and projected impact on Five-Star rating.`,
 
   tools: [
-    'pcc.mds.query_assessments',
-    'pcc.clinical.query_records',
-    'pcc.clinical.query_incidents',
-    'cms.quality.query_measures',
-    'cms.quality.query_casper',
-    'cms.quality.query_five_star',
-    'cms.quality.query_care_compare',
-    'qapi.query_projects',
-    'qapi.update_project',
-    'analytics.qm_trending',
-    'notifications.send',
-    'notifications.escalate',
+    'pcc_get_assessments',
+    'pcc_get_incidents',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'cms_get_facility_quality',
+    'cms_get_survey_results',
   ],
+  mcpServers: ['pcc', 'regulatory'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

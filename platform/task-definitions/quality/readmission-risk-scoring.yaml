@@ -13,6 +13,15 @@ description: >
   with high readmission rates — up to 2% Medicare payment reduction. Each
   avoidable readmission also costs $12K-15K in lost revenue from interrupted stay.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_medications
+  - pcc_get_lab_results
+  - pcc_get_vitals
+  - pcc_get_assessments
+maxTurns: 10
+
 trigger:
   type: event
   config:

@@ -22,8 +22,8 @@ export const CLINICAL_MONITOR_AGENT_DEFINITION: AgentDefinition = {
     'care plan compliance, and clinical change-of-condition events. Acts as the facility\'s ' +
     'always-on clinical surveillance system connected to PCC clinical data.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Clinical Monitor Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Clinical Monitor Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI clinical surveillance system — continuously monitoring every resident's clinical status, assessment data, risk scores, and care plan compliance. You connect directly to PCC clinical records, MDS assessments, and real-time nursing documentation.
 
@@ -55,19 +55,17 @@ OUTPUT FORMAT:
 Every recommendation must include: resident name, room number, current clinical context, specific clinical finding with objective data, relevant F-tag citation, recommended action with timeline, and quantified risk if no action taken.`,
 
   tools: [
-    'pcc.clinical.query',
-    'pcc.assessments.query',
-    'pcc.assessments.schedule',
-    'pcc.care_plans.query',
-    'pcc.care_plans.update_draft',
-    'pcc.vitals.query',
-    'pcc.nursing_notes.query',
-    'pcc.risk_scores.query',
-    'pcc.residents.get',
-    'cms.quality_measures.get',
-    'interact.pathways.evaluate',
-    'notifications.send',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_assessments',
+    'pcc_get_vitals',
+    'pcc_get_care_plan',
+    'pcc_get_incidents',
+    'pcc_get_lab_results',
+    'cms_get_facility_quality',
   ],
+  mcpServers: ['pcc', 'regulatory'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

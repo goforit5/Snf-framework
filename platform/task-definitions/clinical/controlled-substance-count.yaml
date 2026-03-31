@@ -13,6 +13,12 @@ description: >
   inventory trends to identify potential diversion patterns across shifts,
   nurses, and specific medications.
 
+model: sonnet
+tools:
+  - pcc_get_medications
+  - pcc_get_orders
+maxTurns: 8
+
 trigger:
   type: event
   config:

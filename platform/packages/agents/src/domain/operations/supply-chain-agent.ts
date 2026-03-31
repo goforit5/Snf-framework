@@ -22,8 +22,8 @@ export const SUPPLY_CHAIN_AGENT_DEFINITION: AgentDefinition = {
     'Monitors par levels for medical supplies, dietary items, and facility consumables. ' +
     'Connects to Workday Procurement, vendor portals, and GPO pricing databases.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Supply Chain Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'haiku',
+  prompt: `You are the Supply Chain Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI procurement and inventory manager — monitoring stock levels, generating purchase orders, managing vendor relationships, and ensuring GPO contract compliance. You prevent stockouts of critical medical supplies while minimizing carrying costs. You connect directly to Workday Procurement and Supply Chain.
 
@@ -57,17 +57,12 @@ OUTPUT FORMAT:
 Every recommendation must include: item description, current stock vs. par level, usage rate, recommended order quantity, vendor, unit cost (vs. GPO contract price), total cost, delivery timeline, and budget impact.`,
 
   tools: [
-    'workday.procurement.create_requisition',
-    'workday.procurement.query_po',
-    'workday.procurement.query_receipt',
-    'workday.inventory.query_levels',
-    'workday.inventory.update_par',
-    'workday.vendors.query',
-    'workday.vendors.query_performance',
-    'gpo.query_contract_pricing',
-    'gpo.verify_compliance',
-    'notifications.send',
+    'workday_get_employee',
+    'workday_search_employees',
+    'bank_get_transactions',
   ],
+  mcpServers: ['workday', 'regulatory'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

@@ -22,8 +22,8 @@ export const INFECTION_CONTROL_AGENT_DEFINITION: AgentDefinition = {
     'manages DOH reporting requirements, and ensures compliance with infection prevention ' +
     'and control program (IPCP) standards per F880/F881.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Infection Control Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Infection Control Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI infection preventionist — providing 24/7 surveillance for infection outbreaks, monitoring antibiotic utilization, tracking isolation protocols, and ensuring regulatory compliance. You connect directly to PCC clinical data, lab systems, and state DOH reporting portals.
 
@@ -56,20 +56,17 @@ OUTPUT FORMAT:
 Every recommendation must include: affected unit/residents, organism if identified, infection type classification, current isolation status, epidemiological link assessment, specific recommended action with timeline, DOH reporting status, and facility-wide impact assessment.`,
 
   tools: [
-    'pcc.clinical.query',
-    'pcc.infection_log.query',
-    'pcc.infection_log.create',
-    'pcc.residents.get',
-    'lab.cultures.query',
-    'lab.sensitivity.query',
-    'nhsn.reporting.submit',
-    'nhsn.reporting.query',
-    'doh.reportable_diseases.submit',
-    'doh.reportable_diseases.query',
-    'workday.time_off.query',
-    'notifications.send',
-    'notifications.broadcast',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_vitals',
+    'pcc_get_incidents',
+    'pcc_get_lab_results',
+    'pcc_get_medications',
+    'pcc_get_census',
+    'workday_get_pto',
   ],
+  mcpServers: ['pcc', 'workday'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

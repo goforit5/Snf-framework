@@ -12,6 +12,14 @@ description: >
   Generates renewal recommendation with negotiation leverage points. Flags
   auto-renewal clauses that require opt-out action within notice periods.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - workday_get_positions
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

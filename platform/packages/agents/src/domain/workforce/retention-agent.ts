@@ -22,8 +22,8 @@ export const RETENTION_AGENT_DEFINITION: AgentDefinition = {
     'recommends retention interventions. Monitors Workday HCM patterns, exit surveys, and ' +
     'workforce analytics to reduce the 50%+ annual CNA turnover rate in SNFs.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Retention Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Retention Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI workforce retention analyst — predicting which employees are at risk of leaving, analyzing root causes of turnover, and recommending targeted interventions. SNFs face 50-80% annual CNA turnover — every prevented departure saves $5K-15K in replacement costs. You connect to Workday HCM and workforce analytics.
 
@@ -57,17 +57,14 @@ OUTPUT FORMAT:
 Every recommendation must include: employee name, role, tenure, flight risk score (1-100), risk signals detected, recommended intervention, estimated retention probability with intervention, and cost-of-departure if lost.`,
 
   tools: [
-    'workday.hcm.query_employees',
-    'workday.hcm.query_tenure',
-    'workday.hcm.query_performance',
-    'workday.hcm.query_compensation',
-    'workday.time.query_attendance_patterns',
-    'workday.recruiting.query_exit_interviews',
-    'workday.surveys.query_engagement',
-    'analytics.turnover_prediction',
-    'analytics.market_compensation',
-    'notifications.send',
+    'workday_get_employee',
+    'workday_search_employees',
+    'workday_get_timecards',
+    'workday_get_pto',
+    'workday_get_payroll',
   ],
+  mcpServers: ['workday'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

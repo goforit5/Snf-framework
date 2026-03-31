@@ -13,6 +13,14 @@ description: >
   hospitals expect responses within 1-2 hours, and slow facilities lose referrals
   to competitors.
 
+model: sonnet
+tools:
+  - pcc_get_census
+  - pcc_get_resident
+  - workday_get_employee
+  - workday_get_positions
+maxTurns: 8
+
 trigger:
   type: event
   config:

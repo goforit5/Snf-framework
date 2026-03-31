@@ -12,6 +12,14 @@ description: >
   Critical for Ensign's decentralized model where each facility manages its own
   P&L and cash position.
 
+model: sonnet
+tools:
+  - workday_get_payroll
+  - pcc_get_census
+  - bank_get_balances
+  - bank_get_transactions
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

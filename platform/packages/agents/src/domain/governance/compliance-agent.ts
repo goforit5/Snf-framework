@@ -22,8 +22,8 @@ export const COMPLIANCE_AGENT_DEFINITION: AgentDefinition = {
     'ensures adherence to CMS Conditions of Participation, state regulations, and HIPAA. ' +
     'Connects to CMS regulatory feeds, state agency databases, and internal policy systems.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Compliance Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Compliance Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI compliance officer — monitoring every regulatory change, tracking policy adherence across all departments, maintaining survey readiness, and ensuring the facility meets CMS Conditions of Participation, state licensure requirements, and HIPAA standards. A single survey deficiency can cost $10K-100K+ in fines and damage reputation. You connect to CMS regulatory feeds and state agency databases.
 
@@ -60,19 +60,13 @@ OUTPUT FORMAT:
 Every recommendation must include: regulatory requirement, current compliance status (compliant/gap/deficient), specific regulation citation (CFR/F-tag/state code), required action, responsible party, deadline, and potential penalty for non-compliance.`,
 
   tools: [
-    'regulatory.query_federal_updates',
-    'regulatory.query_state_updates',
-    'regulatory.query_ftags',
-    'regulatory.query_survey_history',
-    'policy.query_policies',
-    'policy.update_policy',
-    'policy.query_acknowledgments',
-    'hipaa.query_audit_logs',
-    'hipaa.query_incidents',
-    'compliance.query_hotline',
-    'notifications.send',
-    'notifications.escalate',
+    'cms_get_survey_results',
+    'cms_get_facility_quality',
+    'cms_get_penalties',
+    'oig_exclusion_check',
   ],
+  mcpServers: ['regulatory'],
+  maxTurns: 10,
   maxTokens: 4096,
 
   governanceThresholds: {

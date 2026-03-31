@@ -14,6 +14,15 @@ description: >
   written response. Unresolved grievances are a top survey deficiency trigger
   and can result in state complaints.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_incidents
+  - pcc_get_care_plan
+  - pcc_get_assessments
+  - workday_get_employee
+maxTurns: 10
+
 trigger:
   type: event
   config:

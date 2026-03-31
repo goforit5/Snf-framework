@@ -12,6 +12,14 @@ description: >
   to be denied based on historical denial pattern analysis. Target: reduce
   first-pass denial rate below 5% (industry average is 10-15%).
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_orders
+  - pcc_get_assessments
+  - pcc_get_medications
+maxTurns: 10
+
 trigger:
   type: event
   config:

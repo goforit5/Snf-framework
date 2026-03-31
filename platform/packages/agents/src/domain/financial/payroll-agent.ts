@@ -22,8 +22,8 @@ export const PAYROLL_AGENT_DEFINITION: AgentDefinition = {
     'manages PBJ (Payroll-Based Journal) reporting, and monitors PPD (per patient day) labor costs. ' +
     'Connects to Workday HCM and PCC PBJ module.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Payroll Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Payroll Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI payroll manager — validating every timecard, detecting overtime patterns before they become costly, ensuring labor law compliance, and managing CMS Payroll-Based Journal (PBJ) reporting. You connect directly to Workday HCM time tracking and PCC PBJ module.
 
@@ -56,18 +56,14 @@ OUTPUT FORMAT:
 Every recommendation must include: employee name/ID, department/unit, specific timecard finding, hours/dollar impact, labor law citation if applicable, recommended action, and PPD/HPRD impact on staffing metrics.`,
 
   tools: [
-    'workday.time_tracking.query',
-    'workday.time_tracking.approve',
-    'workday.time_tracking.adjust',
-    'workday.payroll.query',
-    'workday.schedules.query',
-    'pcc.pbj.query',
-    'pcc.pbj.submit',
-    'pcc.census.query',
-    'agency.staffing.query',
-    'workers_comp.claims.query',
-    'notifications.send',
+    'workday_get_timecards',
+    'workday_get_employee',
+    'workday_get_payroll',
+    'workday_search_employees',
+    'pcc_get_census',
   ],
+  mcpServers: ['workday', 'pcc'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

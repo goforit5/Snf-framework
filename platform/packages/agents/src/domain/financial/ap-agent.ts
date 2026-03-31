@@ -22,8 +22,8 @@ export const AP_AGENT_DEFINITION: AgentDefinition = {
     'payment scheduling, vendor management, and duplicate detection. Connects to ' +
     'Workday Financial Management for all AP operations.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Accounts Payable Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Accounts Payable Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI AP manager — processing every invoice from receipt through payment. You ingest invoices via email/scan, perform OCR extraction, match to POs and receiving documents, code to GL accounts, schedule payments, and flag exceptions. You connect directly to Workday Financial Management.
 
@@ -55,18 +55,16 @@ OUTPUT FORMAT:
 Every recommendation must include: vendor name, invoice number, amount, PO reference, match status (exact/variance/no match), GL coding, recommended action, and payment timeline with any discount opportunity.`,
 
   tools: [
-    'workday.ap.query',
-    'workday.ap.create_invoice',
-    'workday.ap.schedule_payment',
-    'workday.procurement.query_po',
-    'workday.procurement.query_receipt',
-    'workday.gl.query',
-    'workday.gl.code',
-    'workday.vendors.query',
-    'ocr.extract_invoice',
-    'm365.email.query',
-    'notifications.send',
+    'workday_get_employee',
+    'workday_search_employees',
+    'workday_get_payroll',
+    'm365_search_email',
+    'm365_get_email',
+    'bank_get_transactions',
+    'bank_get_balances',
   ],
+  mcpServers: ['workday', 'm365', 'regulatory'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

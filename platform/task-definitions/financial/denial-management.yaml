@@ -13,6 +13,14 @@ description: >
   appeal turnaround <30 days. Prioritizes high-dollar denials and those
   approaching appeal deadline.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_orders
+  - pcc_get_assessments
+  - pcc_get_care_plan
+maxTurns: 12
+
 trigger:
   type: event
   config:

@@ -13,6 +13,11 @@ description: >
   call light is a CMS survey deficiency — this task ensures nothing falls
   through the cracks.
 
+model: haiku
+tools:
+  - workday_get_employee
+maxTurns: 6
+
 trigger:
   type: event
   config:

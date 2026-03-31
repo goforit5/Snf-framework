@@ -12,6 +12,13 @@ description: >
   approved vendor master. Three-way match (PO, receipt, invoice) enables
   auto-approval for routine invoices under threshold.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - bank_get_transactions
+  - m365_search_email
+maxTurns: 10
+
 trigger:
   type: event
   config:

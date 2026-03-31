@@ -12,6 +12,12 @@ description: >
   CMS requires documented evidence of quarterly fire drills on each shift —
   surveyors routinely check the last 4 quarters of drill records.
 
+model: haiku
+tools:
+  - m365_get_calendar
+  - m365_create_event
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

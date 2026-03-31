@@ -8,7 +8,7 @@
  *   - Event bus + governance engine
  *   - Decision service
  *   - Task registry + scheduler + event processor
- *   - Agent registry + 26 domain agents
+ *   - Agent registry + 30 agents (26 domain + 4 orchestration/meta)
  *   - Health monitor + metrics collector
  *   - Fastify API server
  *   - Graceful shutdown
@@ -17,6 +17,8 @@
 import { Pool } from 'pg';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
+
+import type { AgentEvent, Decision, TaskDefinition } from '@snf/core';
 
 // --- @snf/audit ---
 import { AuditEngine, ChainVerifier, createAgentLogger } from '@snf/audit';
@@ -30,22 +32,52 @@ import {
   MetricsCollector,
 } from '@snf/agents';
 
-// --- @snf/agents — Domain agents (relative imports since deep package paths don't resolve) ---
-import { PharmacyAgent } from '../packages/agents/src/domain/clinical/pharmacy-agent.js';
+import type { DecisionQueue, AgentDependencies } from '../packages/agents/src/base-agent.js';
+
+// --- @snf/agents — Domain agents (26) ────────────────────────────────────────
+
+// Clinical (7)
 import { ClinicalMonitorAgent } from '../packages/agents/src/domain/clinical/clinical-monitor-agent.js';
+import { PharmacyAgent } from '../packages/agents/src/domain/clinical/pharmacy-agent.js';
 import { InfectionControlAgent } from '../packages/agents/src/domain/clinical/infection-control-agent.js';
 import { TherapyAgent } from '../packages/agents/src/domain/clinical/therapy-agent.js';
 import { DietaryAgent } from '../packages/agents/src/domain/clinical/dietary-agent.js';
 import { MedicalRecordsAgent } from '../packages/agents/src/domain/clinical/medical-records-agent.js';
 import { SocialServicesAgent } from '../packages/agents/src/domain/clinical/social-services-agent.js';
+
+// Financial (6)
 import { BillingAgent } from '../packages/agents/src/domain/financial/billing-agent.js';
 import { ArAgent } from '../packages/agents/src/domain/financial/ar-agent.js';
 import { ApAgent } from '../packages/agents/src/domain/financial/ap-agent.js';
 import { PayrollAgent } from '../packages/agents/src/domain/financial/payroll-agent.js';
 import { TreasuryAgent } from '../packages/agents/src/domain/financial/treasury-agent.js';
 import { BudgetAgent } from '../packages/agents/src/domain/financial/budget-agent.js';
+
+// Workforce (5)
 import { RecruitingAgent } from '../packages/agents/src/domain/workforce/recruiting-agent.js';
 import { SchedulingAgent } from '../packages/agents/src/domain/workforce/scheduling-agent.js';
+import { CredentialingAgent } from '../packages/agents/src/domain/workforce/credentialing-agent.js';
+import { TrainingAgent } from '../packages/agents/src/domain/workforce/training-agent.js';
+import { RetentionAgent } from '../packages/agents/src/domain/workforce/retention-agent.js';
+
+// Operations (4)
+import { SupplyChainAgent } from '../packages/agents/src/domain/operations/supply-chain-agent.js';
+import { MaintenanceAgent } from '../packages/agents/src/domain/operations/maintenance-agent.js';
+import { CensusAgent } from '../packages/agents/src/domain/operations/census-agent.js';
+import { LifeSafetyAgent } from '../packages/agents/src/domain/operations/life-safety-agent.js';
+
+// Governance (4)
+import { QualityAgent } from '../packages/agents/src/domain/governance/quality-agent.js';
+import { RiskAgent } from '../packages/agents/src/domain/governance/risk-agent.js';
+import { ComplianceAgent } from '../packages/agents/src/domain/governance/compliance-agent.js';
+import { LegalAgent } from '../packages/agents/src/domain/governance/legal-agent.js';
+
+// --- @snf/agents — Orchestration + Meta agents (4) ──────────────────────────
+
+import { ExceptionRouterAgent } from '../packages/agents/src/domain/orchestration/exception-router-agent.js';
+import { ExecutiveBriefingAgent } from '../packages/agents/src/domain/orchestration/executive-briefing-agent.js';
+import { AuditAgent } from '../packages/agents/src/domain/orchestration/audit-agent.js';
+import { PlatformAgent } from '../packages/agents/src/domain/orchestration/platform-agent.js';
 
 // --- @snf/hitl ---
 import { DecisionService } from '../packages/hitl/src/decisions/index.js';
@@ -57,6 +89,7 @@ import {
   EventProcessor,
   RunManager,
 } from '@snf/tasks';
+import type { RunResult } from '@snf/tasks';
 
 // --- @snf/api ---
 import { buildServer } from '@snf/api';
@@ -183,35 +216,36 @@ async function main(): Promise<void> {
     engine: auditEngine,
   });
 
-  // ── 8. Decision Queue adapter for agents ────────────────────────────────
+  // ── 8. Decision Queue adapter ─────────────────────────────────────────
+  //
+  // DecisionService.submit takes a partial Decision (Omit<Decision, ...>)
+  // and returns Promise<Decision>. The DecisionQueue interface expected by
+  // BaseSnfAgent takes a full Decision and returns Promise<void>.
+  // This adapter bridges the two signatures.
 
-  const decisionQueue = {
-    submit: decisionService.submit.bind(decisionService),
+  const decisionQueue: DecisionQueue = {
+    async submit(decision: Decision): Promise<void> {
+      await decisionService.submit(decision);
+    },
   };
 
   // ── 9. Agent Dependencies (shared across all agents) ────────────────────
 
-  // Type assertion: main.ts is the integration seam where concrete
-  // implementations meet abstract interfaces. Minor shape mismatches
-  // are resolved here; they'll be tightened when wiring real services.
-  const agentDeps = {
+  const agentDeps: AgentDependencies = {
     auditLogger,
     decisionQueue,
     eventBus,
     governanceEngine,
     anthropicApiKey: config.anthropicApiKey,
-  } as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  };
 
-  // ── 10. Agent Registry — Register all domain agents ─────────────────────
+  // ── 10. Agent Registry — Register all 30 agents ────────────────────────
 
   const agentRegistry = new AgentRegistry();
 
   const agents = [
-    // Wave 1 — Core infrastructure
+    // ── Clinical domain (7 agents) ──
     new ClinicalMonitorAgent(agentDeps),
-    new BillingAgent(agentDeps),
-
-    // Wave 2 — Clinical domain
     new PharmacyAgent(agentDeps),
     new InfectionControlAgent(agentDeps),
     new TherapyAgent(agentDeps),
@@ -219,16 +253,38 @@ async function main(): Promise<void> {
     new MedicalRecordsAgent(agentDeps),
     new SocialServicesAgent(agentDeps),
 
-    // Wave 3 — Financial domain
+    // ── Financial domain (6 agents) ──
+    new BillingAgent(agentDeps),
     new ArAgent(agentDeps),
     new ApAgent(agentDeps),
     new PayrollAgent(agentDeps),
     new TreasuryAgent(agentDeps),
     new BudgetAgent(agentDeps),
 
-    // Wave 4 — Workforce
+    // ── Workforce domain (5 agents) ──
     new RecruitingAgent(agentDeps),
     new SchedulingAgent(agentDeps),
+    new CredentialingAgent(agentDeps),
+    new TrainingAgent(agentDeps),
+    new RetentionAgent(agentDeps),
+
+    // ── Operations domain (4 agents) ──
+    new SupplyChainAgent(agentDeps),
+    new MaintenanceAgent(agentDeps),
+    new CensusAgent(agentDeps),
+    new LifeSafetyAgent(agentDeps),
+
+    // ── Governance domain (4 agents) ──
+    new QualityAgent(agentDeps),
+    new RiskAgent(agentDeps),
+    new ComplianceAgent(agentDeps),
+    new LegalAgent(agentDeps),
+
+    // ── Orchestration + Meta (4 agents) ──
+    new ExceptionRouterAgent(agentDeps),
+    new ExecutiveBriefingAgent(agentDeps),
+    new AuditAgent(agentDeps),
+    new PlatformAgent(agentDeps),
   ];
 
   for (const agent of agents) {
@@ -237,7 +293,7 @@ async function main(): Promise<void> {
     agentRegistry.setProbation(agent.definition.id);
   }
 
-  console.log(`[agents] Registered ${agents.length} domain agents (all in probation mode).`);
+  console.log(`[agents] Registered ${agents.length} agents (26 domain + 4 orchestration/meta, all in probation mode).`);
 
   // ── 11. Task Registry — Load YAML task definitions ──────────────────────
 
@@ -259,18 +315,18 @@ async function main(): Promise<void> {
 
   // ── 13. Task Executor (bridges task scheduler -> agent execution) ───────
 
-  const taskExecutor = async (taskDef: import('@snf/core').TaskDefinition, runId: string) => {
+  const taskExecutor = async (taskDef: TaskDefinition, runId: string): Promise<RunResult> => {
     const agent = agentRegistry.get(taskDef.agentId);
-    const result = await agent.run({
-      taskId: taskDef.id,
-      runId,
-      domain: taskDef.domain,
-      facilityId: taskDef.trigger.config?.facilityId as string ?? '*',
+    const agentRun = await agent.run({
+      traceId: runId,
+      taskDefinitionId: taskDef.id,
+      facilityId: (taskDef.trigger.config?.facilityId as string) ?? '*',
+      channel: 'schedule',
+      source: 'task-scheduler',
       payload: taskDef.trigger.config ?? {},
     });
     return {
-      success: result.action !== 'error',
-      output: result,
+      output: agentRun as unknown as Record<string, unknown>,
     };
   };
 
@@ -297,18 +353,18 @@ async function main(): Promise<void> {
     registry: taskRegistry,
     eventBus,
     runManager,
-    executor: async (taskDef, _event, runId) => {
+    executor: async (taskDef: TaskDefinition, runId: string, triggerEvent: AgentEvent): Promise<RunResult> => {
       const agent = agentRegistry.get(taskDef.agentId);
-      const result = await agent.run({
-        taskId: taskDef.id,
-        runId,
-        domain: taskDef.domain,
-        facilityId: '*',
-        payload: {},
+      const agentRun = await agent.run({
+        traceId: runId,
+        taskDefinitionId: taskDef.id,
+        facilityId: triggerEvent.facilityId ?? '*',
+        channel: 'event',
+        source: `event:${triggerEvent.eventType}`,
+        payload: triggerEvent.payload ?? {},
       });
       return {
-        success: result.action !== 'error',
-        output: result,
+        output: agentRun as unknown as Record<string, unknown>,
       };
     },
     onError: (taskId, _event, err) => {
@@ -350,20 +406,18 @@ async function main(): Promise<void> {
     config.chainVerifyLookbackHr,
   );
 
-  chainVerifier.on('chainBreak', (breakInfo) => {
-    console.error('[CRITICAL] Audit trail chain break detected:', breakInfo);
+  chainVerifier.on('chain:break', (breaks) => {
+    console.error(`[CRITICAL] Audit trail chain break detected: ${breaks.length} break(s)`, breaks);
   });
 
-  chainVerifier.on('verificationComplete', (report) => {
-    if (report.valid) {
-      console.log(
-        `[audit] Chain verification passed — ${report.entriesChecked} entries verified.`,
-      );
-    } else {
-      console.error(
-        `[audit] Chain verification FAILED — ${report.breaks?.length ?? 0} break(s) found.`,
-      );
-    }
+  chainVerifier.on('chain:verified', (report) => {
+    console.log(
+      `[audit] Chain verification passed — ${report.entriesChecked} entries verified in ${report.duration}ms.`,
+    );
+  });
+
+  chainVerifier.on('chain:error', (error) => {
+    console.error('[audit] Chain verification error:', error.message);
   });
 
   console.log(
@@ -440,6 +494,9 @@ async function main(): Promise<void> {
   console.log('='.repeat(60));
   console.log(`  API:              http://${config.host}:${config.port}`);
   console.log(`  Agents:           ${agents.length} registered`);
+  console.log(`    Domain:         26`);
+  console.log(`    Orchestration:  3`);
+  console.log(`    Meta:           1`);
   console.log(`    Active:         ${statusSummary.active}`);
   console.log(`    Probation:      ${statusSummary.probation}`);
   console.log(`    Paused:         ${statusSummary.paused}`);

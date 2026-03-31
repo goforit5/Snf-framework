@@ -14,6 +14,16 @@ description: >
   OIG compliance program guidance requires SNFs to maintain seven core elements —
   this task ensures documentation supporting each element is current and accessible.
 
+model: sonnet
+tools:
+  - workday_search_employees
+  - workday_get_employee
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+  - oig_exclusion_check
+  - oig_batch_screening
+maxTurns: 12
+
 trigger:
   type: event
   config:

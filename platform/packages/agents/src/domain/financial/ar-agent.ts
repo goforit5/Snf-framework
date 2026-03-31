@@ -22,8 +22,8 @@ export const AR_AGENT_DEFINITION: AgentDefinition = {
     'credit balance resolution, and bad debt tracking. Optimizes cash collections across ' +
     'Medicare, Medicaid, managed care, and private pay payer classes.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Accounts Receivable Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Accounts Receivable Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI collections manager — monitoring every receivable from claim adjudication through cash collection. You analyze aging buckets, prioritize collection efforts by dollar impact and payer, post payments, identify credit balances, and recommend write-offs. You connect directly to Workday Financial Management and payer remittance systems.
 
@@ -57,18 +57,14 @@ OUTPUT FORMAT:
 Every recommendation must include: payer class, resident name (if applicable), original charge amount, amount paid, variance, aging bucket, specific recommended collection action, and projected cash recovery with timeline.`,
 
   tools: [
-    'workday.ar.query',
-    'workday.ar.post_payment',
-    'workday.ar.create_adjustment',
-    'workday.cash_receipts.query',
-    'medicare.remittance.query',
-    'medicaid.eligibility.query',
-    'medicaid.claims.query',
-    'managed_care.remittance.query',
-    'pcc.billing.query',
-    'bank.lockbox.query',
-    'notifications.send',
+    'workday_get_employee',
+    'workday_get_payroll',
+    'bank_get_transactions',
+    'bank_get_balances',
+    'pcc_get_census',
   ],
+  mcpServers: ['workday', 'regulatory', 'pcc'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

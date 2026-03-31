@@ -13,6 +13,12 @@ description: >
   and identifies documentation gaps. CMS F-tags F900-F945 govern Life Safety
   Code compliance — deficiencies here frequently result in Immediate Jeopardy.
 
+model: sonnet
+tools:
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+maxTurns: 8
+
 trigger:
   type: schedule
   config:

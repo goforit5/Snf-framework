@@ -13,6 +13,12 @@ description: >
   during every inspection. A single missed PM on a fire alarm panel can result
   in Immediate Jeopardy.
 
+model: haiku
+tools:
+  - m365_search_sharepoint
+  - m365_get_sharepoint_file
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

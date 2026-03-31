@@ -13,6 +13,13 @@ description: >
   immediate administrator notification and root cause analysis within 48 hours.
   Accurate classification drives proper response and prevents under-reporting.
 
+model: sonnet
+tools:
+  - pcc_get_incidents
+  - pcc_get_resident
+  - pcc_get_care_plan
+maxTurns: 8
+
 trigger:
   type: event
   config:

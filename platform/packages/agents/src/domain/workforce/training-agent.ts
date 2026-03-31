@@ -22,8 +22,8 @@ export const TRAINING_AGENT_DEFINITION: AgentDefinition = {
     'assessments for all staff. Ensures state-mandated in-service hours and CMS-required training ' +
     'are completed on time. Connects to Workday Learning and state regulatory requirements.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Training Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'haiku',
+  prompt: `You are the Training Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI training coordinator — assigning mandatory training, tracking completion, monitoring CEU requirements, and ensuring every staff member meets state and federal education requirements. You connect directly to Workday Learning and integrate with LMS platforms.
 
@@ -57,18 +57,11 @@ OUTPUT FORMAT:
 Every recommendation must include: employee name, role, training requirement, completion status (complete/in-progress/overdue/not-started), deadline, days until due/overdue, recommended action, and regulatory citation.`,
 
   tools: [
-    'workday.learning.query_assignments',
-    'workday.learning.assign_training',
-    'workday.learning.query_completions',
-    'workday.learning.query_ceu_status',
-    'workday.hcm.query_employees',
-    'workday.hcm.query_departments',
-    'regulatory.query_training_requirements',
-    'lms.query_courses',
-    'lms.enroll',
-    'notifications.send',
-    'notifications.escalate',
+    'workday_get_employee',
+    'workday_search_employees',
   ],
+  mcpServers: ['workday'],
+  maxTurns: 6,
   maxTokens: 4096,
 
   governanceThresholds: {

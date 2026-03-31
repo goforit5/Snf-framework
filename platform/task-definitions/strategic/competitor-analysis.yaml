@@ -13,6 +13,12 @@ description: >
   facility receives a poor survey or drops star ratings, that creates a referral
   capture opportunity. When a competitor improves, it signals potential referral loss.
 
+model: sonnet
+tools:
+  - cms_get_facility_quality
+  - cms_get_survey_results
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

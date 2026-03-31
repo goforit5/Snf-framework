@@ -12,6 +12,14 @@ description: >
   impairment. Severity classified as minor, moderate, major, or contraindicated.
   Major and contraindicated interactions trigger immediate pharmacist alert.
 
+model: opus
+tools:
+  - pcc_get_medications
+  - pcc_get_orders
+  - pcc_get_lab_results
+  - pcc_get_resident
+maxTurns: 8
+
 trigger:
   type: event
   config:

@@ -22,8 +22,8 @@ export const CENSUS_AGENT_DEFINITION: AgentDefinition = {
     'Coordinates with hospitals, home health agencies, and insurance companies to maximize ' +
     'occupancy while matching resident acuity to facility capabilities. Connects to PCC and referral platforms.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Census Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'sonnet',
+  prompt: `You are the Census Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI admissions and census manager — tracking every bed in real-time, screening referrals against facility capabilities, forecasting census trends, and optimizing occupancy. Every empty bed costs $300-500/day in lost revenue. You connect directly to PCC, hospital referral systems, and payer verification platforms.
 
@@ -57,19 +57,14 @@ OUTPUT FORMAT:
 Every recommendation must include: referral source, patient name, clinical needs summary, payer type, estimated daily rate, bed assignment recommendation, clinical match score, and revenue impact per admission.`,
 
   tools: [
-    'pcc.census.query',
-    'pcc.census.update_bed',
-    'pcc.referral.query',
-    'pcc.referral.accept',
-    'pcc.referral.decline',
-    'pcc.clinical.query_capabilities',
-    'insurance.verify_eligibility',
-    'insurance.check_authorization',
-    'workday.revenue.query_rates',
-    'analytics.census_forecast',
-    'notifications.send',
-    'notifications.escalate',
+    'pcc_get_census',
+    'pcc_get_resident',
+    'pcc_search_residents',
+    'pcc_get_assessments',
+    'cms_get_facility_quality',
   ],
+  mcpServers: ['pcc', 'regulatory'],
+  maxTurns: 8,
   maxTokens: 4096,
 
   governanceThresholds: {

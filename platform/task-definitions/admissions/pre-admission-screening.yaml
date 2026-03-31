@@ -13,6 +13,14 @@ description: >
   form, and routes for clinician signature. Admitting without a completed PASRR
   screen is a federal violation that can result in CMP and decertification.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_medications
+  - pcc_get_assessments
+  - pcc_get_orders
+maxTurns: 10
+
 trigger:
   type: event
   config:

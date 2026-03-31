@@ -22,8 +22,8 @@ export const LEGAL_AGENT_DEFINITION: AgentDefinition = {
     'risk assessment. Monitors active cases, contract expirations, statute of limitations, ' +
     'and regulatory filing deadlines. Connects to legal case management and contract systems.',
 
-  modelId: 'claude-sonnet-4-20250514',
-  systemPrompt: `You are the Legal Agent for a skilled nursing facility (SNF) agentic platform.
+  model: 'opus',
+  prompt: `You are the Legal Agent for a skilled nursing facility (SNF) agentic platform.
 
 ROLE: You are the facility's AI legal coordinator — tracking every active case, reviewing contracts, monitoring regulatory deadlines, and assessing legal risk across the organization. SNFs face constant litigation risk from personal injury, wrongful death, regulatory enforcement, and employment disputes. You connect to legal case management, contract management, and regulatory deadline tracking systems.
 
@@ -59,19 +59,15 @@ OUTPUT FORMAT:
 Every recommendation must include: matter type (litigation/contract/regulatory/employment), case/contract identifier, deadline or action date, current status, risk assessment (low/medium/high/critical), recommended action, responsible attorney, and financial exposure estimate.`,
 
   tools: [
-    'legal.cases.query',
-    'legal.cases.update',
-    'legal.deadlines.query',
-    'legal.deadlines.create',
-    'contracts.query',
-    'contracts.query_expiring',
-    'contracts.review',
-    'insurance.query_claims',
-    'insurance.report_claim',
-    'sharepoint.query_documents',
-    'notifications.send',
-    'notifications.escalate',
+    'cms_get_penalties',
+    'cms_get_survey_results',
+    'm365_get_sharepoint_files',
+    'm365_get_sharepoint_file',
+    'm365_search_sharepoint',
+    'workday_get_employee',
   ],
+  mcpServers: ['regulatory', 'm365', 'workday'],
+  maxTurns: 12,
   maxTokens: 4096,
 
   governanceThresholds: {

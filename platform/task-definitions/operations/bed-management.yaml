@@ -12,6 +12,12 @@ description: >
   and with admissions for intake scheduling. Accurate bed management directly
   impacts revenue — every empty bed is $200-500/day in lost revenue.
 
+model: haiku
+tools:
+  - pcc_get_census
+  - pcc_get_resident
+maxTurns: 6
+
 trigger:
   type: schedule
   config:

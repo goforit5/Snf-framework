@@ -12,6 +12,13 @@ description: >
   toward annual budget overrun. Facilities exceeding 5% total variance require
   corrective action plans.
 
+model: sonnet
+tools:
+  - workday_get_payroll
+  - workday_get_positions
+  - pcc_get_census
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

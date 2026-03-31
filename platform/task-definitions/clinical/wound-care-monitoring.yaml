@@ -12,6 +12,14 @@ description: >
   ensure residents with pressure ulcers receive necessary treatment. Integrates
   Braden Scale scores to identify at-risk residents before wounds develop.
 
+model: sonnet
+tools:
+  - pcc_get_assessments
+  - pcc_get_vitals
+  - pcc_get_orders
+  - pcc_get_care_plan
+maxTurns: 10
+
 trigger:
   type: schedule
   config:

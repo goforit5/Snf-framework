@@ -12,6 +12,15 @@ description: >
   Tracks completion of all onboarding tasks and escalates blockers. A missed
   onboarding step (e.g., incomplete background check) creates CMS survey risk.
 
+model: sonnet
+tools:
+  - workday_get_employee
+  - workday_get_positions
+  - workday_get_benefits
+  - m365_send_email
+  - m365_create_event
+maxTurns: 12
+
 trigger:
   type: event
   config:

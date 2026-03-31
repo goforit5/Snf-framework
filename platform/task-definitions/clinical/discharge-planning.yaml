@@ -13,6 +13,15 @@ description: >
   prepares residents for safe transfer. Generates comprehensive discharge
   summary and checklist for care team review.
 
+model: sonnet
+tools:
+  - pcc_get_resident
+  - pcc_get_care_plan
+  - pcc_get_assessments
+  - pcc_get_orders
+  - pcc_get_medications
+maxTurns: 10
+
 trigger:
   type: event
   config:

@@ -11,7 +11,7 @@ import type {
   Decision,
   DecisionPriority,
 } from '@snf/core';
-import { GovernanceLevel } from '@snf/core';
+import { GovernanceLevel, MODEL_IDS } from '@snf/core';
 import { GovernanceEngine } from './governance-engine.js';
 import type { GovernanceContext, GovernanceDecision, AuditLogger } from './governance-engine.js';
 import { EventBus } from './event-bus.js';
@@ -176,6 +176,7 @@ export abstract class BaseSnfAgent {
       agentId: this.definition.id,
       traceId: input.traceId,
       taskDefinitionId: input.taskDefinitionId,
+      model: this.definition.model,
       startedAt,
       completedAt: null,
       status: 'running',
@@ -270,11 +271,11 @@ export abstract class BaseSnfAgent {
       this.recordStep('log', { runId }, { status: 'completed' });
 
       // Complete the run
-      this.currentRun.status = 'completed';
-      this.currentRun.completedAt = new Date().toISOString();
-      this.currentRun.totalDurationMs = Date.now() - new Date(startedAt).getTime();
+      this.currentRun!.status = 'completed';
+      this.currentRun!.completedAt = new Date().toISOString();
+      this.currentRun!.totalDurationMs = Date.now() - new Date(startedAt).getTime();
 
-      return this.currentRun;
+      return this.currentRun!;
     } catch (error) {
       // Record failure
       if (this.currentRun) {
@@ -316,9 +317,9 @@ export abstract class BaseSnfAgent {
     const client = this.getClient();
 
     const response = await client.messages.create({
-      model: this.definition.modelId,
+      model: MODEL_IDS[this.definition.model],
       max_tokens: options?.maxTokens ?? this.definition.maxTokens,
-      system: this.definition.systemPrompt,
+      system: this.definition.prompt,
       messages,
       ...(options?.tools && options.tools.length > 0 ? { tools: options.tools } : {}),
     });

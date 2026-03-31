@@ -11,6 +11,15 @@ description: >
   generates a reconciliation report for pharmacist review. CMS F-tag F756
   requires timely med rec. This task ensures zero-gap coverage.
 
+model: sonnet
+tools:
+  - pcc_get_medications
+  - pcc_get_orders
+  - pcc_get_resident
+  - pcc_get_lab_results
+  - pcc_get_assessments
+maxTurns: 12
+
 trigger:
   type: event
   config:
