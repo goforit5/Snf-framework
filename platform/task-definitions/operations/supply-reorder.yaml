@@ -1,0 +1,126 @@
+id: supply-reorder
+name: Supply Inventory Reorder Automation
+version: 1.0.0
+domain: operations
+agentId: supply-chain-agent
+description: >
+  Monitors supply inventory levels and triggers reorder workflows when stock
+  falls below par levels. Covers medical supplies (gloves, wound care, catheters),
+  dietary supplies, housekeeping chemicals, and office supplies. Pulls current
+  inventory from the supply management system, compares against par levels
+  adjusted for census, validates pricing against contracted rates, and generates
+  purchase orders in Workday. Prevents stockouts that impact resident care while
+  optimizing inventory carrying costs. Consolidates orders across facilities
+  for volume discounts when multiple facilities need the same items.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 * * 1,3,5"
+    timezone: facility_local
+
+steps:
+  - name: fetch-inventory-levels
+    description: Pull current inventory levels for all tracked supply categories
+    tool: inventory.getLevels
+    input:
+      facilityId: "{{context.facilityId}}"
+      categories:
+        - medical
+        - dietary
+        - housekeeping
+        - office
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-par-levels
+    description: Pull census-adjusted par levels for the facility
+    tool: inventory.getParLevels
+    input:
+      facilityId: "{{context.facilityId}}"
+      adjustForCensus: true
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: check-contracted-pricing
+    description: Validate current pricing against GPO and vendor contract rates
+    tool: workday.procurement.getContractedPricing
+    input:
+      items: "{{steps.fetch-inventory-levels.output.belowParItems}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: generate-orders
+    description: Generate optimized purchase orders with vendor consolidation and pricing validation
+    tool: claude.analyze
+    input:
+      prompt: supply_reorder_optimization
+      context:
+        - "{{steps.fetch-inventory-levels.output}}"
+        - "{{steps.fetch-par-levels.output}}"
+        - "{{steps.check-contracted-pricing.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit purchase orders to decision queue for materials manager approval
+    tool: decision-queue.submit
+    input:
+      type: supply-reorder
+      priority: "{{steps.generate-orders.output.priority}}"
+      orders: "{{steps.generate-orders.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "total_order_value < 2000 && all_contracted_pricing == true"
+    level: 1
+    reason: Routine reorder under $2K at contracted pricing — auto-submit PO
+  - condition: "total_order_value < 10000 && all_contracted_pricing == true"
+    level: 2
+    reason: Standard reorder under $10K at contracted pricing — auto-approve with notification
+  - condition: "critical_supply_stockout == true"
+    level: 5
+    reason: Critical medical supply stockout imminent — escalate for emergency procurement
+  - condition: "pricing_above_contract == true"
+    level: 4
+    reason: Vendor pricing exceeds contracted rate — requires procurement review
+
+requiredConnectors:
+  - workday
+  - inventory
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    purchaseOrders:
+      type: array
+    totalOrderValue:
+      type: number
+    stockoutRisks:
+      type: array
+    savingsFromConsolidation:
+      type: number
+
+schedule: "0 7 * * 1,3,5"
+timeout: 5m
+tags:
+  - supply-chain
+  - procurement
+  - inventory
+  - cost-control
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

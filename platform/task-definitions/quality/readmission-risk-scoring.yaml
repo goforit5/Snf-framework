@@ -1,0 +1,122 @@
+id: readmission-risk-scoring
+name: Hospital Readmission Risk Scoring
+version: 1.0.0
+domain: quality
+agentId: clinical-analytics-agent
+description: >
+  Calculates 30-day hospital readmission risk scores for all short-stay residents.
+  Pulls clinical data from PCC (diagnoses, vitals, labs, medications, functional
+  status), applies a multi-factor risk model considering comorbidities, prior
+  hospitalizations, medication complexity, functional decline trajectory, and
+  psychosocial factors. High-risk residents receive enhanced monitoring protocols.
+  CMS SNF Value-Based Purchasing (VBP) program directly penalizes facilities
+  with high readmission rates — up to 2% Medicare payment reduction. Each
+  avoidable readmission also costs $12K-15K in lost revenue from interrupted stay.
+
+trigger:
+  type: event
+  config:
+    event: admission.created
+    filter: "admissionType == 'short_stay'"
+
+steps:
+  - name: fetch-clinical-profile
+    description: Pull comprehensive clinical profile from PCC (diagnoses, meds, labs, vitals)
+    tool: pcc.clinical.getProfile
+    input:
+      residentId: "{{event.residentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-hospitalization-history
+    description: Pull prior hospitalization and ED visit history from PCC and HIE
+    tool: pcc.hospitalizations.getHistory
+    input:
+      residentId: "{{event.residentId}}"
+      lookbackMonths: 12
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: calculate-risk-score
+    description: >
+      Apply readmission risk model incorporating LACE index components, clinical
+      complexity, medication risk factors, functional trajectory, and psychosocial
+      determinants. Generate risk tier and recommended monitoring protocol.
+    tool: claude.analyze
+    input:
+      prompt: readmission_risk_scoring_model
+      context:
+        - "{{steps.fetch-clinical-profile.output}}"
+        - "{{steps.fetch-hospitalization-history.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit readmission risk score to decision queue for DON/clinical team review
+    tool: decision-queue.submit
+    input:
+      type: readmission-risk-scoring
+      priority: "{{steps.calculate-risk-score.output.priority}}"
+      riskAssessment: "{{steps.calculate-risk-score.output}}"
+      residentId: "{{event.residentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "risk_tier == 'low'"
+    level: 2
+    reason: Low readmission risk — standard monitoring protocol, auto-file with notification
+  - condition: "risk_tier == 'high'"
+    level: 4
+    reason: High readmission risk — requires clinical team review and enhanced monitoring plan
+  - condition: "risk_tier == 'critical' || prior_30day_readmission == true"
+    level: 5
+    reason: Critical readmission risk or prior 30-day bounce-back — escalate for physician/DON intervention
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    residentId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - residentId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    riskScore:
+      type: number
+    riskTier:
+      type: string
+      enum:
+        - low
+        - moderate
+        - high
+        - critical
+    riskFactors:
+      type: array
+    recommendedProtocol:
+      type: string
+
+schedule: null
+timeout: 3m
+tags:
+  - readmission
+  - risk-scoring
+  - vbp
+  - quality
+  - clinical
+  - cms-required
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

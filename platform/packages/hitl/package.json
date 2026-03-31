@@ -1,0 +1,20 @@
+{
+  "name": "@snf/hitl",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@snf/core": "*",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "migrate": "node dist/migrations/run.js",
+    "seed": "node dist/seed.js"
+  }
+}

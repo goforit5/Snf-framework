@@ -1,0 +1,139 @@
+id: regulatory-change-alert
+name: Regulatory & Legislative Change Alert
+version: 1.0.0
+domain: legal
+agentId: regulatory-intelligence-agent
+description: >
+  Monitors federal and state regulatory changes affecting SNF operations. Tracks
+  CMS Federal Register publications, state Department of Health rule changes,
+  OSHA updates, FDA drug safety communications, OIG fraud alerts, and state
+  legislature bills affecting healthcare. Analyzes each change for operational
+  impact, identifies affected facilities by state, estimates compliance timeline
+  and cost, and generates action items for affected departments. The SNF
+  regulatory landscape shifts constantly — CMS alone publishes 50+ significant
+  rules per year affecting long-term care. Missing a regulatory change can
+  result in survey deficiencies or payment penalties.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 6 * * *"
+    timezone: America/Chicago
+
+steps:
+  - name: scan-federal-register
+    description: Scan CMS and HHS Federal Register entries for new rules, proposed rules, and notices
+    tool: regulatory.federalRegister.scan
+    input:
+      agencies:
+        - CMS
+        - HHS
+        - OSHA
+        - FDA
+        - OIG
+      categories:
+        - long_term_care
+        - skilled_nursing
+        - medicare
+        - medicaid
+      lookbackDays: 1
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: scan-state-regulatory
+    description: Scan state health department and legislative updates for Ensign operating states
+    tool: regulatory.stateChanges.scan
+    input:
+      states:
+        - AZ
+        - CA
+        - CO
+        - ID
+        - IA
+        - KS
+        - NE
+        - NV
+        - OR
+        - SC
+        - TX
+        - UT
+        - WA
+        - WI
+        - WY
+      lookbackDays: 1
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: analyze-impact
+    description: >
+      Analyze each regulatory change for operational impact, identify affected
+      facilities, estimate compliance cost and timeline, and generate department-specific
+      action items.
+    tool: claude.analyze
+    input:
+      prompt: regulatory_change_impact_analysis
+      context:
+        - "{{steps.scan-federal-register.output}}"
+        - "{{steps.scan-state-regulatory.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit regulatory alerts to decision queue for compliance officer/legal review
+    tool: decision-queue.submit
+    input:
+      type: regulatory-change-alert
+      priority: "{{steps.analyze-impact.output.priority}}"
+      alerts: "{{steps.analyze-impact.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "no_material_changes == true"
+    level: 1
+    reason: No material regulatory changes — auto-file daily scan log
+  - condition: "payment_impact == true"
+    level: 4
+    reason: Regulatory change affects Medicare/Medicaid payment — requires CFO review
+  - condition: "immediate_compliance_action == true"
+    level: 5
+    reason: New regulation requires immediate compliance action — escalate to compliance officer and legal
+
+requiredConnectors:
+  - regulatory
+inputSchema:
+  type: object
+  properties:
+    states:
+      type: array
+      items:
+        type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    federalChanges:
+      type: array
+    stateChanges:
+      type: array
+    impactAssessments:
+      type: array
+    actionItems:
+      type: array
+
+schedule: "0 6 * * *"
+timeout: 5m
+tags:
+  - regulatory
+  - legal
+  - compliance
+  - federal-register
+  - state-law
+  - cms
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

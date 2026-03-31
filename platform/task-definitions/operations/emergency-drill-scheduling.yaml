@@ -1,0 +1,108 @@
+id: emergency-drill-scheduling
+name: Emergency Drill Scheduling & Documentation
+version: 1.0.0
+domain: operations
+agentId: compliance-ops-agent
+description: >
+  Schedules and tracks all required emergency drills: fire drills (quarterly per
+  shift), severe weather/tornado drills (annually), elopement drills (per facility
+  policy), and full-facility evacuation exercises (annually). Ensures drills are
+  conducted on each shift (day, evening, night), documents participation, records
+  drill duration and findings, and tracks corrective actions from drill deficiencies.
+  CMS requires documented evidence of quarterly fire drills on each shift —
+  surveyors routinely check the last 4 quarters of drill records.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 1 * *"
+    timezone: facility_local
+
+steps:
+  - name: fetch-drill-history
+    description: Pull drill completion history for the past 12 months by type and shift
+    tool: cmms.drills.getRecords
+    input:
+      facilityId: "{{context.facilityId}}"
+      lookbackMonths: 12
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-drill-requirements
+    description: Pull state and federal drill requirements by facility type
+    tool: compliance.getDrillRequirements
+    input:
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: generate-schedule
+    description: >
+      Generate upcoming drill schedule ensuring all shifts, types, and quarterly
+      requirements are covered. Identify any overdue drills and recommend make-up dates.
+    tool: claude.analyze
+    input:
+      prompt: emergency_drill_scheduling
+      context:
+        - "{{steps.fetch-drill-history.output}}"
+        - "{{steps.fetch-drill-requirements.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit drill schedule to decision queue for safety officer/administrator approval
+    tool: decision-queue.submit
+    input:
+      type: emergency-drill-scheduling
+      priority: "{{steps.generate-schedule.output.priority}}"
+      schedule: "{{steps.generate-schedule.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_drills_current == true"
+    level: 2
+    reason: All drills current — auto-publish next quarter schedule
+  - condition: "overdue_drills > 0"
+    level: 4
+    reason: Overdue drills identified — requires safety officer immediate scheduling
+  - condition: "fire_drill_shift_gap == true"
+    level: 5
+    reason: Fire drill missing for a required shift — CMS deficiency risk, schedule immediately
+
+requiredConnectors:
+  - cmms
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    upcomingDrills:
+      type: array
+    overdueDrills:
+      type: array
+    complianceStatus:
+      type: string
+    quarterlyCompletionRate:
+      type: number
+
+schedule: "0 7 1 * *"
+timeout: 3m
+tags:
+  - emergency-drills
+  - fire-safety
+  - compliance
+  - cms-required
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

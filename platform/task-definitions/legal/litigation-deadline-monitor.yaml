@@ -1,0 +1,111 @@
+id: litigation-deadline-monitor
+name: Litigation Deadline & Filing Monitor
+version: 1.0.0
+domain: legal
+agentId: legal-ops-agent
+description: >
+  Monitors all active litigation matters for upcoming deadlines including
+  discovery responses, deposition dates, motion filing deadlines, mediation
+  dates, trial dates, and statute of limitations. Pulls matter details from
+  the legal case management system, cross-references with court calendars,
+  generates escalating alerts at 30/14/7/3-day intervals, and identifies
+  matters requiring document preservation holds or witness preparation. SNF
+  litigation exposure includes slip-and-fall, wrongful death, abuse/neglect
+  claims, employment disputes, and regulatory enforcement actions. A missed
+  deadline can result in sanctions, default judgment, or malpractice claims
+  against counsel.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 * * *"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-active-matters
+    description: Pull all active litigation matters and upcoming deadlines from case management
+    tool: clm.litigation.getActive
+    input:
+      includeDeadlines: true
+      lookAheadDays: 60
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: check-document-holds
+    description: Verify litigation hold compliance for all active matters
+    tool: clm.litigation.getHoldStatus
+    input:
+      matterIds: "{{steps.fetch-active-matters.output.activeMatterIds}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: prioritize-deadlines
+    description: >
+      Prioritize upcoming deadlines by urgency and consequence, identify matters
+      requiring immediate attention, flag overdue items, and generate task lists
+      for legal team.
+    tool: claude.analyze
+    input:
+      prompt: litigation_deadline_prioritization
+      context:
+        - "{{steps.fetch-active-matters.output}}"
+        - "{{steps.check-document-holds.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit deadline report to decision queue for general counsel/legal team
+    tool: decision-queue.submit
+    input:
+      type: litigation-deadline-monitor
+      priority: "{{steps.prioritize-deadlines.output.priority}}"
+      report: "{{steps.prioritize-deadlines.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "no_deadlines_within_14_days == true"
+    level: 2
+    reason: No imminent deadlines — auto-file daily status report
+  - condition: "deadline_within_7_days == true"
+    level: 5
+    reason: Filing deadline within 7 days — requires general counsel confirmation
+  - condition: "statute_of_limitations_approaching == true"
+    level: 6
+    reason: Statute of limitations approaching — immediate legal action required
+
+requiredConnectors:
+  - clm
+inputSchema:
+  type: object
+  properties:
+    matterId:
+      type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    upcomingDeadlines:
+      type: array
+    overdueItems:
+      type: array
+    holdComplianceStatus:
+      type: object
+    matterSummaries:
+      type: array
+
+schedule: "0 7 * * *"
+timeout: 3m
+tags:
+  - litigation
+  - legal
+  - deadlines
+  - compliance
+  - risk-management
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

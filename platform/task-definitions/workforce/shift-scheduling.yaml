@@ -1,0 +1,144 @@
+id: shift-scheduling
+name: Shift Scheduling & Optimization
+version: 1.0.0
+domain: workforce
+agentId: scheduling-agent
+description: >
+  Generates optimized shift schedules for each facility based on census, acuity
+  levels, CMS staffing requirements (PBJ), employee availability/preferences,
+  overtime history, and credential requirements. Pulls current census from PCC,
+  staffing matrix from Workday, and employee preferences from the scheduling
+  system. Ensures RN/LPN/CNA ratios meet state minimums and flags shifts that
+  are under-staffed 72 hours in advance so facility admins can act proactively.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 6 * * *"
+    timezone: facility_local
+
+steps:
+  - name: fetch-census-acuity
+    description: Pull current census and acuity levels from PCC for staffing ratio calculation
+    tool: pcc.census.getSummary
+    input:
+      facilityId: "{{context.facilityId}}"
+      includeAcuity: true
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-staffing-matrix
+    description: Retrieve required staffing ratios and minimum hours per resident day from Workday
+    tool: workday.staffing.getMatrix
+    input:
+      facilityId: "{{context.facilityId}}"
+      lookAheadDays: 7
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-employee-availability
+    description: Pull employee availability, PTO requests, and shift preferences from scheduling system
+    tool: workday.scheduling.getAvailability
+    input:
+      facilityId: "{{context.facilityId}}"
+      startDate: "{{context.scheduleStartDate}}"
+      endDate: "{{context.scheduleEndDate}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-overtime-history
+    description: Pull overtime hours worked in current pay period to avoid excessive OT
+    tool: workday.time.getOvertimeSummary
+    input:
+      facilityId: "{{context.facilityId}}"
+      payPeriod: current
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: optimize-schedule
+    description: >
+      Generate optimized schedule balancing census needs, credential requirements,
+      employee preferences, overtime limits, and state-mandated staffing ratios.
+      Flag any shifts that cannot be filled with available staff.
+    tool: claude.analyze
+    input:
+      prompt: shift_schedule_optimization
+      context:
+        - "{{steps.fetch-census-acuity.output}}"
+        - "{{steps.fetch-staffing-matrix.output}}"
+        - "{{steps.fetch-employee-availability.output}}"
+        - "{{steps.fetch-overtime-history.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 3m
+
+  - name: submit-decision
+    description: Submit optimized schedule to decision queue for DON/administrator approval
+    tool: decision-queue.submit
+    input:
+      type: shift-scheduling
+      priority: "{{steps.optimize-schedule.output.priority}}"
+      schedule: "{{steps.optimize-schedule.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "unfilled_shifts == 0 && overtime_variance < 0.05"
+    level: 2
+    reason: All shifts filled within normal parameters — auto-publish with notification
+  - condition: "unfilled_shifts > 3"
+    level: 4
+    reason: Multiple unfilled shifts — requires DON review and possible agency activation
+  - condition: "below_state_minimum == true"
+    level: 5
+    reason: Schedule falls below state-mandated staffing ratios — escalate to administrator
+
+requiredConnectors:
+  - pcc
+  - workday
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    scheduleStartDate:
+      type: string
+      format: date
+    scheduleEndDate:
+      type: string
+      format: date
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    schedule:
+      type: object
+    unfilledShifts:
+      type: array
+    overtimeProjection:
+      type: number
+    complianceStatus:
+      type: string
+      enum:
+        - compliant
+        - at_risk
+        - non_compliant
+
+schedule: "0 6 * * *"
+timeout: 5m
+tags:
+  - scheduling
+  - staffing
+  - pbj
+  - compliance
+  - overtime
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

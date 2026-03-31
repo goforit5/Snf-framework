@@ -1,0 +1,22 @@
+{
+  "name": "@snf/api",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "dependencies": {
+    "@snf/core": "*",
+    "@snf/hitl": "*",
+    "@snf/audit": "*",
+    "@snf/agents": "*",
+    "@snf/tasks": "*",
+    "fastify": "^5.2.0",
+    "@fastify/websocket": "^11.0.0",
+    "@fastify/cors": "^10.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js"
+  }
+}

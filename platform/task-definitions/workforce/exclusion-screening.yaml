@@ -1,0 +1,125 @@
+id: exclusion-screening
+name: OIG/SAM Exclusion Screening
+version: 1.0.0
+domain: workforce
+agentId: compliance-screening-agent
+description: >
+  Screens all employees and contractors against the OIG List of Excluded
+  Individuals/Entities (LEIE) and the GSA System for Award Management (SAM)
+  exclusion database. Federal law prohibits Medicare/Medicaid payment for
+  services rendered by excluded individuals. A single missed exclusion can
+  result in $100K+ CMP (Civil Monetary Penalty) per occurrence plus repayment
+  of all claims. Runs monthly for all active employees and on-demand for new
+  hires. Cross-references name, NPI, SSN (last 4), and date of birth.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 3 1 * *"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-active-employees
+    description: Pull all active employees and contractors from Workday HR
+    tool: workday.hr.getActiveEmployees
+    input:
+      includeContractors: true
+      fields:
+        - employeeId
+        - fullName
+        - npi
+        - dateOfBirth
+        - ssnLast4
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: screen-oig-leie
+    description: Screen all employees against OIG LEIE exclusion database
+    tool: oig.leie.screenBatch
+    input:
+      employees: "{{steps.fetch-active-employees.output.employees}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 3m
+
+  - name: screen-sam
+    description: Screen all employees against GSA SAM exclusion database
+    tool: sam.exclusions.screenBatch
+    input:
+      employees: "{{steps.fetch-active-employees.output.employees}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 3m
+
+  - name: analyze-matches
+    description: Analyze potential matches, score confidence, and eliminate false positives
+    tool: claude.analyze
+    input:
+      prompt: exclusion_match_analysis
+      context:
+        - "{{steps.screen-oig-leie.output}}"
+        - "{{steps.screen-sam.output}}"
+        - "{{steps.fetch-active-employees.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit screening results to decision queue — matches require immediate compliance action
+    tool: decision-queue.submit
+    input:
+      type: exclusion-screening
+      priority: "{{steps.analyze-matches.output.priority}}"
+      results: "{{steps.analyze-matches.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "matches == 0"
+    level: 1
+    reason: No exclusion matches found — auto-file screening certificate
+  - condition: "potential_match == true && confidence < 0.7"
+    level: 4
+    reason: Low-confidence potential match — requires compliance officer review
+  - condition: "confirmed_match == true"
+    level: 6
+    reason: Confirmed exclusion match — immediate suspension, notify compliance officer and legal
+
+requiredConnectors:
+  - workday
+  - oig
+  - sam
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    employeeId:
+      type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    totalScreened:
+      type: integer
+    oigMatches:
+      type: array
+    samMatches:
+      type: array
+    screeningCertificate:
+      type: object
+
+schedule: "0 3 1 * *"
+timeout: 10m
+tags:
+  - compliance
+  - oig
+  - sam
+  - exclusion
+  - cms-required
+  - cmp-risk
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

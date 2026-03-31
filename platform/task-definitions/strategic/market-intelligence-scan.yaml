@@ -1,0 +1,142 @@
+id: market-intelligence-scan
+name: Market Intelligence & Industry Scan
+version: 1.0.0
+domain: strategic
+agentId: market-intelligence-agent
+description: >
+  Performs daily scanning of healthcare industry news, CMS policy announcements,
+  state Medicaid rate updates, competitor earnings calls, M&A activity, and
+  workforce market trends relevant to Ensign's operating footprint. Sources
+  include CMS.gov, state Medicaid agency sites, SEC filings, industry
+  publications (McKnight's, Skilled Nursing News, Provider Magazine), and
+  local news in Ensign's 15 operating states. Distills actionable intelligence
+  into executive briefings with quantified impact estimates. Barry Port and
+  the leadership team need a single daily feed replacing dozens of manual
+  information sources.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 5 * * *"
+    timezone: America/Chicago
+
+steps:
+  - name: scan-cms-updates
+    description: Scan CMS.gov for new transmittals, MLN articles, and policy updates
+    tool: web.scan
+    input:
+      sources:
+        - cms_gov
+        - federal_register
+      keywords:
+        - skilled nursing
+        - snf
+        - long-term care
+        - medicare part a
+        - pbj
+      lookbackHours: 24
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: scan-industry-news
+    description: Scan healthcare industry publications for SNF-relevant news
+    tool: web.scan
+    input:
+      sources:
+        - mcknights_ltc
+        - skilled_nursing_news
+        - modern_healthcare
+        - provider_magazine
+      lookbackHours: 24
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: scan-competitor-activity
+    description: Scan SEC filings, press releases, and news for competitor M&A and strategic moves
+    tool: web.scan
+    input:
+      companies:
+        - Sabra Healthcare
+        - Diversified Healthcare Trust
+        - ProMedica
+        - Kindred Healthcare
+        - Brookdale Senior Living
+      lookbackHours: 24
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: generate-briefing
+    description: >
+      Synthesize all signals into a prioritized executive intelligence briefing
+      with impact assessments and recommended actions.
+    tool: claude.generate
+    input:
+      template: executive_intelligence_briefing
+      data:
+        - "{{steps.scan-cms-updates.output}}"
+        - "{{steps.scan-industry-news.output}}"
+        - "{{steps.scan-competitor-activity.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit intelligence briefing to decision queue for executive team
+    tool: decision-queue.submit
+    input:
+      type: market-intelligence-scan
+      priority: "{{steps.generate-briefing.output.priority}}"
+      briefing: "{{steps.generate-briefing.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 2
+governanceOverrides:
+  - condition: "no_material_signals == true"
+    level: 1
+    reason: No material intelligence signals — auto-file daily digest
+  - condition: "competitor_acquisition_detected == true"
+    level: 4
+    reason: Competitor acquisition activity detected — requires CEO/M&A team briefing
+  - condition: "major_policy_change == true"
+    level: 5
+    reason: Major CMS/state policy change with revenue impact — escalate to CEO and CFO
+
+requiredConnectors:
+  - web
+inputSchema:
+  type: object
+  properties:
+    focusAreas:
+      type: array
+      items:
+        type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    cmsUpdates:
+      type: array
+    industryNews:
+      type: array
+    competitorActivity:
+      type: array
+    executiveBriefing:
+      type: object
+    actionItems:
+      type: array
+
+schedule: "0 5 * * *"
+timeout: 7m
+tags:
+  - market-intelligence
+  - executive
+  - strategy
+  - competitor-analysis
+  - cms-policy
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

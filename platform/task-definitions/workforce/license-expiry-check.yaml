@@ -1,0 +1,119 @@
+id: license-expiry-check
+name: Professional License Expiry Monitoring
+version: 1.0.0
+domain: workforce
+agentId: credentialing-agent
+description: >
+  Monitors professional license expiration dates for all clinical staff (RN, LPN,
+  CNA, RT, PT, OT, SLP, pharmacists, physicians). Pulls license records from
+  Workday HR, cross-references against state licensing board databases, and
+  generates escalating alerts at 90, 60, 30, and 14-day intervals. Employees
+  with expired licenses are flagged for immediate removal from the active
+  schedule. CMS Conditions of Participation require all clinical staff to
+  maintain current licensure — a single lapse triggers deficiency citations.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 * * 1"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-license-records
+    description: Pull all active employee license records from Workday HR
+    tool: workday.hr.getLicenses
+    input:
+      status: active
+      includeExpiring: true
+      lookAheadDays: 90
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: verify-state-boards
+    description: Cross-reference license numbers against state licensing board databases
+    tool: licensing.verifyBatch
+    input:
+      licenses: "{{steps.fetch-license-records.output.expiringLicenses}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: check-schedule-impact
+    description: Identify scheduled shifts for employees with expiring/expired licenses
+    tool: workday.scheduling.getAssignments
+    input:
+      employeeIds: "{{steps.fetch-license-records.output.expiringEmployeeIds}}"
+      lookAheadDays: 30
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: generate-alerts
+    description: Generate tiered alerts based on expiry timeline and schedule impact
+    tool: claude.analyze
+    input:
+      prompt: license_expiry_alert_generation
+      context:
+        - "{{steps.fetch-license-records.output}}"
+        - "{{steps.verify-state-boards.output}}"
+        - "{{steps.check-schedule-impact.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit license expiry alerts to decision queue for HR/DON action
+    tool: decision-queue.submit
+    input:
+      type: license-expiry-check
+      priority: "{{steps.generate-alerts.output.priority}}"
+      alerts: "{{steps.generate-alerts.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "days_to_expiry > 60"
+    level: 2
+    reason: License expiring in 60+ days — auto-notify employee with renewal reminder
+  - condition: "days_to_expiry <= 14"
+    level: 5
+    reason: License expiring within 14 days — requires immediate HR intervention
+  - condition: "license_expired == true"
+    level: 6
+    reason: License already expired — remove from schedule immediately, notify administrator
+
+requiredConnectors:
+  - workday
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    lookAheadDays:
+      type: integer
+  required: []
+outputSchema:
+  type: object
+  properties:
+    expiringLicenses:
+      type: array
+    expiredLicenses:
+      type: array
+    scheduleImpact:
+      type: object
+    alertsSent:
+      type: integer
+
+schedule: "0 7 * * 1"
+timeout: 5m
+tags:
+  - credentialing
+  - license
+  - compliance
+  - cms-required
+  - staffing
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

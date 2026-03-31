@@ -1,0 +1,18 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "noImplicitAny": false
+  },
+  "include": ["."],
+  "references": [
+    { "path": "../packages/core" },
+    { "path": "../packages/agents" },
+    { "path": "../packages/tasks" },
+    { "path": "../packages/hitl" },
+    { "path": "../packages/audit" },
+    { "path": "../packages/api" }
+  ]
+}

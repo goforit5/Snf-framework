@@ -1,0 +1,130 @@
+id: budget-variance-analysis
+name: Monthly Budget Variance Analysis
+version: 1.0.0
+domain: financial
+agentId: financial-planning-agent
+description: >
+  Performs monthly budget-to-actual variance analysis across all GL accounts for
+  each facility. Pulls actual spend from Workday GL, compares against approved
+  budget, and identifies significant variances by cost center and account. Analyzes
+  variance drivers (census changes, staffing mix, supply costs, contract labor)
+  and generates executive-ready variance commentary. Flags accounts trending
+  toward annual budget overrun. Facilities exceeding 5% total variance require
+  corrective action plans.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 8 5 * *"
+    description: Monthly variance analysis on the 5th after month-end close
+
+steps:
+  - name: fetch-actuals
+    description: Pull month-end GL actuals from Workday by cost center and account
+    tool: workday.gl.getActuals
+    input:
+      facilityId: "{{context.facilityId}}"
+      period: prior_month
+      groupBy:
+        - cost_center
+        - gl_account
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-budget
+    description: Pull approved budget for the same period from Workday
+    tool: workday.gl.getBudget
+    input:
+      facilityId: "{{context.facilityId}}"
+      period: prior_month
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-census-revenue
+    description: Pull census and revenue data to contextualize variances against volume changes
+    tool: pcc.census.getMonthly
+    input:
+      facilityId: "{{context.facilityId}}"
+      period: prior_month
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: analyze-variances
+    description: >
+      Calculate variance by GL account and cost center. Identify top 10 variance
+      drivers. Distinguish between volume-driven variances (census changes) and
+      rate-driven variances (cost per unit changes). Project year-end run rate
+      for accounts trending over budget. Generate variance commentary suitable
+      for board reporting.
+    tool: claude.analyze
+    input:
+      prompt: budget_variance_analysis
+      context:
+        - "{{steps.fetch-actuals.output}}"
+        - "{{steps.fetch-budget.output}}"
+        - "{{steps.fetch-census-revenue.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit variance analysis to decision queue for CFO/controller review
+    tool: decision-queue.submit
+    input:
+      type: budget-variance
+      priority: "{{steps.analyze-variances.output.priority}}"
+      report: "{{steps.analyze-variances.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "total_variance_pct < 0.02"
+    level: 1
+    reason: Total variance under 2% — auto-file monthly report
+  - condition: "total_variance_pct > 0.10"
+    level: 5
+    reason: Variance exceeds 10% — requires administrator and regional CFO review with corrective action plan
+  - condition: "projected_annual_overrun > 500000"
+    level: 5
+    reason: Projected annual budget overrun exceeds $500K — requires executive review
+
+requiredConnectors:
+  - workday
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    totalVariance:
+      type: number
+    totalVariancePct:
+      type: number
+    topVarianceDrivers:
+      type: array
+    projectedAnnualOverrun:
+      type: number
+    commentary:
+      type: string
+
+schedule: "0 8 5 * *"
+timeout: 5m
+tags:
+  - budgeting
+  - variance-analysis
+  - financial-planning
+  - gl
+  - executive-reporting
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

@@ -1,0 +1,141 @@
+id: claim-submission
+name: Claim Scrubbing & Submission
+version: 1.0.0
+domain: financial
+agentId: revenue-cycle-agent
+description: >
+  Scrubs outgoing claims (UB-04) before submission to payers. Validates coding
+  accuracy (ICD-10, HCPCS, revenue codes), checks MDS-driven PDPM classification
+  alignment, verifies authorization/pre-certification status, confirms resident
+  eligibility, and validates against payer-specific billing rules. Runs CCI edits
+  (Correct Coding Initiative) and medical necessity checks. Flags claims likely
+  to be denied based on historical denial pattern analysis. Target: reduce
+  first-pass denial rate below 5% (industry average is 10-15%).
+
+trigger:
+  type: event
+  config:
+    event: claim.ready_for_submission
+    filter: "status == 'scrub_pending'"
+
+steps:
+  - name: fetch-claim-data
+    description: Pull complete claim data including diagnosis codes, procedure codes, and charges
+    tool: pcc.billing.getClaim
+    input:
+      claimId: "{{event.claimId}}"
+      residentId: "{{event.residentId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: verify-eligibility
+    description: Run real-time eligibility verification with payer (270/271 transaction)
+    tool: pcc.billing.verifyEligibility
+    input:
+      residentId: "{{event.residentId}}"
+      payerCode: "{{event.payerCode}}"
+      dateOfService: "{{event.dateOfService}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: validate-coding
+    description: Validate ICD-10 coding against clinical documentation and check CCI edits
+    tool: claude.analyze
+    input:
+      prompt: claim_coding_validation
+      context:
+        - "{{steps.fetch-claim-data.output}}"
+        - "{{steps.verify-eligibility.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: check-denial-risk
+    description: Compare claim profile against historical denial patterns for this payer
+    tool: claude.analyze
+    input:
+      prompt: denial_risk_prediction
+      context:
+        - "{{steps.fetch-claim-data.output}}"
+        - "{{steps.validate-coding.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: submit-decision
+    description: Submit scrubbed claim to decision queue for billing specialist review or auto-submit
+    tool: decision-queue.submit
+    input:
+      type: claim-submission
+      priority: "{{steps.check-denial-risk.output.riskLevel}}"
+      claim: "{{steps.fetch-claim-data.output}}"
+      scrubResults: "{{steps.validate-coding.output}}"
+      denialRisk: "{{steps.check-denial-risk.output}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 2
+governanceOverrides:
+  - condition: "all_edits_pass == true && denial_risk == 'low'"
+    level: 1
+    reason: Clean claim with low denial risk — auto-submit to payer
+  - condition: "denial_risk == 'high'"
+    level: 4
+    reason: High denial risk based on historical patterns — requires billing specialist review
+  - condition: "eligibility_issue == true"
+    level: 5
+    reason: Eligibility verification failed — hold claim for investigation
+  - condition: "amount > 50000"
+    level: 4
+    reason: High-value claim exceeds $50K — requires billing manager review before submission
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    claimId:
+      type: string
+    residentId:
+      type: string
+    facilityId:
+      type: string
+    payerCode:
+      type: string
+  required:
+    - claimId
+    - residentId
+outputSchema:
+  type: object
+  properties:
+    scrubStatus:
+      type: string
+      enum:
+        - clean
+        - warnings
+        - errors
+    denialRisk:
+      type: string
+      enum:
+        - low
+        - moderate
+        - high
+    edits:
+      type: array
+    recommendedAction:
+      type: string
+
+schedule: null
+timeout: 3m
+tags:
+  - revenue-cycle
+  - claims
+  - coding
+  - denial-prevention
+  - pdpm
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

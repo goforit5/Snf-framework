@@ -1,0 +1,108 @@
+id: vendor-coi-check
+name: Vendor Certificate of Insurance Verification
+version: 1.0.0
+domain: operations
+agentId: vendor-management-agent
+description: >
+  Monitors vendor Certificates of Insurance (COI) for expiration and compliance
+  with facility insurance requirements. All vendors performing on-site work
+  (maintenance contractors, therapy companies, staffing agencies, food service)
+  must maintain current general liability, workers comp, and professional
+  liability insurance meeting minimum coverage thresholds. Expired COIs expose
+  the facility to uninsured liability. This task checks COI expiry dates weekly,
+  sends renewal reminders to vendors, and flags vendors with expired or
+  inadequate coverage for service suspension.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 8 * * 1"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-vendor-cois
+    description: Pull all active vendor COI records and expiration dates
+    tool: workday.vendors.getCOIs
+    input:
+      status: active
+      includeExpiring: true
+      lookAheadDays: 60
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: validate-coverage
+    description: Verify COI coverage amounts meet facility minimum requirements
+    tool: claude.analyze
+    input:
+      prompt: coi_coverage_validation
+      context:
+        - "{{steps.fetch-vendor-cois.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: send-renewal-notices
+    description: Send automated renewal reminders to vendors with COIs expiring within 30 days
+    tool: communications.sendBatch
+    input:
+      recipients: "{{steps.validate-coverage.output.expiringVendors}}"
+      template: coi_renewal_reminder
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: submit-decision
+    description: Submit COI compliance report to decision queue for risk management review
+    tool: decision-queue.submit
+    input:
+      type: vendor-coi-check
+      priority: "{{steps.validate-coverage.output.priority}}"
+      report: "{{steps.validate-coverage.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_cois_current == true"
+    level: 1
+    reason: All vendor COIs current and compliant — auto-file compliance certificate
+  - condition: "expired_coi_count > 0 && vendor_on_site == true"
+    level: 5
+    reason: Active on-site vendor has expired COI — suspend services until renewed
+  - condition: "coverage_below_minimum == true"
+    level: 4
+    reason: Vendor coverage below facility minimums — requires risk management review
+
+requiredConnectors:
+  - workday
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    totalVendors:
+      type: integer
+    compliantCount:
+      type: integer
+    expiringCount:
+      type: integer
+    expiredCount:
+      type: integer
+    coverageGaps:
+      type: array
+
+schedule: "0 8 * * 1"
+timeout: 5m
+tags:
+  - vendor-management
+  - insurance
+  - risk-management
+  - compliance
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

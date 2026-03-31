@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://snf.dev/schemas/task-definition.json",
+  "title": "TaskDefinition",
+  "description": "Schema for SNF Agentic Platform task definition YAML files. Tasks are data, not code.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "version",
+    "domain",
+    "agentId",
+    "description",
+    "trigger",
+    "steps",
+    "defaultGovernanceLevel",
+    "requiredConnectors",
+    "timeout"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "Unique task identifier in kebab-case (e.g., medication-reconciliation)"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "description": "Human-readable task name"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$",
+      "description": "Semantic version (e.g., 1.0.0)"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "clinical",
+        "financial",
+        "workforce",
+        "operations",
+        "admissions",
+        "quality",
+        "legal",
+        "strategic",
+        "governance",
+        "platform"
+      ],
+      "description": "Agent domain this task belongs to"
+    },
+    "agentId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+      "description": "ID of the agent that executes this task"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Detailed description of what the task does and why"
+    },
+    "trigger": {
+      "$ref": "#/$defs/TaskTrigger"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/TaskStep"
+      },
+      "description": "Ordered list of execution steps"
+    },
+    "defaultGovernanceLevel": {
+      "$ref": "#/$defs/GovernanceLevel",
+      "description": "Default governance level for this task"
+    },
+    "governanceOverrides": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/TaskGovernanceOverride"
+      },
+      "default": [],
+      "description": "Conditions that override the default governance level"
+    },
+    "requiredConnectors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Connector IDs required for this task (e.g., pcc, workday, cms)"
+    },
+    "inputSchema": {
+      "type": "object",
+      "default": {},
+      "description": "JSON Schema describing expected input payload"
+    },
+    "outputSchema": {
+      "type": "object",
+      "default": {},
+      "description": "JSON Schema describing task output"
+    },
+    "schedule": {
+      "type": ["string", "null"],
+      "default": null,
+      "description": "Cron expression for scheduled tasks (null for event/manual triggers)"
+    },
+    "timeout": {
+      "type": "string",
+      "pattern": "^\\d+[smh]$",
+      "description": "Task-level timeout (e.g., 30s, 5m, 1h)"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Tags for filtering and categorization"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last-updated timestamp"
+    }
+  },
+  "$defs": {
+    "GovernanceLevel": {
+      "type": "integer",
+      "enum": [0, 1, 2, 3, 4, 5, 6],
+      "description": "0=OBSERVE_ONLY, 1=AUTO_EXECUTE, 2=AUTO_EXECUTE_NOTIFY, 3=RECOMMEND_TIMEOUT, 4=REQUIRE_APPROVAL, 5=REQUIRE_DUAL_APPROVAL, 6=ESCALATE_ONLY"
+    },
+    "TaskTrigger": {
+      "type": "object",
+      "required": ["type", "config"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["schedule", "event", "manual", "webhook"],
+          "description": "How the task is initiated"
+        },
+        "config": {
+          "type": "object",
+          "description": "Trigger-specific configuration (cron for schedule, event name for event, etc.)"
+        }
+      }
+    },
+    "TaskStep": {
+      "type": "object",
+      "required": ["name", "description", "tool", "input", "timeout"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Step name for logging and tracing"
+        },
+        "description": {
+          "type": "string",
+          "description": "What this step does"
+        },
+        "tool": {
+          "type": "string",
+          "description": "Tool identifier to invoke (e.g., pcc.medications.list, claude.analyze)"
+        },
+        "input": {
+          "type": "object",
+          "description": "Input parameters for the tool"
+        },
+        "onSuccess": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Next step name on success (null = next in array)"
+        },
+        "onFailure": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Step name to jump to on failure (null = abort task)"
+        },
+        "timeout": {
+          "type": "string",
+          "pattern": "^\\d+[smh]$",
+          "description": "Step-level timeout (e.g., 30s, 2m)"
+        }
+      }
+    },
+    "TaskGovernanceOverride": {
+      "type": "object",
+      "required": ["condition", "level", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "condition": {
+          "type": "string",
+          "description": "Expression evaluated at runtime (e.g., 'controlled_substance == true')"
+        },
+        "level": {
+          "$ref": "#/$defs/GovernanceLevel"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Human-readable reason for the override"
+        }
+      }
+    }
+  }
+}

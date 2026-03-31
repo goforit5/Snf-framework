@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "composite": true,
+    "incremental": true,
+    "paths": {
+      "@snf/core": ["./packages/core/src"],
+      "@snf/agents": ["./packages/agents/src"],
+      "@snf/tasks": ["./packages/tasks/src"],
+      "@snf/hitl": ["./packages/hitl/src"],
+      "@snf/audit": ["./packages/audit/src"],
+      "@snf/connectors/*": ["./packages/connectors/src/*"],
+      "@snf/api": ["./packages/api/src"]
+    }
+  },
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/agents" },
+    { "path": "./packages/tasks" },
+    { "path": "./packages/hitl" },
+    { "path": "./packages/audit" },
+    { "path": "./packages/connectors" },
+    { "path": "./packages/api" }
+  ],
+  "exclude": ["node_modules", "dist"]
+}

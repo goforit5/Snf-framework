@@ -1,0 +1,123 @@
+id: incident-classification
+name: Incident Report Classification & Routing
+version: 1.0.0
+domain: quality
+agentId: risk-management-agent
+description: >
+  Classifies and routes incident reports filed in PCC. When an incident is
+  reported (fall, medication error, skin breakdown, elopement attempt, injury,
+  behavioral event), the agent classifies severity (minor, moderate, major,
+  sentinel), determines regulatory reporting requirements (state reportable
+  events, CMS adverse event reporting), identifies root cause investigation
+  triggers, and routes to appropriate reviewers. Sentinel events require
+  immediate administrator notification and root cause analysis within 48 hours.
+  Accurate classification drives proper response and prevents under-reporting.
+
+trigger:
+  type: event
+  config:
+    event: incident.reported
+    filter: "status == 'new'"
+
+steps:
+  - name: fetch-incident-details
+    description: Pull full incident report including witness statements and resident information
+    tool: pcc.incidents.get
+    input:
+      incidentId: "{{event.incidentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-resident-history
+    description: Pull resident incident history and risk profile for pattern analysis
+    tool: pcc.incidents.getResidentHistory
+    input:
+      residentId: "{{event.residentId}}"
+      lookbackDays: 180
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: classify-incident
+    description: >
+      Classify incident severity, determine regulatory reporting requirements,
+      identify if this is part of a pattern, and route to appropriate reviewers.
+      Flag sentinel events for immediate escalation.
+    tool: claude.analyze
+    input:
+      prompt: incident_classification_analysis
+      context:
+        - "{{steps.fetch-incident-details.output}}"
+        - "{{steps.fetch-resident-history.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit classified incident to decision queue for DON/risk manager review
+    tool: decision-queue.submit
+    input:
+      type: incident-classification
+      priority: "{{steps.classify-incident.output.priority}}"
+      classification: "{{steps.classify-incident.output}}"
+      incidentId: "{{event.incidentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "severity == 'minor' && no_injury == true && no_pattern == true"
+    level: 2
+    reason: Minor incident with no injury and no pattern — auto-file with DON notification
+  - condition: "severity == 'major' || state_reportable == true"
+    level: 5
+    reason: Major incident or state-reportable event — requires administrator and risk manager review
+  - condition: "severity == 'sentinel'"
+    level: 6
+    reason: Sentinel event — immediate administrator notification, root cause analysis within 48 hours
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    incidentId:
+      type: string
+    facilityId:
+      type: string
+    residentId:
+      type: string
+  required:
+    - incidentId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    severity:
+      type: string
+      enum:
+        - minor
+        - moderate
+        - major
+        - sentinel
+    regulatoryReporting:
+      type: array
+    patternDetected:
+      type: boolean
+    routedTo:
+      type: array
+
+schedule: null
+timeout: 3m
+tags:
+  - incidents
+  - risk-management
+  - classification
+  - sentinel-events
+  - regulatory-reporting
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

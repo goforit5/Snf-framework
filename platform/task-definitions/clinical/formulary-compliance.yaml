@@ -1,0 +1,140 @@
+id: formulary-compliance
+name: Monthly Formulary Compliance Audit
+version: 1.0.0
+domain: clinical
+agentId: pharmacy-agent
+description: >
+  Runs a monthly audit across all residents in a facility to identify medications
+  that are off-formulary, have preferred therapeutic alternatives, or where
+  generic substitution is available. Calculates cost impact of switching to
+  formulary-compliant alternatives. Generates a facility-level compliance report
+  with per-resident recommendations for the Director of Pharmacy and Medical
+  Director review. Supports Ensign's cost containment goals while maintaining
+  clinical appropriateness.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 6 1 * *"
+    timezone: America/Los_Angeles
+    description: First day of each month at 6:00 AM PT
+
+steps:
+  - name: fetch-facility-census
+    description: Get current census with all active residents for the facility
+    tool: pcc.census.list
+    input:
+      facilityId: "{{input.facilityId}}"
+      status: active
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-all-medications
+    description: Pull active medication lists for every resident in the census
+    tool: pcc.medications.listBulk
+    input:
+      facilityId: "{{input.facilityId}}"
+      residentIds: "{{steps.fetch-facility-census.output.residentIds}}"
+      status: active
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: fetch-formulary
+    description: Load the current facility/organization formulary with preferred alternatives
+    tool: pharmacy.formulary.get
+    input:
+      facilityId: "{{input.facilityId}}"
+      includeAlternatives: true
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: analyze-compliance
+    description: >
+      Compare each resident's active medications against the formulary.
+      Flag off-formulary medications, identify preferred therapeutic alternatives,
+      calculate per-medication and aggregate cost savings from switching.
+      Account for clinical exceptions (prior authorizations, failed trials).
+    tool: claude.analyze
+    input:
+      prompt: formulary_compliance_audit
+      context:
+        - "{{steps.fetch-all-medications.output}}"
+        - "{{steps.fetch-formulary.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 5m
+
+  - name: generate-audit-report
+    description: >
+      Create structured audit report: facility summary, per-resident findings,
+      cost impact analysis, recommended switches with clinical rationale.
+    tool: claude.generate
+    input:
+      template: formulary_compliance_report
+      data: "{{steps.analyze-compliance.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-for-review
+    description: Submit the audit report to the decision queue for pharmacy director review
+    tool: decision-queue.submit
+    input:
+      type: formulary-audit
+      priority: medium
+      report: "{{steps.generate-audit-report.output}}"
+      facilityId: "{{input.facilityId}}"
+      costImpact: "{{steps.analyze-compliance.output.totalCostSavings}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "off_formulary_count == 0"
+    level: 2
+    reason: Full formulary compliance — auto-file report with notification
+  - condition: "cost_savings > 10000"
+    level: 5
+    reason: Significant cost impact over $10K requires pharmacy director and medical director review
+  - condition: "clinical_exception_needed == true"
+    level: 4
+    reason: Clinical exceptions require pharmacist documentation and physician sign-off
+
+requiredConnectors:
+  - pcc
+  - pharmacy-formulary
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    totalResidents:
+      type: integer
+    offFormularyCount:
+      type: integer
+    totalCostSavings:
+      type: number
+    recommendations:
+      type: array
+
+schedule: "0 6 1 * *"
+timeout: 15m
+tags:
+  - pharmacy
+  - formulary
+  - cost-containment
+  - monthly-audit
+  - compliance
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

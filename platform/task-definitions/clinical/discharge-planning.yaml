@@ -1,0 +1,142 @@
+id: discharge-planning
+name: Discharge Readiness & Transition Planning
+version: 1.0.0
+domain: clinical
+agentId: care-coordination-agent
+description: >
+  Monitors all residents with active discharge plans and assesses readiness for
+  transition. Pulls therapy progress (PT/OT/SLP functional scores), physician
+  discharge criteria, medication reconciliation status, DME orders, caregiver
+  training completion, and follow-up appointment scheduling from PCC. Calculates
+  LACE index for readmission risk. Coordinates with payer authorization timelines
+  to prevent coverage gaps. CMS F-tag F660 requires discharge planning that
+  prepares residents for safe transfer. Generates comprehensive discharge
+  summary and checklist for care team review.
+
+trigger:
+  type: event
+  config:
+    event: discharge.plan.updated
+    filter: "status in ['active', 'pending']"
+
+steps:
+  - name: fetch-discharge-plan
+    description: Retrieve the current discharge plan and target date from PCC
+    tool: pcc.discharge.getPlan
+    input:
+      residentId: "{{event.residentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-therapy-progress
+    description: Pull PT/OT/SLP functional scores and goal attainment status
+    tool: pcc.therapy.getProgress
+    input:
+      residentId: "{{event.residentId}}"
+      lookbackDays: 30
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-payer-authorization
+    description: Check current payer authorization status and remaining covered days
+    tool: pcc.billing.getAuthorization
+    input:
+      residentId: "{{event.residentId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-discharge-checklist
+    description: Pull completion status of discharge tasks (med rec, DME, follow-up appointments, caregiver training)
+    tool: pcc.discharge.getChecklist
+    input:
+      residentId: "{{event.residentId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: assess-readiness
+    description: >
+      Evaluate discharge readiness across clinical, functional, and logistical
+      dimensions. Calculate LACE readmission risk index. Identify incomplete
+      checklist items, therapy goals not yet met, and payer authorization gaps.
+      Flag residents being discharged before functional goals are met or with
+      high readmission risk (LACE >10).
+    tool: claude.analyze
+    input:
+      prompt: discharge_readiness_assessment
+      context:
+        - "{{steps.fetch-discharge-plan.output}}"
+        - "{{steps.fetch-therapy-progress.output}}"
+        - "{{steps.fetch-payer-authorization.output}}"
+        - "{{steps.fetch-discharge-checklist.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit discharge readiness assessment to decision queue for care team review
+    tool: decision-queue.submit
+    input:
+      type: discharge-readiness
+      priority: "{{steps.assess-readiness.output.priority}}"
+      report: "{{steps.assess-readiness.output}}"
+      residentId: "{{event.residentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "all_goals_met == true && checklist_complete == true && lace_score <= 5"
+    level: 2
+    reason: All discharge criteria met and low readmission risk — approve with notification
+  - condition: "lace_score > 10"
+    level: 5
+    reason: High readmission risk — requires physician and case manager co-review
+  - condition: "payer_auth_expiring_48h == true"
+    level: 5
+    reason: Payer authorization expiring within 48 hours — requires urgent discharge coordination
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    residentId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - residentId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    readinessScore:
+      type: number
+    laceIndex:
+      type: number
+    incompleteItems:
+      type: array
+    readmissionRisk:
+      type: string
+      enum:
+        - low
+        - moderate
+        - high
+
+schedule: null
+timeout: 5m
+tags:
+  - discharge-planning
+  - care-coordination
+  - readmission-prevention
+  - f660
+  - cms-required
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

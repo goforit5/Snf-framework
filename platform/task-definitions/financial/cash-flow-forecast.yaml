@@ -1,0 +1,136 @@
+id: cash-flow-forecast
+name: 13-Week Cash Flow Forecast
+version: 1.0.0
+domain: financial
+agentId: treasury-agent
+description: >
+  Generates rolling 13-week cash flow forecast by pulling AR aging, AP aging,
+  census projections, payroll obligations, debt service schedules, and capital
+  expenditure plans. Models cash receipts based on historical collection patterns
+  by payer (Medicare 14-day, Medicaid 30-45 day, managed care 21-day averages).
+  Identifies weeks where projected cash balance falls below minimum threshold.
+  Critical for Ensign's decentralized model where each facility manages its own
+  P&L and cash position.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 * * 1"
+    description: Weekly 13-week cash flow forecast every Monday
+
+steps:
+  - name: fetch-ar-aging
+    description: Pull AR aging summary by payer class from PCC
+    tool: pcc.billing.getARAging
+    input:
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-ap-aging
+    description: Pull AP aging and scheduled disbursements from Workday
+    tool: workday.ap.getAging
+    input:
+      facilityId: "{{context.facilityId}}"
+      forecastWeeks: 13
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-payroll-obligations
+    description: Pull upcoming payroll obligations for the next 13 weeks
+    tool: workday.payroll.getForecast
+    input:
+      facilityId: "{{context.facilityId}}"
+      forecastWeeks: 13
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-census-projection
+    description: Pull census projections and expected revenue by payer mix
+    tool: pcc.census.getForecast
+    input:
+      facilityId: "{{context.facilityId}}"
+      forecastWeeks: 13
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: generate-forecast
+    description: >
+      Model weekly cash inflows and outflows for 13 weeks. Apply historical
+      collection curves by payer class. Factor in seasonal patterns, census
+      trends, and known one-time items. Calculate projected weekly cash balance
+      and identify any weeks below minimum threshold. Generate management
+      commentary for weeks requiring action.
+    tool: claude.analyze
+    input:
+      prompt: cash_flow_forecast
+      context:
+        - "{{steps.fetch-ar-aging.output}}"
+        - "{{steps.fetch-ap-aging.output}}"
+        - "{{steps.fetch-payroll-obligations.output}}"
+        - "{{steps.fetch-census-projection.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit cash flow forecast to decision queue for treasurer/controller review
+    tool: decision-queue.submit
+    input:
+      type: cash-flow-forecast
+      priority: "{{steps.generate-forecast.output.priority}}"
+      report: "{{steps.generate-forecast.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_weeks_above_minimum == true"
+    level: 2
+    reason: All weeks above minimum cash threshold — file forecast with notification
+  - condition: "weeks_below_minimum > 0"
+    level: 5
+    reason: Projected cash shortfall identified — requires treasurer and administrator immediate action
+  - condition: "ar_days > 45"
+    level: 4
+    reason: AR days exceeding 45-day target — collection acceleration plan required
+
+requiredConnectors:
+  - workday
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    weeklyProjections:
+      type: array
+    minimumCashBalance:
+      type: number
+    weeksAboveMinimum:
+      type: number
+    arDays:
+      type: number
+    keyRisks:
+      type: array
+
+schedule: "0 7 * * 1"
+timeout: 5m
+tags:
+  - treasury
+  - cash-flow
+  - forecasting
+  - ar-management
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

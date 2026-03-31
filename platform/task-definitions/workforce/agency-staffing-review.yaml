@@ -1,0 +1,121 @@
+id: agency-staffing-review
+name: Agency Staffing Usage Review & Cost Analysis
+version: 1.0.0
+domain: workforce
+agentId: workforce-analytics-agent
+description: >
+  Reviews agency/travel staffing utilization across facilities. Pulls agency
+  invoices from Workday AP, maps agency hours to shifts in the scheduling
+  system, calculates cost-per-hour premium vs. internal staff, identifies
+  facilities with chronic agency dependency, and recommends recruitment
+  strategies for high-agency positions. Agency staffing costs 2-3x internal
+  rates and correlates with lower quality scores. CMS proposed rules may
+  mandate agency usage disclosure. This task drives the strategy to reduce
+  agency dependency while maintaining adequate staffing.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 8 * * 1"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-agency-invoices
+    description: Pull agency staffing invoices from Workday AP for the trailing 30 days
+    tool: workday.ap.getInvoices
+    input:
+      vendorCategory: staffing_agency
+      lookbackDays: 30
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-agency-shifts
+    description: Pull agency-covered shifts from scheduling system with facility and credential breakdowns
+    tool: workday.scheduling.getAgencyShifts
+    input:
+      lookbackDays: 30
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-vacancy-data
+    description: Pull open position and vacancy data from Workday recruiting
+    tool: workday.recruiting.getVacancies
+    input:
+      status: open
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: analyze-agency-usage
+    description: >
+      Calculate cost premiums, identify chronic agency-dependent facilities,
+      correlate agency usage with quality metrics, and recommend targeted
+      recruitment or retention strategies.
+    tool: claude.analyze
+    input:
+      prompt: agency_staffing_analysis
+      context:
+        - "{{steps.fetch-agency-invoices.output}}"
+        - "{{steps.fetch-agency-shifts.output}}"
+        - "{{steps.fetch-vacancy-data.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit agency usage report to decision queue for regional/VP workforce review
+    tool: decision-queue.submit
+    input:
+      type: agency-staffing-review
+      priority: "{{steps.analyze-agency-usage.output.priority}}"
+      report: "{{steps.analyze-agency-usage.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "agency_spend_trending_down == true"
+    level: 2
+    reason: Agency spending trending down — auto-file report with notification
+  - condition: "agency_cost_ratio > 0.25"
+    level: 4
+    reason: Agency costs exceed 25% of total staffing — requires VP workforce review
+  - condition: "single_facility_agency_ratio > 0.40"
+    level: 5
+    reason: Single facility over 40% agency staffing — escalate for emergency recruitment plan
+
+requiredConnectors:
+  - workday
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    lookbackDays:
+      type: integer
+  required: []
+outputSchema:
+  type: object
+  properties:
+    totalAgencySpend:
+      type: number
+    costPremiumPercentage:
+      type: number
+    facilitySummaries:
+      type: array
+    recommendations:
+      type: array
+
+schedule: "0 8 * * 1"
+timeout: 5m
+tags:
+  - agency
+  - staffing
+  - cost-analysis
+  - recruitment
+  - workforce-planning
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

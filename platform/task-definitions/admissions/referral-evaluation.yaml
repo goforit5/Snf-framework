@@ -1,0 +1,136 @@
+id: referral-evaluation
+name: Clinical Referral Evaluation & Acceptance
+version: 1.0.0
+domain: admissions
+agentId: admissions-agent
+description: >
+  Evaluates incoming hospital referrals for clinical appropriateness and
+  acceptance recommendation. Pulls the referral packet (H&P, discharge summary,
+  medication list, therapy orders, insurance info) from the hospital via PCC
+  referral management, compares care requirements against facility capabilities
+  (ventilator, dialysis, IV therapy, wound vac, isolation capacity), checks
+  physician coverage for required specialties, and generates an acceptance
+  recommendation with projected PDPM classification and estimated revenue.
+  Response time is the #1 factor in referral conversion — hospitals send to
+  whoever responds first. Target: evaluate and respond within 60 minutes.
+
+trigger:
+  type: event
+  config:
+    event: referral.received
+    filter: "status == 'pending_clinical_review'"
+
+steps:
+  - name: fetch-referral-packet
+    description: Pull complete referral packet from PCC including clinical documents and insurance
+    tool: pcc.referrals.getPacket
+    input:
+      referralId: "{{event.referralId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: assess-clinical-capability
+    description: Check facility clinical capabilities against patient care requirements
+    tool: pcc.facilities.getCapabilities
+    input:
+      facilityId: "{{event.facilityId}}"
+      requiredServices: "{{steps.fetch-referral-packet.output.careRequirements}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: estimate-pdpm
+    description: Calculate projected PDPM classification and per-diem rate based on referral data
+    tool: claude.analyze
+    input:
+      prompt: pdpm_classification_estimate
+      context:
+        - "{{steps.fetch-referral-packet.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: generate-recommendation
+    description: >
+      Generate acceptance/decline recommendation with clinical rationale, projected
+      length of stay, PDPM revenue estimate, and any conditions for acceptance.
+    tool: claude.analyze
+    input:
+      prompt: referral_acceptance_recommendation
+      context:
+        - "{{steps.fetch-referral-packet.output}}"
+        - "{{steps.assess-clinical-capability.output}}"
+        - "{{steps.estimate-pdpm.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: submit-decision
+    description: Submit referral evaluation to decision queue for DON/admissions director
+    tool: decision-queue.submit
+    input:
+      type: referral-evaluation
+      priority: high
+      evaluation: "{{steps.generate-recommendation.output}}"
+      referralId: "{{event.referralId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "clinical_match == true && capability_confirmed == true && standard_payer == true"
+    level: 3
+    reason: Clinical match confirmed with standard payer — fast-track for DON approval
+  - condition: "specialized_care_required == true"
+    level: 5
+    reason: Specialized care needs (vent, dialysis, complex wound) — requires physician sign-off
+  - condition: "unfunded_or_charity == true"
+    level: 5
+    reason: Unfunded or charity care referral — requires administrator financial approval
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    referralId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - referralId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    recommendation:
+      type: string
+      enum:
+        - accept
+        - accept_with_conditions
+        - decline
+        - refer_to_sister_facility
+    clinicalMatch:
+      type: boolean
+    pdpmEstimate:
+      type: object
+    projectedLOS:
+      type: integer
+    projectedRevenue:
+      type: number
+
+schedule: null
+timeout: 5m
+tags:
+  - admissions
+  - referral
+  - clinical-screening
+  - pdpm
+  - revenue
+  - time-sensitive
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

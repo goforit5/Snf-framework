@@ -1,0 +1,124 @@
+id: pre-admission-screening
+name: PASRR Pre-Admission Screening
+version: 1.0.0
+domain: admissions
+agentId: admissions-agent
+description: >
+  Conducts Preadmission Screening and Resident Review (PASRR) Level I screening
+  for all Medicaid-funded admissions. Federal law (OBRA 87) requires every
+  individual admitted to a Medicaid-certified nursing facility to be screened
+  for serious mental illness (SMI) and intellectual disability (ID). The agent
+  pulls clinical data from the referral packet, identifies diagnoses and
+  behavioral indicators triggering Level II referral, prepares the PASRR Level I
+  form, and routes for clinician signature. Admitting without a completed PASRR
+  screen is a federal violation that can result in CMP and decertification.
+
+trigger:
+  type: event
+  config:
+    event: admission.scheduled
+    filter: "payerType in ['medicaid', 'medicare_medicaid_dual']"
+
+steps:
+  - name: fetch-clinical-data
+    description: Pull diagnoses, psychiatric history, and behavioral data from referral packet
+    tool: pcc.referrals.getClinicalData
+    input:
+      referralId: "{{event.referralId}}"
+      residentId: "{{event.residentId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: screen-smi-id
+    description: >
+      Screen for SMI and ID indicators using DSM-5 diagnosis codes, behavioral
+      history, psychiatric medication use, and prior PASRR screening results.
+      Determine if Level II referral is required.
+    tool: claude.analyze
+    input:
+      prompt: pasrr_level_one_screening
+      context:
+        - "{{steps.fetch-clinical-data.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: generate-pasrr-form
+    description: Generate completed PASRR Level I screening form for clinician review and signature
+    tool: claude.generate
+    input:
+      template: pasrr_level_one_form
+      data: "{{steps.screen-smi-id.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: submit-decision
+    description: Submit PASRR screening to decision queue for clinician review and signature
+    tool: decision-queue.submit
+    input:
+      type: pre-admission-screening
+      priority: "{{steps.screen-smi-id.output.priority}}"
+      screening: "{{steps.screen-smi-id.output}}"
+      form: "{{steps.generate-pasrr-form.output}}"
+      residentId: "{{event.residentId}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "no_smi_id_indicators == true"
+    level: 3
+    reason: No SMI/ID indicators found — route for clinician signature confirmation
+  - condition: "level_two_referral_required == true"
+    level: 5
+    reason: Level II PASRR referral required — hold admission until state authority completes Level II
+  - condition: "exempted_hospital_discharge == true"
+    level: 3
+    reason: Exempted hospital discharge — expedited screening, must complete within 72 hours of admission
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    referralId:
+      type: string
+    residentId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - residentId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    screeningResult:
+      type: string
+      enum:
+        - negative
+        - positive_smi
+        - positive_id
+        - positive_both
+    levelTwoRequired:
+      type: boolean
+    pasrrForm:
+      type: object
+    exemptionApplied:
+      type: boolean
+
+schedule: null
+timeout: 3m
+tags:
+  - pasrr
+  - admissions
+  - screening
+  - medicaid
+  - federal-requirement
+  - cms-required
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

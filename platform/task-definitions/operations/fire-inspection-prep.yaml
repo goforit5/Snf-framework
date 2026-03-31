@@ -1,0 +1,128 @@
+id: fire-inspection-prep
+name: Fire & Life Safety Inspection Preparation
+version: 1.0.0
+domain: operations
+agentId: compliance-ops-agent
+description: >
+  Prepares facilities for state fire marshal and Life Safety Code inspections.
+  Compiles documentation for fire drills (quarterly requirement), extinguisher
+  inspections (monthly), sprinkler system tests (quarterly/annual), fire alarm
+  testing (annual), generator load tests (monthly/annual), kitchen hood
+  suppression inspections (semi-annual), and emergency lighting tests (monthly).
+  Cross-references completed maintenance records against inspection checklists
+  and identifies documentation gaps. CMS F-tags F900-F945 govern Life Safety
+  Code compliance — deficiencies here frequently result in Immediate Jeopardy.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 6 1 * *"
+    timezone: facility_local
+
+steps:
+  - name: fetch-inspection-schedule
+    description: Pull upcoming fire/life safety inspection dates from regulatory calendar
+    tool: compliance.getInspectionSchedule
+    input:
+      facilityId: "{{context.facilityId}}"
+      type: fire_life_safety
+      lookAheadDays: 90
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: fetch-drill-records
+    description: Pull fire drill, evacuation drill, and disaster drill completion records
+    tool: cmms.drills.getRecords
+    input:
+      facilityId: "{{context.facilityId}}"
+      lookbackMonths: 12
+      types:
+        - fire
+        - evacuation
+        - disaster
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-equipment-records
+    description: Pull inspection/testing records for all life safety equipment
+    tool: cmms.pm.getCompletedByCategory
+    input:
+      facilityId: "{{context.facilityId}}"
+      category: life_safety
+      lookbackMonths: 12
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: gap-analysis
+    description: Compare completed records against Life Safety Code requirements and identify gaps
+    tool: claude.analyze
+    input:
+      prompt: fire_inspection_readiness_analysis
+      context:
+        - "{{steps.fetch-inspection-schedule.output}}"
+        - "{{steps.fetch-drill-records.output}}"
+        - "{{steps.fetch-equipment-records.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit inspection readiness report to decision queue for maintenance director/administrator
+    tool: decision-queue.submit
+    input:
+      type: fire-inspection-prep
+      priority: "{{steps.gap-analysis.output.priority}}"
+      readinessReport: "{{steps.gap-analysis.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_requirements_met == true"
+    level: 2
+    reason: All Life Safety Code documentation complete — auto-file readiness certificate
+  - condition: "critical_gaps > 0"
+    level: 5
+    reason: Critical Life Safety documentation gaps — Immediate Jeopardy risk, escalate to administrator
+  - condition: "inspection_within_30_days == true && gaps > 0"
+    level: 5
+    reason: Inspection imminent with unresolved gaps — escalate for emergency remediation
+
+requiredConnectors:
+  - cmms
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    readinessScore:
+      type: number
+    criticalGaps:
+      type: array
+    documentationStatus:
+      type: object
+    nextInspectionDate:
+      type: string
+      format: date
+
+schedule: "0 6 1 * *"
+timeout: 5m
+tags:
+  - fire-safety
+  - life-safety
+  - inspection
+  - compliance
+  - f900-f945
+  - immediate-jeopardy
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

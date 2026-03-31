@@ -1,0 +1,28 @@
+{
+  "name": "@snf/platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SNF Enterprise Agentic Platform — Production Backend",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev --workspace=@snf/api",
+    "lint": "eslint packages/*/src/**/*.ts",
+    "typecheck": "tsc --build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "npm run migrate --workspace=@snf/hitl",
+    "db:seed": "npm run seed --workspace=@snf/hitl"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.2"
+  }
+}

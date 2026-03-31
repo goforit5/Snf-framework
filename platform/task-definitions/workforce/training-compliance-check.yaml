@@ -1,0 +1,109 @@
+id: training-compliance-check
+name: Mandatory Training Compliance Check
+version: 1.0.0
+domain: workforce
+agentId: training-agent
+description: >
+  Monitors completion of CMS-mandated and state-required training for all staff.
+  Tracks annual requirements (abuse prevention, infection control, fire safety,
+  HIPAA, bloodborne pathogens, dementia care) and role-specific certifications
+  (CPR/BLS, IV certification). Pulls completion records from the LMS, identifies
+  overdue and upcoming-due training, and generates compliance reports by facility.
+  CMS F-tags F725/F726 require documented training — surveyors routinely cite
+  incomplete training records.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 6 * * 1"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-training-records
+    description: Pull all employee training completion records from LMS
+    tool: lms.getCompletionStatus
+    input:
+      scope: all_active_employees
+      categories:
+        - cms_required
+        - state_required
+        - role_specific
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: fetch-requirements-matrix
+    description: Pull current training requirements by role, state, and facility
+    tool: lms.getRequirementsMatrix
+    input:
+      includeStateSpecific: true
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: identify-gaps
+    description: Compare completion records against requirements to identify overdue and upcoming gaps
+    tool: claude.analyze
+    input:
+      prompt: training_compliance_gap_analysis
+      context:
+        - "{{steps.fetch-training-records.output}}"
+        - "{{steps.fetch-requirements-matrix.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit training compliance report to decision queue for staff development coordinator
+    tool: decision-queue.submit
+    input:
+      type: training-compliance-check
+      priority: "{{steps.identify-gaps.output.priority}}"
+      complianceReport: "{{steps.identify-gaps.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "compliance_rate >= 0.95"
+    level: 2
+    reason: 95%+ training compliance — auto-file report with notification
+  - condition: "overdue_count > 10"
+    level: 4
+    reason: More than 10 overdue training items — requires staff development review
+  - condition: "cms_required_overdue == true"
+    level: 5
+    reason: CMS-mandated training overdue — survey deficiency risk, escalate to administrator
+
+requiredConnectors:
+  - workday
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required: []
+outputSchema:
+  type: object
+  properties:
+    complianceRate:
+      type: number
+    overdueItems:
+      type: array
+    upcomingDue:
+      type: array
+    facilitySummary:
+      type: object
+
+schedule: "0 6 * * 1"
+timeout: 5m
+tags:
+  - training
+  - compliance
+  - cms-required
+  - f725
+  - f726
+  - annual-requirements
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

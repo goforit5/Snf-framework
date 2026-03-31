@@ -1,0 +1,147 @@
+id: new-hire-onboarding
+name: New Hire Onboarding Orchestration
+version: 1.0.0
+domain: workforce
+agentId: onboarding-agent
+description: >
+  Orchestrates the end-to-end onboarding process for new hires. When a hire
+  event fires in Workday, the agent provisions system access (PCC, email,
+  scheduling), verifies all required credentials and background checks are
+  complete, assigns mandatory training modules, schedules orientation, ensures
+  TB test and physical are current, and creates a 90-day check-in cadence.
+  Tracks completion of all onboarding tasks and escalates blockers. A missed
+  onboarding step (e.g., incomplete background check) creates CMS survey risk.
+
+trigger:
+  type: event
+  config:
+    event: hr.newHire
+    filter: "status == 'accepted'"
+
+steps:
+  - name: fetch-hire-details
+    description: Pull new hire profile, position details, and start date from Workday
+    tool: workday.hr.getEmployee
+    input:
+      employeeId: "{{event.employeeId}}"
+      includePosition: true
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: verify-background-check
+    description: Confirm background check, drug screen, and abuse registry clearance
+    tool: workday.hr.getBackgroundCheck
+    input:
+      employeeId: "{{event.employeeId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: verify-credentials
+    description: Verify professional license, certifications, and health clearances are on file
+    tool: workday.hr.getCredentials
+    input:
+      employeeId: "{{event.employeeId}}"
+      required:
+        - professionalLicense
+        - tbTest
+        - physicalExam
+        - hepatitisB
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: provision-systems
+    description: Create accounts in PCC, email, and scheduling systems
+    tool: provisioning.createAccounts
+    input:
+      employeeId: "{{event.employeeId}}"
+      systems:
+        - pcc
+        - microsoft365
+        - scheduling
+      facilityId: "{{event.facilityId}}"
+      role: "{{steps.fetch-hire-details.output.position.role}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: assign-training
+    description: Assign required orientation and compliance training modules
+    tool: lms.assignCurriculum
+    input:
+      employeeId: "{{event.employeeId}}"
+      curriculum: new_hire_orientation
+      dueDate: "{{event.startDate}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: submit-decision
+    description: Submit onboarding readiness status to decision queue for HR coordinator review
+    tool: decision-queue.submit
+    input:
+      type: new-hire-onboarding
+      priority: "{{steps.verify-credentials.output.priority}}"
+      hireDetails: "{{steps.fetch-hire-details.output}}"
+      readinessChecklist:
+        backgroundCheck: "{{steps.verify-background-check.output}}"
+        credentials: "{{steps.verify-credentials.output}}"
+        systemAccess: "{{steps.provision-systems.output}}"
+        training: "{{steps.assign-training.output}}"
+      facilityId: "{{event.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_checks_clear == true && all_credentials_valid == true"
+    level: 2
+    reason: All background checks clear and credentials verified — auto-approve onboarding
+  - condition: "background_check_pending == true && start_date_within_3_days == true"
+    level: 5
+    reason: Background check incomplete with imminent start date — escalate to HR director
+  - condition: "credential_missing == true"
+    level: 4
+    reason: Required credential missing — hold onboarding until resolved
+
+requiredConnectors:
+  - workday
+  - pcc
+  - microsoft365
+inputSchema:
+  type: object
+  properties:
+    employeeId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - employeeId
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    onboardingStatus:
+      type: string
+      enum:
+        - ready
+        - blocked
+        - in_progress
+    checklistItems:
+      type: array
+    blockers:
+      type: array
+
+schedule: null
+timeout: 5m
+tags:
+  - onboarding
+  - new-hire
+  - credentialing
+  - provisioning
+  - compliance
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

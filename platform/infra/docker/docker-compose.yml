@@ -1,0 +1,143 @@
+# =============================================================================
+# SNF Agentic Platform — Local Development Stack
+# =============================================================================
+# Mirrors production services for local development:
+# - PostgreSQL 16 (matches Aurora/Flexible Server)
+# - Redis (event bus, caching)
+# - LocalStack (S3/SQS emulation for AWS workflows)
+# - Platform API (the main application)
+# - Adminer (database admin UI)
+#
+# Usage:
+#   docker compose up -d              # Start all services
+#   docker compose up -d postgres redis  # Start deps only
+#   docker compose logs -f api        # Follow API logs
+#   docker compose down -v            # Stop and remove volumes
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Primary data store
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: snf-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: snf_platform
+      POSTGRES_USER: snf_admin
+      POSTGRES_PASSWORD: snf_local_dev_only # Local dev only — never use in production
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U snf_admin -d snf_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Redis — Event bus and caching layer
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: snf-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # LocalStack — AWS service emulation (S3, SQS, Secrets Manager)
+  # ---------------------------------------------------------------------------
+  # Provides local versions of AWS services for development without
+  # cloud credentials. Swap for Azurite if targeting Azure.
+  localstack:
+    image: localstack/localstack:3
+    container_name: snf-localstack
+    restart: unless-stopped
+    environment:
+      SERVICES: s3,sqs,secretsmanager
+      DEFAULT_REGION: us-east-1
+      DEBUG: 0
+    ports:
+      - "4566:4566"     # LocalStack gateway
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Platform API — The SNF Agentic Platform
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: ../..
+      dockerfile: platform/infra/docker/Dockerfile
+    container_name: snf-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      DATABASE_URL: postgresql://snf_admin:snf_local_dev_only@postgres:5432/snf_platform
+      REDIS_URL: redis://redis:6379
+      AWS_ENDPOINT_URL: http://localstack:4566  # Route AWS SDK calls to LocalStack
+      AWS_ACCESS_KEY_ID: test                    # LocalStack dummy credentials
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ---------------------------------------------------------------------------
+  # Adminer — Database Admin UI
+  # ---------------------------------------------------------------------------
+  # Lightweight database management at http://localhost:8080
+  # System: PostgreSQL | Server: postgres | User: snf_admin
+  adminer:
+    image: adminer:4
+    container_name: snf-adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+# =============================================================================
+# Named Volumes — Persistent data across restarts
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  localstack_data:
+    driver: local

@@ -1,0 +1,112 @@
+id: qm-trending
+name: Quality Measure Trending & Early Warning
+version: 1.0.0
+domain: quality
+agentId: quality-analytics-agent
+description: >
+  Monitors CMS Quality Measures (QMs) in real time by analyzing MDS assessment
+  data in PCC. Tracks all 15 long-stay and 3 short-stay QMs including falls with
+  major injury, pressure ulcers, UTIs, use of physical restraints, antipsychotic
+  medication use, and functional decline. Calculates facility QM rates, compares
+  against state and national benchmarks, identifies trending deterioration before
+  it impacts the CMS Five-Star rating, and recommends targeted interventions.
+  A 1-star drop in quality rating reduces referrals by 15-25%.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 5 * * 1"
+    timezone: America/Chicago
+
+steps:
+  - name: fetch-mds-data
+    description: Pull MDS assessment data from PCC for QM calculation
+    tool: pcc.mds.getAssessments
+    input:
+      lookbackDays: 90
+      includeCorrections: true
+    onSuccess: null
+    onFailure: null
+    timeout: 1m
+
+  - name: fetch-current-qm-scores
+    description: Pull current CMS QM scores and Five-Star quality component
+    tool: cms.qualityMeasures.getCurrent
+    input:
+      includeNationalBenchmarks: true
+      includeStateBenchmarks: true
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: calculate-trends
+    description: >
+      Calculate QM trends over 90-day rolling windows, identify measures trending
+      toward threshold crossings, project impact on Five-Star quality rating,
+      and recommend targeted clinical interventions for deteriorating measures.
+    tool: claude.analyze
+    input:
+      prompt: quality_measure_trend_analysis
+      context:
+        - "{{steps.fetch-mds-data.output}}"
+        - "{{steps.fetch-current-qm-scores.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit QM trending report to decision queue for QAPI committee/DON review
+    tool: decision-queue.submit
+    input:
+      type: qm-trending
+      priority: "{{steps.calculate-trends.output.priority}}"
+      trendReport: "{{steps.calculate-trends.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_qms_stable_or_improving == true"
+    level: 2
+    reason: All quality measures stable or improving — auto-file weekly summary
+  - condition: "qm_trending_above_75th_percentile == true"
+    level: 4
+    reason: Quality measure trending above 75th percentile — requires DON intervention plan
+  - condition: "five_star_rating_drop_projected == true"
+    level: 5
+    reason: Five-Star quality rating drop projected — escalate to administrator and regional
+
+requiredConnectors:
+  - pcc
+  - cms
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+    lookbackDays:
+      type: integer
+  required: []
+outputSchema:
+  type: object
+  properties:
+    qualityMeasures:
+      type: array
+    trendingAlerts:
+      type: array
+    fiveStarProjection:
+      type: object
+    interventionRecommendations:
+      type: array
+
+schedule: "0 5 * * 1"
+timeout: 5m
+tags:
+  - quality-measures
+  - five-star
+  - mds
+  - qapi
+  - cms-required
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

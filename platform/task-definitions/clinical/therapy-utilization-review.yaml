@@ -1,0 +1,138 @@
+id: therapy-utilization-review
+name: Therapy Utilization & Outcomes Review
+version: 1.0.0
+domain: clinical
+agentId: clinical-operations-agent
+description: >
+  Analyzes therapy utilization patterns (PT/OT/SLP) across the facility to
+  ensure appropriate delivery and optimize PDPM reimbursement. Pulls therapy
+  minutes, functional outcome scores (Section GG), group vs individual ratios,
+  concurrent therapy usage, and missed therapy sessions from PCC. Compares
+  utilization against PDPM classification and identifies under- or over-delivery
+  relative to the resident's clinical needs and reimbursement category. Flags
+  missed sessions trending above 10% threshold. Ensures compliance with CMS
+  therapy requirements while maximizing clinical outcomes.
+
+trigger:
+  type: schedule
+  config:
+    cron: "0 7 * * 5"
+    description: Weekly therapy utilization review every Friday morning
+
+steps:
+  - name: fetch-therapy-minutes
+    description: Pull therapy minutes by discipline for all active therapy residents this week
+    tool: pcc.therapy.getMinutes
+    input:
+      facilityId: "{{context.facilityId}}"
+      lookbackDays: 7
+      groupBy: resident
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: fetch-functional-scores
+    description: Retrieve Section GG functional outcome scores and goal progress
+    tool: pcc.assessments.list
+    input:
+      facilityId: "{{context.facilityId}}"
+      assessmentType: section_gg
+      lookbackDays: 14
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-pdpm-classifications
+    description: Pull PDPM therapy classification for each active therapy resident
+    tool: pcc.billing.getPDPMClassifications
+    input:
+      facilityId: "{{context.facilityId}}"
+      activeOnly: true
+    onSuccess: null
+    onFailure: null
+    timeout: 20s
+
+  - name: fetch-missed-therapy
+    description: Retrieve missed therapy sessions and reasons for the past 7 days
+    tool: pcc.therapy.getMissed
+    input:
+      facilityId: "{{context.facilityId}}"
+      lookbackDays: 7
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: analyze-utilization
+    description: >
+      Compare actual therapy delivery against PDPM classification expectations.
+      Calculate group/individual ratios, concurrent therapy percentages, and
+      missed session rates by discipline. Identify residents with flat or
+      declining functional scores despite therapy. Flag under-utilization that
+      may indicate missed revenue and over-utilization that may trigger audit risk.
+    tool: claude.analyze
+    input:
+      prompt: therapy_utilization_analysis
+      context:
+        - "{{steps.fetch-therapy-minutes.output}}"
+        - "{{steps.fetch-functional-scores.output}}"
+        - "{{steps.fetch-pdpm-classifications.output}}"
+        - "{{steps.fetch-missed-therapy.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit therapy utilization findings to decision queue for rehab director review
+    tool: decision-queue.submit
+    input:
+      type: therapy-utilization
+      priority: "{{steps.analyze-utilization.output.priority}}"
+      report: "{{steps.analyze-utilization.output}}"
+      facilityId: "{{context.facilityId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 3
+governanceOverrides:
+  - condition: "all_within_targets == true && missed_rate < 0.05"
+    level: 1
+    reason: All therapy metrics within acceptable ranges — auto-file weekly report
+  - condition: "missed_rate > 0.15"
+    level: 4
+    reason: Missed therapy rate exceeds 15% — requires rehab director and administrator review
+  - condition: "pdpm_mismatch_count > 5"
+    level: 4
+    reason: Multiple PDPM classification mismatches — potential revenue impact requires finance review
+
+requiredConnectors:
+  - pcc
+inputSchema:
+  type: object
+  properties:
+    facilityId:
+      type: string
+  required:
+    - facilityId
+outputSchema:
+  type: object
+  properties:
+    utilizationSummary:
+      type: object
+    missedSessionRate:
+      type: number
+    pdpmMismatches:
+      type: array
+    functionalOutcomes:
+      type: object
+
+schedule: "0 7 * * 5"
+timeout: 5m
+tags:
+  - therapy
+  - rehabilitation
+  - pdpm
+  - utilization-management
+  - revenue-optimization
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"

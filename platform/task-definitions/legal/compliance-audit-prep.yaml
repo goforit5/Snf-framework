@@ -1,0 +1,142 @@
+id: compliance-audit-prep
+name: Compliance Audit Preparation & Documentation
+version: 1.0.0
+domain: legal
+agentId: compliance-audit-agent
+description: >
+  Prepares documentation packages for internal and external compliance audits.
+  Covers Medicare/Medicaid billing audits, OIG compliance program effectiveness
+  audits, HIPAA security assessments, corporate compliance plan reviews, and
+  state regulatory audits. Pulls relevant policies, training records, incident
+  reports, grievance logs, exclusion screening certificates, and QAPI minutes
+  from across all systems. Verifies documentation completeness against audit
+  checklists and identifies gaps requiring remediation before the audit date.
+  OIG compliance program guidance requires SNFs to maintain seven core elements —
+  this task ensures documentation supporting each element is current and accessible.
+
+trigger:
+  type: event
+  config:
+    event: audit.scheduled
+    filter: "type in ['compliance', 'billing', 'hipaa', 'corporate']"
+
+steps:
+  - name: fetch-audit-scope
+    description: Pull audit scope, checklist, and documentation requirements
+    tool: compliance.audits.getScope
+    input:
+      auditId: "{{event.auditId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 15s
+
+  - name: gather-policies
+    description: Pull current compliance policies, procedures, and code of conduct
+    tool: sharepoint.documents.search
+    input:
+      categories:
+        - compliance_policies
+        - procedures
+        - code_of_conduct
+      currentVersionOnly: true
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: gather-training-records
+    description: Pull compliance training completion records for audit period
+    tool: lms.getCompletionRecords
+    input:
+      categories:
+        - compliance
+        - hipaa
+        - fraud_waste_abuse
+      dateRange: "{{event.auditPeriod}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: gather-screening-records
+    description: Pull exclusion screening certificates and background check records
+    tool: workday.hr.getScreeningRecords
+    input:
+      dateRange: "{{event.auditPeriod}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 30s
+
+  - name: assess-completeness
+    description: >
+      Compare gathered documentation against audit checklist, identify gaps,
+      recommend remediation actions, and generate the audit preparation package.
+    tool: claude.analyze
+    input:
+      prompt: compliance_audit_preparation
+      context:
+        - "{{steps.fetch-audit-scope.output}}"
+        - "{{steps.gather-policies.output}}"
+        - "{{steps.gather-training-records.output}}"
+        - "{{steps.gather-screening-records.output}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 2m
+
+  - name: submit-decision
+    description: Submit audit prep package to decision queue for compliance officer review
+    tool: decision-queue.submit
+    input:
+      type: compliance-audit-prep
+      priority: "{{steps.assess-completeness.output.priority}}"
+      prepPackage: "{{steps.assess-completeness.output}}"
+      auditId: "{{event.auditId}}"
+    onSuccess: null
+    onFailure: null
+    timeout: 10s
+
+defaultGovernanceLevel: 4
+governanceOverrides:
+  - condition: "all_documentation_complete == true"
+    level: 2
+    reason: All audit documentation complete and verified — auto-package for auditor
+  - condition: "critical_gaps > 0 && audit_within_30_days == true"
+    level: 5
+    reason: Critical documentation gaps with audit imminent — escalate for emergency remediation
+  - condition: "oig_audit == true"
+    level: 5
+    reason: OIG audit — requires general counsel and compliance officer joint review
+
+requiredConnectors:
+  - workday
+  - sharepoint
+inputSchema:
+  type: object
+  properties:
+    auditId:
+      type: string
+    facilityId:
+      type: string
+  required:
+    - auditId
+outputSchema:
+  type: object
+  properties:
+    completenessScore:
+      type: number
+    documentationGaps:
+      type: array
+    prepPackage:
+      type: object
+    remediationPlan:
+      type: array
+
+schedule: null
+timeout: 5m
+tags:
+  - compliance
+  - audit
+  - oig
+  - hipaa
+  - documentation
+  - legal
+createdAt: "2026-03-29T00:00:00Z"
+updatedAt: "2026-03-29T00:00:00Z"
