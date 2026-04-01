@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent vs. Human — Speed, Scale, Cost</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue: #2563eb;
+    --dark: #0a0a0a;
+    --dark-card: #141414;
+    --dark-border: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-dim: #71717a;
+    --red: #ef4444;
+    --red-dim: #991b1b;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --amber: #f59e0b;
+    --violet: #8b5cf6;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--dark);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+.infographic {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 48px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.header .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--blue);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.header .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ─── Scenario Cards ─── */
+.scenarios {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.scenario {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 14px;
+    padding: 18px 24px;
+    display: grid;
+    grid-template-columns: 200px 1fr 1fr 120px;
+    gap: 20px;
+    align-items: center;
+}
+
+.scenario-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.scenario-label .domain {
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+}
+
+.scenario-label .domain.clinical { color: var(--blue); }
+.scenario-label .domain.finance { color: var(--green); }
+.scenario-label .domain.hr { color: var(--violet); }
+.scenario-label .domain.compliance { color: var(--amber); }
+
+.scenario-label .task-name {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.25;
+}
+
+.scenario-label .scope {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+}
+
+/* ─── Human vs Agent columns ─── */
+.human-col, .agent-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.human-col {
+    background: rgba(239,68,68,0.04);
+    border: 1px solid rgba(239,68,68,0.12);
+}
+
+.agent-col {
+    background: rgba(34,197,94,0.04);
+    border: 1px solid rgba(34,197,94,0.12);
+}
+
+.col-header {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.human-col .col-header { color: var(--red); }
+.agent-col .col-header { color: var(--green); }
+
+.metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.75rem;
+}
+
+.metric-row .label { color: var(--text-dim); }
+
+.metric-row .value {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.human-col .metric-row .value { color: var(--red); }
+.agent-col .metric-row .value { color: var(--green); }
+
+/* ─── Improvement Badge ─── */
+.improvement {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.improvement .factor {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+}
+
+.improvement .imp-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+/* ─── Timeline bars ─── */
+.timeline-section {
+    margin-top: 14px;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+}
+
+.timeline-header h3 {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.timeline-header .th-note {
+    font-size: 0.68rem;
+    color: var(--text-dim);
+}
+
+.timeline-pair {
+    display: grid;
+    grid-template-columns: 160px 1fr 80px;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.tl-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-align: right;
+}
+
+.tl-label.human { color: var(--red); }
+.tl-label.agent { color: var(--green); }
+
+.tl-track {
+    height: 28px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.tl-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.tl-bar.human-bar {
+    background: linear-gradient(90deg, rgba(239,68,68,0.3), rgba(239,68,68,0.12));
+    color: var(--red);
+}
+
+.tl-bar.agent-bar {
+    background: linear-gradient(90deg, rgba(34,197,94,0.35), rgba(34,197,94,0.12));
+    color: var(--green);
+}
+
+.tl-value {
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.tl-value.red { color: var(--red); }
+.tl-value.green { color: var(--green); }
+
+/* ─── Bottom ─── */
+.bottom-strip {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dark-border);
+    align-items: center;
+}
+
+.bottom-stat {
+    text-align: center;
+}
+
+.bottom-stat .num {
+    font-size: 1.4rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+}
+
+.bottom-stat .num.green { color: var(--green); }
+.bottom-stat .num.blue { color: var(--blue); }
+.bottom-stat .num.amber { color: var(--amber); }
+
+.bottom-stat .bl {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+    font-weight: 500;
+}
+
+.b-divider {
+    width: 1px;
+    height: 30px;
+    background: var(--dark-border);
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate { opacity: 0; animation: fadeInUp 0.5s ease-out forwards; }
+.d1 { animation-delay: 0.1s; }
+.d2 { animation-delay: 0.2s; }
+.d3 { animation-delay: 0.3s; }
+.d4 { animation-delay: 0.4s; }
+.d5 { animation-delay: 0.5s; }
+.d6 { animation-delay: 0.6s; }
+.d7 { animation-delay: 0.7s; }
+</style>
+</head>
+<body>
+
+<div class="infographic">
+    <div class="header animate">
+        <p class="label">The Agentic Advantage</p>
+        <h1>What Takes <span style="color: var(--red);">Weeks</span> Takes <span style="color: var(--green);">Hours</span></h1>
+        <p class="subtitle">Real workflows across Ensign's 330+ facilities. Same quality. Same compliance. Radically different speed and cost.</p>
+    </div>
+
+    <div class="scenarios">
+
+        <!-- Scenario 1: Billing Audit -->
+        <div class="scenario animate d1">
+            <div class="scenario-label">
+                <span class="domain finance">Finance</span>
+                <span class="task-name">Billing Compliance Audit</span>
+                <span class="scope">330 facilities &bull; All payer classes</span>
+            </div>
+            <div class="human-col">
+                <span class="col-header">Human Team</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">3 weeks</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">12 auditors</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$180,000</span></div>
+            </div>
+            <div class="agent-col">
+                <span class="col-header">AI Agent</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">4 hours</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">1 reviewer</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$47</span></div>
+            </div>
+            <div class="improvement">
+                <span class="factor">126x</span>
+                <span class="imp-label">faster</span>
+            </div>
+        </div>
+
+        <!-- Scenario 2: Psychotropic Med Review -->
+        <div class="scenario animate d2">
+            <div class="scenario-label">
+                <span class="domain clinical">Clinical</span>
+                <span class="task-name">Psychotropic Medication Review</span>
+                <span class="scope">12,000+ residents &bull; CMS F-758 compliance</span>
+            </div>
+            <div class="human-col">
+                <span class="col-header">Human Team</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">2 weeks</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">8 pharmacists</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$96,000</span></div>
+            </div>
+            <div class="agent-col">
+                <span class="col-header">AI Agent</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">2 hours</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">1 pharmacist</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$31</span></div>
+            </div>
+            <div class="improvement">
+                <span class="factor">168x</span>
+                <span class="imp-label">faster</span>
+            </div>
+        </div>
+
+        <!-- Scenario 3: Credential Verification -->
+        <div class="scenario animate d3">
+            <div class="scenario-label">
+                <span class="domain hr">Workforce</span>
+                <span class="task-name">Staff Credential Verification</span>
+                <span class="scope">30,000 employees &bull; License + cert checks</span>
+            </div>
+            <div class="human-col">
+                <span class="col-header">Human Team</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">Ongoing</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">6 FTE</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$420K/yr</span></div>
+            </div>
+            <div class="agent-col">
+                <span class="col-header">AI Agent</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">Continuous</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">0 FTE</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$800/yr</span></div>
+            </div>
+            <div class="improvement">
+                <span class="factor">525x</span>
+                <span class="imp-label">cheaper</span>
+            </div>
+        </div>
+
+        <!-- Scenario 4: Survey Readiness -->
+        <div class="scenario animate d4">
+            <div class="scenario-label">
+                <span class="domain compliance">Compliance</span>
+                <span class="task-name">CMS Survey Readiness Scan</span>
+                <span class="scope">330 facilities &bull; 180+ F-tags</span>
+            </div>
+            <div class="human-col">
+                <span class="col-header">Human Team</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">6 weeks</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">15 consultants</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$450,000</span></div>
+            </div>
+            <div class="agent-col">
+                <span class="col-header">AI Agent</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">8 hours</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">1 compliance dir.</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$124</span></div>
+            </div>
+            <div class="improvement">
+                <span class="factor">126x</span>
+                <span class="imp-label">faster</span>
+            </div>
+        </div>
+
+        <!-- Scenario 5: Falls Risk Assessment -->
+        <div class="scenario animate d5">
+            <div class="scenario-label">
+                <span class="domain clinical">Clinical</span>
+                <span class="task-name">Falls Risk Pattern Analysis</span>
+                <span class="scope">330 facilities &bull; 24-month lookback</span>
+            </div>
+            <div class="human-col">
+                <span class="col-header">Human Team</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">4 weeks</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">10 analysts</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$160,000</span></div>
+            </div>
+            <div class="agent-col">
+                <span class="col-header">AI Agent</span>
+                <div class="metric-row"><span class="label">Time</span><span class="value">6 hours</span></div>
+                <div class="metric-row"><span class="label">People</span><span class="value">1 QA director</span></div>
+                <div class="metric-row"><span class="label">Cost</span><span class="value">$89</span></div>
+            </div>
+            <div class="improvement">
+                <span class="factor">112x</span>
+                <span class="imp-label">faster</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ─── Bottom Totals ─── -->
+    <div class="bottom-strip animate d6">
+        <div class="bottom-stat">
+            <div class="num green">$1.3M</div>
+            <div class="bl">Saved per audit cycle (these 5 alone)</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num blue">24/7</div>
+            <div class="bl">Agents run continuously, not quarterly</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num green">$291</div>
+            <div class="bl">Total API cost for all 5 tasks</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num amber">51 people</div>
+            <div class="bl">Reassigned to higher-value work</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat" style="max-width: 160px;">
+            <div class="bl" style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4;">Same quality.<br>Same compliance.<br><span style="color: var(--green); font-weight: 700;">100x the speed.</span></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

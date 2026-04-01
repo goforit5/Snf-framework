@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Vendor AI Scam — Where Your PHI Actually Goes</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue: #2563eb;
+    --dark: #0a0a0a;
+    --dark-card: #141414;
+    --dark-border: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-dim: #71717a;
+    --red: #ef4444;
+    --red-dim: #991b1b;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --amber: #f59e0b;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--dark);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+.infographic {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 48px 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.header .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--red);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.header h1 {
+    font-size: 2.4rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.header .subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ─── Two Architectures ─── */
+.architectures {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.arch {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.arch.vendor {
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.arch.agentic {
+    border-color: rgba(34, 197, 94, 0.25);
+    background: linear-gradient(180deg, rgba(34,197,94,0.03) 0%, var(--dark-card) 100%);
+}
+
+.arch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.arch-header h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.arch-header .verdict {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 10px;
+    border-radius: 6px;
+}
+
+.vendor .arch-header .verdict {
+    background: rgba(239,68,68,0.12);
+    color: var(--red);
+}
+
+.agentic .arch-header .verdict {
+    background: rgba(34,197,94,0.12);
+    color: var(--green);
+}
+
+/* ─── Architecture Diagram ─── */
+.arch-diagram {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.arch-node {
+    width: 100%;
+    max-width: 380px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--dark-border);
+    background: var(--dark);
+    text-align: center;
+    position: relative;
+}
+
+.arch-node .node-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.arch-node .node-desc {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+/* Vendor-specific node styling */
+.vendor .arch-node.ensign-cloud {
+    border-color: rgba(34,197,94,0.3);
+    background: rgba(34,197,94,0.04);
+}
+
+.vendor .arch-node.vendor-cloud {
+    border-color: rgba(239,68,68,0.3);
+    background: rgba(239,68,68,0.05);
+}
+
+.vendor .arch-node.third-party {
+    border-color: rgba(245,158,11,0.3);
+    background: rgba(245,158,11,0.05);
+}
+
+/* Agentic node styling */
+.agentic .arch-node {
+    border-color: rgba(34,197,94,0.2);
+    background: rgba(34,197,94,0.03);
+}
+
+.agentic .arch-node.vpc-boundary {
+    border-color: rgba(34,197,94,0.4);
+    border-width: 2px;
+    border-style: dashed;
+    padding: 16px;
+    background: rgba(34,197,94,0.02);
+}
+
+/* ─── Arrows between nodes ─── */
+.arch-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 0;
+    position: relative;
+}
+
+.arch-arrow svg { display: block; }
+
+.arch-arrow .arrow-label {
+    font-size: 0.58rem;
+    font-weight: 600;
+    margin-top: 1px;
+}
+
+.vendor .arch-arrow .arrow-label { color: var(--red); }
+.agentic .arch-arrow .arrow-label { color: var(--green); }
+
+/* ─── Warning badges ─── */
+.warning-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 4px;
+}
+
+.warning-badge.danger {
+    background: rgba(239,68,68,0.12);
+    color: var(--red);
+}
+
+.warning-badge.safe {
+    background: rgba(34,197,94,0.12);
+    color: var(--green);
+}
+
+/* ─── Risk Checklist ─── */
+.risk-list {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--dark-border);
+}
+
+.risk-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.risk-icon {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 800;
+    margin-top: 1px;
+}
+
+.risk-icon.bad { background: rgba(239,68,68,0.15); color: var(--red); }
+.risk-icon.good { background: rgba(34,197,94,0.15); color: var(--green); }
+
+/* ─── Hop Counter ─── */
+.hop-counter {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.hop {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 800;
+}
+
+.hop.active-red {
+    background: rgba(239,68,68,0.15);
+    color: var(--red);
+    border: 1px solid rgba(239,68,68,0.3);
+}
+
+.hop.active-green {
+    background: rgba(34,197,94,0.15);
+    color: var(--green);
+    border: 1px solid rgba(34,197,94,0.3);
+}
+
+.hop.inactive {
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    border: 1px solid var(--dark-border);
+    opacity: 0.3;
+}
+
+.hop-label {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-top: 4px;
+}
+
+/* ─── Bottom ─── */
+.bottom-strip {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dark-border);
+    align-items: center;
+}
+
+.bottom-stat {
+    text-align: center;
+}
+
+.bottom-stat .num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.bottom-stat .num.red { color: var(--red); }
+.bottom-stat .num.green { color: var(--green); }
+
+.bottom-stat .bl {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.b-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--dark-border);
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate { opacity: 0; animation: fadeInUp 0.5s ease-out forwards; }
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.5s; }
+
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.2); }
+    50% { box-shadow: 0 0 8px 3px rgba(239,68,68,0.1); }
+}
+
+.vendor .arch-node.vendor-cloud { animation: pulse-red 3s ease-in-out infinite; animation-delay: 1s; }
+
+@keyframes pulse-green-border {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.2); }
+    50% { box-shadow: 0 0 8px 3px rgba(34,197,94,0.08); }
+}
+
+.agentic .arch-node.vpc-boundary { animation: pulse-green-border 3s ease-in-out infinite; animation-delay: 1.5s; }
+</style>
+</head>
+<body>
+
+<div class="infographic">
+    <div class="header animate">
+        <p class="label">Security Architecture Comparison</p>
+        <h1>Where Your <span style="color: var(--red);">PHI</span> Actually Goes</h1>
+        <p class="subtitle">Two ways to add AI to healthcare. One sends patient data outside your cloud. The other doesn't.</p>
+    </div>
+
+    <div class="architectures">
+
+        <!-- ═══ VENDOR ARCHITECTURE ═══ -->
+        <div class="arch vendor animate delay-1">
+            <div class="arch-header">
+                <h2 style="color: var(--red);">Vendor "AI Features"</h2>
+                <span class="verdict">5 Data Hops</span>
+            </div>
+
+            <div class="arch-diagram">
+                <div class="arch-node ensign-cloud">
+                    <div class="node-name" style="color: var(--green);">Ensign's Cloud / Servers</div>
+                    <div class="node-desc">PCC data, Workday data, clinical records, PHI</div>
+                    <span class="warning-badge safe">Your perimeter</span>
+                </div>
+
+                <div class="arch-arrow">
+                    <svg width="20" height="28" viewBox="0 0 20 28"><line x1="10" y1="0" x2="10" y2="22" stroke="#991b1b" stroke-width="1.5" stroke-dasharray="3,3"/><polygon points="6,22 10,28 14,22" fill="#991b1b"/></svg>
+                    <span class="arrow-label">PHI leaves your cloud</span>
+                </div>
+
+                <div class="arch-node vendor-cloud">
+                    <div class="node-name" style="color: var(--red);">PCC / Workday Cloud</div>
+                    <div class="node-desc">Vendor's infrastructure &mdash; their servers, their rules</div>
+                    <span class="warning-badge danger">PHI on vendor servers</span>
+                </div>
+
+                <div class="arch-arrow">
+                    <svg width="20" height="28" viewBox="0 0 20 28"><line x1="10" y1="0" x2="10" y2="22" stroke="#92400e" stroke-width="1.5" stroke-dasharray="3,3"/><polygon points="6,22 10,28 14,22" fill="#92400e"/></svg>
+                    <span class="arrow-label" style="color: var(--amber);">Sent to 3rd party LLM</span>
+                </div>
+
+                <div class="arch-node third-party">
+                    <div class="node-name" style="color: var(--amber);">OpenAI / Anthropic / Google</div>
+                    <div class="node-desc">Third-party AI processing &mdash; another BAA, another hop</div>
+                    <span class="warning-badge danger">3rd party processing</span>
+                </div>
+
+                <div class="arch-arrow">
+                    <svg width="20" height="28" viewBox="0 0 20 28"><line x1="10" y1="0" x2="10" y2="22" stroke="#991b1b" stroke-width="1.5" stroke-dasharray="3,3"/><polygon points="6,22 10,28 14,22" fill="#991b1b"/></svg>
+                    <span class="arrow-label">Results routed back</span>
+                </div>
+
+                <div class="arch-node vendor-cloud" style="animation: none;">
+                    <div class="node-name" style="color: var(--red);">Back to Vendor UI</div>
+                    <div class="node-desc">Results displayed in their interface</div>
+                </div>
+
+                <div class="arch-arrow">
+                    <svg width="20" height="28" viewBox="0 0 20 28"><line x1="10" y1="0" x2="10" y2="22" stroke="#991b1b" stroke-width="1.5" stroke-dasharray="3,3"/><polygon points="6,22 10,28 14,22" fill="#991b1b"/></svg>
+                    <span class="arrow-label">Finally back to you</span>
+                </div>
+
+                <div class="arch-node ensign-cloud">
+                    <div class="node-name" style="color: var(--text-secondary);">Ensign User</div>
+                    <div class="node-desc">Sees AI results &mdash; after 5 network hops</div>
+                </div>
+            </div>
+
+            <div class="hop-counter">
+                <div class="hop active-red">1</div>
+                <div class="hop active-red">2</div>
+                <div class="hop active-red">3</div>
+                <div class="hop active-red">4</div>
+                <div class="hop active-red">5</div>
+            </div>
+            <div class="hop-label">5 hops &mdash; 3 organizations touch your PHI</div>
+
+            <div class="risk-list">
+                <div class="risk-item"><div class="risk-icon bad">&times;</div> PHI leaves your security perimeter</div>
+                <div class="risk-item"><div class="risk-icon bad">&times;</div> Additional BAAs with each vendor + their AI provider</div>
+                <div class="risk-item"><div class="risk-icon bad">&times;</div> No visibility into how AI processes your data</div>
+                <div class="risk-item"><div class="risk-icon bad">&times;</div> Each hop = potential breach point</div>
+            </div>
+        </div>
+
+        <!-- ═══ AGENTIC ARCHITECTURE ═══ -->
+        <div class="arch agentic animate delay-2">
+            <div class="arch-header">
+                <h2 style="color: var(--green);">Agentic Architecture</h2>
+                <span class="verdict">0 External Hops</span>
+            </div>
+
+            <div class="arch-diagram">
+                <div class="arch-node vpc-boundary" style="display: flex; flex-direction: column; gap: 8px; max-width: 420px;">
+                    <div style="font-size: 0.65rem; color: var(--green); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; text-align: center;">Ensign's VPC &mdash; Everything stays here</div>
+
+                    <div class="arch-node" style="border-color: rgba(161,161,170,0.2); background: rgba(255,255,255,0.02);">
+                        <div class="node-name">Ensign's Data</div>
+                        <div class="node-desc">PCC via API, Workday via API, M365 via Graph</div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <svg width="20" height="22" viewBox="0 0 20 22"><line x1="10" y1="0" x2="10" y2="16" stroke="#166534" stroke-width="1.5"/><polygon points="6,16 10,22 14,16" fill="#166534"/></svg>
+                        <div style="font-size: 0.58rem; color: var(--green); font-weight: 600;">Direct API call</div>
+                    </div>
+
+                    <div class="arch-node" style="border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.04);">
+                        <div class="node-name" style="color: var(--blue);">AI Agents</div>
+                        <div class="node-desc">Custom agents &mdash; clinical, financial, HR, compliance</div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <svg width="20" height="22" viewBox="0 0 20 22"><line x1="10" y1="0" x2="10" y2="16" stroke="#166534" stroke-width="1.5"/><polygon points="6,16 10,22 14,16" fill="#166534"/></svg>
+                        <div style="font-size: 0.58rem; color: var(--green); font-weight: 600;">In-VPC inference</div>
+                    </div>
+
+                    <div class="arch-node" style="border-color: rgba(34,197,94,0.3); background: rgba(34,197,94,0.04);">
+                        <div class="node-name" style="color: var(--green);">AWS Bedrock</div>
+                        <div class="node-desc">BAA-covered, SOC 2, HITRUST &mdash; same VPC</div>
+                        <span class="warning-badge safe">PHI never leaves</span>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <svg width="20" height="22" viewBox="0 0 20 22"><line x1="10" y1="0" x2="10" y2="16" stroke="#166534" stroke-width="1.5"/><polygon points="6,16 10,22 14,16" fill="#166534"/></svg>
+                        <div style="font-size: 0.58rem; color: var(--green); font-weight: 600;">Results</div>
+                    </div>
+
+                    <div class="arch-node" style="border-color: rgba(161,161,170,0.2); background: rgba(255,255,255,0.02);">
+                        <div class="node-name">Executive Dashboard</div>
+                        <div class="node-desc">Decisions, approvals, intelligence &mdash; all in-house</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hop-counter">
+                <div class="hop active-green">0</div>
+                <div class="hop inactive">&middot;</div>
+                <div class="hop inactive">&middot;</div>
+                <div class="hop inactive">&middot;</div>
+                <div class="hop inactive">&middot;</div>
+            </div>
+            <div class="hop-label">0 external hops &mdash; 1 organization touches your PHI: you</div>
+
+            <div class="risk-list">
+                <div class="risk-item"><div class="risk-icon good">&check;</div> PHI never leaves Ensign's cloud boundary</div>
+                <div class="risk-item"><div class="risk-icon good">&check;</div> Existing AWS BAA covers all AI processing</div>
+                <div class="risk-item"><div class="risk-icon good">&check;</div> Full visibility &mdash; every query logged and auditable</div>
+                <div class="risk-item"><div class="risk-icon good">&check;</div> Zero additional attack surface</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Bottom Stats ─── -->
+    <div class="bottom-strip animate delay-3">
+        <div class="bottom-stat">
+            <div class="num red">3</div>
+            <div class="bl">Organizations touch PHI (vendor path)</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num green">1</div>
+            <div class="bl">Organization touches PHI (agentic)</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num red">3+</div>
+            <div class="bl">BAAs required (vendor)</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat">
+            <div class="num green">1</div>
+            <div class="bl">BAA required (existing AWS)</div>
+        </div>
+        <div class="b-divider"></div>
+        <div class="bottom-stat" style="max-width: 180px;">
+            <div class="bl" style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4;">Same AI. Same results.<br><span style="color: var(--green); font-weight: 700;">Fewer breach points.</span></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where Your Money Goes — The SaaS Dollar Breakdown</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue: #2563eb;
+    --dark: #0a0a0a;
+    --dark-card: #141414;
+    --dark-border: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-dim: #71717a;
+    --red: #ef4444;
+    --red-dim: #991b1b;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --amber: #f59e0b;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--dark);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+.infographic {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 44px 56px 36px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.header .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.header h1 {
+    font-size: 2.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.header .subtitle {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
+    max-width: 680px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ─── Main Content ─── */
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ─── Dollar Flow Section ─── */
+.dollar-flow {
+    display: grid;
+    grid-template-columns: 280px 1fr 280px;
+    gap: 20px;
+    align-items: center;
+}
+
+.dollar-input, .dollar-output {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+}
+
+.dollar-input {
+    border-color: rgba(245, 158, 11, 0.3);
+}
+
+.dollar-input .amount {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--amber);
+    letter-spacing: -0.02em;
+}
+
+.dollar-input .dlabel {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.dollar-input .detail {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+/* ─── Waterfall Breakdown ─── */
+.waterfall {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.waterfall-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.wf-label {
+    width: 140px;
+    text-align: right;
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.wf-bar-track {
+    flex: 1;
+    height: 32px;
+    background: rgba(255,255,255,0.02);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.wf-bar {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    transition: width 1s ease-out;
+}
+
+.wf-bar.red { background: linear-gradient(90deg, rgba(239,68,68,0.25), rgba(239,68,68,0.15)); color: var(--red); }
+.wf-bar.amber { background: linear-gradient(90deg, rgba(245,158,11,0.25), rgba(245,158,11,0.15)); color: var(--amber); }
+.wf-bar.dim { background: linear-gradient(90deg, rgba(113,113,122,0.2), rgba(113,113,122,0.1)); color: var(--text-dim); }
+.wf-bar.green-bar { background: linear-gradient(90deg, rgba(34,197,94,0.25), rgba(34,197,94,0.12)); color: var(--green); }
+
+.wf-pct {
+    width: 48px;
+    text-align: right;
+    font-size: 0.78rem;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.wf-pct.red { color: var(--red); }
+.wf-pct.amber { color: var(--amber); }
+.wf-pct.dim { color: var(--text-dim); }
+.wf-pct.green { color: var(--green); }
+
+/* ─── Output ─── */
+.dollar-output {
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.dollar-output .amount {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--red);
+    letter-spacing: -0.02em;
+}
+
+.dollar-output .dlabel {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.dollar-output .detail {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+/* ─── VS Section ─── */
+.vs-section {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.vs-card {
+    background: var(--dark-card);
+    border: 1px solid var(--dark-border);
+    border-radius: 14px;
+    padding: 22px;
+}
+
+.vs-card.vendor-card {
+    border-color: rgba(239,68,68,0.2);
+}
+
+.vs-card.agentic-card {
+    border-color: rgba(34,197,94,0.2);
+    background: linear-gradient(135deg, rgba(34,197,94,0.03) 0%, var(--dark-card) 100%);
+}
+
+.vs-card h3 {
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--dark-border);
+}
+
+.vs-card h3.red { color: var(--red); }
+.vs-card h3.green { color: var(--green); }
+
+.cost-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    font-size: 0.78rem;
+}
+
+.cost-line .item { color: var(--text-secondary); }
+
+.cost-line .price {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cost-line .price.red { color: var(--red); }
+.cost-line .price.green { color: var(--green); }
+
+.cost-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0 0;
+    margin-top: 8px;
+    border-top: 1px solid var(--dark-border);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.cost-total .price.red { color: var(--red); }
+.cost-total .price.green { color: var(--green); }
+
+.vs-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    padding-top: 60px;
+}
+
+/* ─── Bottom ─── */
+.bottom-callout {
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--dark-border);
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: auto;
+}
+
+.bottom-callout strong { color: var(--text-primary); }
+.bottom-callout .red { color: var(--red); font-weight: 700; }
+.bottom-callout .green { color: var(--green); font-weight: 700; }
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate { opacity: 0; animation: fadeInUp 0.5s ease-out forwards; }
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.5s; }
+.delay-4 { animation-delay: 0.7s; }
+</style>
+</head>
+<body>
+
+<div class="infographic">
+    <div class="header animate">
+        <p class="label">Follow the Money</p>
+        <h1>Where Your SaaS Dollar Goes</h1>
+        <p class="subtitle">For every dollar Ensign pays Workday or PCC, here's what you're actually buying &mdash; and what the AI part really costs.</p>
+    </div>
+
+    <div class="content">
+
+        <!-- ─── Waterfall Breakdown ─── -->
+        <div class="dollar-flow animate delay-1">
+            <div class="dollar-input">
+                <div class="amount">$1.00</div>
+                <div class="dlabel">Every SaaS dollar</div>
+                <div class="detail">Per-seat license to Workday / PCC</div>
+            </div>
+
+            <div class="waterfall">
+                <div class="waterfall-row">
+                    <span class="wf-label">Sales &amp; Marketing</span>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar red" style="width: 40%;">$0.40 &mdash; Selling you the product</div>
+                    </div>
+                    <span class="wf-pct red">40%</span>
+                </div>
+                <div class="waterfall-row">
+                    <span class="wf-label">R&amp;D / Engineering</span>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar amber" style="width: 25%;">$0.25 &mdash; Building the UI</div>
+                    </div>
+                    <span class="wf-pct amber">25%</span>
+                </div>
+                <div class="waterfall-row">
+                    <span class="wf-label">G&amp;A / Overhead</span>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar dim" style="width: 15%;">$0.15</div>
+                    </div>
+                    <span class="wf-pct dim">15%</span>
+                </div>
+                <div class="waterfall-row">
+                    <span class="wf-label">Profit Margin</span>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar dim" style="width: 15%;">$0.15</div>
+                    </div>
+                    <span class="wf-pct dim">15%</span>
+                </div>
+                <div class="waterfall-row">
+                    <span class="wf-label" style="color: var(--green); font-weight: 600;">Actual AI / Compute</span>
+                    <div class="wf-bar-track">
+                        <div class="wf-bar green-bar" style="width: 5%;">$0.05</div>
+                    </div>
+                    <span class="wf-pct green">5%</span>
+                </div>
+            </div>
+
+            <div class="dollar-output">
+                <div class="amount">$0.05</div>
+                <div class="dlabel">Actual AI value</div>
+                <div class="detail">5 cents of every dollar goes to compute</div>
+            </div>
+        </div>
+
+        <!-- ─── Side-by-Side Cost Comparison ─── -->
+        <div class="vs-section animate delay-2">
+            <div class="vs-card vendor-card">
+                <h3 class="red">Workday "AI" Add-On &mdash; Per Employee</h3>
+                <div class="cost-line">
+                    <span class="item">Base HCM license</span>
+                    <span class="price red">$100/mo</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">AI/ML "Illuminate" add-on</span>
+                    <span class="price red">$50/mo</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">Analytics add-on</span>
+                    <span class="price red">$30/mo</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">Implementation + support</span>
+                    <span class="price red">$20/mo</span>
+                </div>
+                <div class="cost-total">
+                    <span>Total per employee</span>
+                    <span class="price red">$200/mo</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-dim);">
+                    &times; 30,000 employees = <span style="color: var(--red); font-weight: 700;">$6M/month</span>
+                </div>
+            </div>
+
+            <div class="vs-divider">vs.</div>
+
+            <div class="vs-card agentic-card">
+                <h3 class="green">Agentic Equivalent &mdash; Per Operation</h3>
+                <div class="cost-line">
+                    <span class="item">Read employee record (API)</span>
+                    <span class="price green">$0.000</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">AI analysis (Claude Sonnet)</span>
+                    <span class="price green">$0.003</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">Generate recommendation</span>
+                    <span class="price green">$0.008</span>
+                </div>
+                <div class="cost-line">
+                    <span class="item">Write-back to system</span>
+                    <span class="price green">$0.000</span>
+                </div>
+                <div class="cost-total">
+                    <span>Total per operation</span>
+                    <span class="price green">$0.011</span>
+                </div>
+                <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-dim);">
+                    1M operations/month = <span style="color: var(--green); font-weight: 700;">$11,000/month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── Bottom ─── -->
+        <div class="bottom-callout animate delay-3">
+            <strong>95% of your SaaS spend</strong> pays for sales teams, office buildings, and shareholder returns. The actual AI costs <span class="green">pennies</span>. You're paying <span class="red">$6M/month</span> for what costs <span class="green">$11K/month</span> to run directly.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
