@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The SaaS Tax — How Vendors Resell Your Own Data Back to You</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --blue: #2563eb;
+    --blue-dark: #1e40af;
+    --dark: #0a0a0a;
+    --dark-card: #141414;
+    --dark-border: #262626;
+    --text-primary: #ffffff;
+    --text-secondary: #a1a1aa;
+    --text-dim: #71717a;
+    --red: #ef4444;
+    --red-dim: #991b1b;
+    --green: #22c55e;
+    --green-dim: #166534;
+    --amber: #f59e0b;
+}
+
+html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: var(--dark);
+    color: var(--text-primary);
+    line-height: 1.5;
+    overflow: hidden;
+}
+
+.infographic {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 48px 56px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ─── Header ─── */
+.header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.header .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--red);
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-wrap: balance;
+}
+
+.header .subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ─── Two Paths ─── */
+.paths {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    justify-content: center;
+}
+
+.path {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    padding: 24px 28px;
+    border-radius: 16px;
+    border: 1px solid var(--dark-border);
+    background: var(--dark-card);
+}
+
+.path.vendor {
+    border-color: rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.04) 0%, var(--dark-card) 100%);
+}
+
+.path.agentic {
+    border-color: rgba(34, 197, 94, 0.25);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.04) 0%, var(--dark-card) 100%);
+}
+
+.path-label {
+    position: absolute;
+    top: -11px;
+    left: 28px;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    padding: 2px 12px;
+    border-radius: 4px;
+}
+
+.vendor .path-label {
+    background: var(--red-dim);
+    color: var(--red);
+}
+
+.agentic .path-label {
+    background: var(--green-dim);
+    color: var(--green);
+}
+
+/* ─── Flow Nodes ─── */
+.flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex: 1;
+    justify-content: center;
+}
+
+.node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 120px;
+    position: relative;
+}
+
+.node-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    border: 1px solid var(--dark-border);
+    background: var(--dark);
+    position: relative;
+}
+
+.vendor .node-icon.middleman {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.08);
+}
+
+.vendor .node-icon.llm-vendor {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(245, 158, 11, 0.08);
+}
+
+.vendor .node-icon.cost {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.agentic .node-icon.agent {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: rgba(37, 99, 235, 0.1);
+}
+
+.agentic .node-icon.bedrock {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.agentic .node-icon.savings {
+    border-color: rgba(34, 197, 94, 0.5);
+    background: rgba(34, 197, 94, 0.12);
+}
+
+.node-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.25;
+}
+
+.node-desc {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    line-height: 1.3;
+    max-width: 130px;
+    margin-top: 2px;
+}
+
+/* ─── Arrows ─── */
+.arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 6px;
+    min-width: 60px;
+}
+
+.arrow-line {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.arrow svg {
+    display: block;
+}
+
+.arrow-label {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.vendor .arrow-label {
+    color: var(--red);
+}
+
+.vendor .arrow-label.amber-label {
+    color: var(--amber);
+}
+
+.agentic .arrow-label {
+    color: var(--green);
+}
+
+/* ─── Markup Badge ─── */
+.markup-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: var(--red);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    z-index: 2;
+}
+
+.savings-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: var(--green);
+    color: white;
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 8px;
+    letter-spacing: 0.02em;
+    z-index: 2;
+}
+
+/* ─── Bottom Comparison ─── */
+.comparison-strip {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--dark-border);
+}
+
+.comp-item {
+    text-align: center;
+}
+
+.comp-item .amount {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.comp-item .amount.red { color: var(--red); }
+.comp-item .amount.green { color: var(--green); }
+
+.comp-item .comp-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.comp-item .comp-detail {
+    font-size: 0.62rem;
+    color: var(--text-dim);
+    opacity: 0.6;
+    margin-top: 2px;
+}
+
+.comp-vs {
+    display: flex;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+}
+
+/* ─── Data callout ─── */
+.data-callout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+}
+
+.data-callout .highlight {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.data-callout .red-hl {
+    color: var(--red);
+    font-weight: 700;
+}
+
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.35s; }
+.delay-3 { animation-delay: 0.55s; }
+.delay-4 { animation-delay: 0.75s; }
+
+/* ─── Pulse on vendor cost ─── */
+@keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 12px 4px rgba(239, 68, 68, 0.15); }
+}
+
+.vendor .node-icon.cost {
+    animation: pulse-red 2.5s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+
+@keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3); }
+    50% { box-shadow: 0 0 12px 4px rgba(34, 197, 94, 0.15); }
+}
+
+.agentic .node-icon.savings {
+    animation: pulse-green 2.5s ease-in-out infinite;
+    animation-delay: 2s;
+}
+
+/* ─── Flowing data dots ─── */
+@keyframes flowRight {
+    0% { transform: translateX(-8px); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { transform: translateX(8px); opacity: 0; }
+}
+
+.arrow-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    position: absolute;
+    animation: flowRight 1.4s ease-in-out infinite;
+}
+
+.vendor .arrow-dot {
+    background: var(--red);
+}
+
+.agentic .arrow-dot {
+    background: var(--green);
+}
+</style>
+</head>
+<body>
+
+<div class="infographic">
+    <!-- Header -->
+    <div class="header animate">
+        <p class="label">The Hidden Architecture</p>
+        <h1>The SaaS Tax</h1>
+        <p class="subtitle">Your vendors take <strong style="color: white;">your data</strong>, send it to the <strong style="color: white;">same LLMs</strong> you could call directly, and charge you a <strong style="color: var(--red);">1,000x markup</strong>.</p>
+    </div>
+
+    <div class="paths">
+
+        <!-- ═══ VENDOR PATH ═══ -->
+        <div class="path vendor animate delay-1">
+            <div class="path-label">What You Pay For Today</div>
+            <div class="flow">
+
+                <!-- Node 1: Ensign's Data -->
+                <div class="node">
+                    <div class="node-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <span class="node-title">Ensign's Data</span>
+                    <span class="node-desc">Residents, billing, HR, clinical — it's all yours</span>
+                </div>
+
+                <!-- Arrow 1 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#991b1b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                        <polygon points="44,4 52,8 44,12" fill="#991b1b"/>
+                    </svg>
+                    <span class="arrow-label">Sent to vendor</span>
+                </div>
+
+                <!-- Node 2: Vendor Cloud (Middleman) -->
+                <div class="node">
+                    <div class="node-icon middleman">
+                        <span class="markup-badge">MIDDLEMAN</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <path d="M8 10h8"/><path d="M8 14h4"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--red);">PCC / Workday</span>
+                    <span class="node-desc">Wraps your data in their UI and their "AI features"</span>
+                </div>
+
+                <!-- Arrow 2 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#92400e" stroke-width="1.5" stroke-dasharray="4,3"/>
+                        <polygon points="44,4 52,8 44,12" fill="#92400e"/>
+                    </svg>
+                    <span class="arrow-label amber-label">Calls same LLM</span>
+                </div>
+
+                <!-- Node 3: LLM (same one you could call) -->
+                <div class="node">
+                    <div class="node-icon llm-vendor">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93"/>
+                            <path d="M12 2a4 4 0 0 0-4 4c0 1.95 1.4 3.58 3.25 3.93"/>
+                            <circle cx="12" cy="14" r="4"/>
+                            <path d="M12 18v4"/><path d="M8 22h8"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--amber);">Claude / GPT</span>
+                    <span class="node-desc">Same AI models anyone can call via API</span>
+                </div>
+
+                <!-- Arrow 3 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#991b1b" stroke-width="1.5" stroke-dasharray="4,3"/>
+                        <polygon points="44,4 52,8 44,12" fill="#991b1b"/>
+                    </svg>
+                    <span class="arrow-label">Results back</span>
+                </div>
+
+                <!-- Node 4: What Ensign Pays -->
+                <div class="node">
+                    <div class="node-icon cost">
+                        <span class="markup-badge">1000x</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="1" x2="12" y2="23"/>
+                            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--red);">Per-Seat License</span>
+                    <span class="node-desc">$150–300/user/month for AI "add-ons"</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ═══ AGENTIC PATH ═══ -->
+        <div class="path agentic animate delay-2">
+            <div class="path-label">The Agentic Alternative</div>
+            <div class="flow">
+
+                <!-- Node 1: Same Data -->
+                <div class="node">
+                    <div class="node-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                    </div>
+                    <span class="node-title">Ensign's Data</span>
+                    <span class="node-desc">Same data. Same servers. You already own it.</span>
+                </div>
+
+                <!-- Arrow 1 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#166534" stroke-width="1.5"/>
+                        <polygon points="44,4 52,8 44,12" fill="#166534"/>
+                    </svg>
+                    <span class="arrow-label">Direct API</span>
+                </div>
+
+                <!-- Node 2: AI Agent -->
+                <div class="node">
+                    <div class="node-icon agent">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="10" rx="2"/>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            <circle cx="12" cy="16" r="1"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--blue);">AI Agent</span>
+                    <span class="node-desc">Connects to PCC, Workday, M365 APIs directly</span>
+                </div>
+
+                <!-- Arrow 2 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#166534" stroke-width="1.5"/>
+                        <polygon points="44,4 52,8 44,12" fill="#166534"/>
+                    </svg>
+                    <span class="arrow-label">Same LLM</span>
+                </div>
+
+                <!-- Node 3: Same LLM (in your VPC) -->
+                <div class="node">
+                    <div class="node-icon bedrock">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.58-3.25 3.93"/>
+                            <path d="M12 2a4 4 0 0 0-4 4c0 1.95 1.4 3.58 3.25 3.93"/>
+                            <circle cx="12" cy="14" r="4"/>
+                            <path d="M12 18v4"/><path d="M8 22h8"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--green);">AWS Bedrock</span>
+                    <span class="node-desc">Same Claude/GPT — inside your VPC</span>
+                </div>
+
+                <!-- Arrow 3 -->
+                <div class="arrow" style="position: relative;">
+                    <svg width="52" height="16" viewBox="0 0 52 16">
+                        <line x1="0" y1="8" x2="44" y2="8" stroke="#166534" stroke-width="1.5"/>
+                        <polygon points="44,4 52,8 44,12" fill="#166534"/>
+                    </svg>
+                    <span class="arrow-label">Results</span>
+                </div>
+
+                <!-- Node 4: What It Costs -->
+                <div class="node">
+                    <div class="node-icon savings">
+                        <span class="savings-badge">DIRECT</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                            <polyline points="17 6 23 6 23 12"/>
+                        </svg>
+                    </div>
+                    <span class="node-title" style="color: var(--green);">API Token Cost</span>
+                    <span class="node-desc">$0.003–0.06 per operation</span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ─── Bottom: Cost Comparison ─── -->
+    <div class="comparison-strip animate delay-3">
+        <div class="comp-item">
+            <div class="amount red">$150–300</div>
+            <div class="comp-label">Per user / month</div>
+            <div class="comp-detail">Workday AI, PCC "AI features"</div>
+        </div>
+        <div class="comp-vs">vs.</div>
+        <div class="comp-item">
+            <div class="amount green">$0.003</div>
+            <div class="comp-label">Per operation</div>
+            <div class="comp-detail">Direct API — same LLM, no middleman</div>
+        </div>
+        <div class="comp-vs" style="opacity: 0.3;">|</div>
+        <div class="comp-item">
+            <div class="amount red">Their servers</div>
+            <div class="comp-label">PHI leaves your cloud</div>
+            <div class="comp-detail">Additional BAAs, lost visibility</div>
+        </div>
+        <div class="comp-vs">vs.</div>
+        <div class="comp-item">
+            <div class="amount green">Your VPC</div>
+            <div class="comp-label">PHI never leaves</div>
+            <div class="comp-detail">Zero additional security risk</div>
+        </div>
+    </div>
+
+    <div class="data-callout animate delay-4">
+        <span>Both paths use <span class="highlight">the exact same AI models</span>.</span>
+        <span style="margin: 0 4px;">The only difference is</span>
+        <span class="red-hl">who bills you for it</span>.
+    </div>
+
+</div>
+
+</body>
+</html>
