@@ -53,9 +53,21 @@ const NAV_SECTIONS = [
       { path: '/clinical/dietary', label: 'Dietary & Nutrition', icon: Apple },
       { path: '/clinical/social-services', label: 'Social Services', icon: Heart },
       { path: '/clinical/medical-records', label: 'Medical Records', icon: FileText },
-      { path: '/survey', label: 'Survey Readiness', icon: ClipboardCheck },
       { path: '/compliance', label: 'Compliance', icon: ShieldCheck },
       { path: '/audits', label: 'Audit Library', icon: Eye },
+    ],
+  },
+  {
+    key: 'survey',
+    title: 'Survey',
+    icon: ClipboardCheck,
+    items: [
+      { path: '/survey/readiness', label: 'Survey Readiness', icon: ClipboardCheck },
+      { path: '/survey/command', label: 'Survey Command', icon: Shield },
+      { path: '/survey/requests', label: 'Request Tracker', icon: FileText },
+      { path: '/survey/sampling', label: 'Sample Tracking', icon: Users },
+      { path: '/survey/findings', label: 'Findings & Risk', icon: AlertTriangle },
+      { path: '/survey/post-survey', label: 'POC & Response', icon: FileCheck },
     ],
   },
   {

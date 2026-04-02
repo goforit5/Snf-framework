@@ -26,6 +26,13 @@ const SettingsPage = lazy(() => import('./pages/platform/Settings'));
 const ClinicalCommand = lazy(() => import('./pages/ClinicalCommand'));
 const SurveyReadiness = lazy(() => import('./pages/SurveyReadiness'));
 const ClinicalCompliance = lazy(() => import('./pages/ClinicalCompliance'));
+
+/* ─── Survey ─── */
+const SurveyCommand = lazy(() => import('./pages/survey/SurveyCommand'));
+const SurveyRequests = lazy(() => import('./pages/survey/SurveyRequests'));
+const SurveySampling = lazy(() => import('./pages/survey/SurveySampling'));
+const SurveyFindings = lazy(() => import('./pages/survey/SurveyFindings'));
+const SurveyPostSurvey = lazy(() => import('./pages/survey/SurveyPostSurvey'));
 const AuditLibrary = lazy(() => import('./pages/AuditLibrary'));
 const PharmacyManagement = lazy(() => import('./pages/clinical/PharmacyManagement'));
 const TherapyRehab = lazy(() => import('./pages/clinical/TherapyRehab'));
@@ -143,8 +150,16 @@ function AppRoutes() {
                         <Route path="/clinical/dietary" element={<DietaryNutrition />} />
                         <Route path="/clinical/social-services" element={<SocialServices />} />
                         <Route path="/clinical/medical-records" element={<MedicalRecords />} />
+                        <Route path="/survey/readiness" element={<SurveyReadiness />} />
                         <Route path="/survey" element={<SurveyReadiness />} />
                         <Route path="/compliance" element={<ClinicalCompliance />} />
+
+                        {/* Survey */}
+                        <Route path="/survey/command" element={<SurveyCommand />} />
+                        <Route path="/survey/requests" element={<SurveyRequests />} />
+                        <Route path="/survey/sampling" element={<SurveySampling />} />
+                        <Route path="/survey/findings" element={<SurveyFindings />} />
+                        <Route path="/survey/post-survey" element={<SurveyPostSurvey />} />
                         <Route path="/audits" element={<AuditLibrary />} />
 
                         {/* Revenue Cycle */}
