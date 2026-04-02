@@ -7,6 +7,8 @@ import { AgentProvider } from './providers/AgentProvider';
 import { NotificationProvider } from './providers/NotificationProvider';
 import { ToastProvider, PageSkeleton } from './components/FeedbackComponents';
 import { useDarkMode, DarkModeContext } from './hooks/useDarkMode';
+import { SessionHistoryProvider } from './hooks/useSessionHistory';
+import { IssueProvider } from './providers/IssueProvider';
 import Layout from './components/Layout';
 const ComingSoon = lazy(() => import('./pages/ComingSoon'));
 
@@ -229,19 +231,23 @@ export default function App() {
   return (
     <DarkModeContext.Provider value={darkMode}>
       <Router>
-        <AuthProvider>
-          <ScopeProvider>
-            <AgentProvider>
-              <NotificationProvider>
-                <ModalProvider>
-                  <ToastProvider>
-                    <AppRoutes />
-                  </ToastProvider>
-                </ModalProvider>
-              </NotificationProvider>
-            </AgentProvider>
-          </ScopeProvider>
-        </AuthProvider>
+        <SessionHistoryProvider>
+          <AuthProvider>
+            <ScopeProvider>
+              <AgentProvider>
+                <NotificationProvider>
+                  <ModalProvider>
+                    <ToastProvider>
+                      <IssueProvider>
+                        <AppRoutes />
+                      </IssueProvider>
+                    </ToastProvider>
+                  </ModalProvider>
+                </NotificationProvider>
+              </AgentProvider>
+            </ScopeProvider>
+          </AuthProvider>
+        </SessionHistoryProvider>
       </Router>
     </DarkModeContext.Provider>
   );

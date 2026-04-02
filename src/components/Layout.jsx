@@ -24,6 +24,7 @@ import { ScopeSelector } from './FilterComponents';
 import GlobalSearch from './GlobalSearch';
 import { useGlobalSearchShortcut } from './GlobalSearchUtils';
 import NotificationCenter from './NotificationCenter';
+import IssueReporter from './IssueReporter';
 
 /* ─── Navigation Definition ─── */
 const NAV_SECTIONS = [
@@ -644,6 +645,9 @@ export default function Layout({ children }) {
 
       {/* Notification Center */}
       <NotificationCenter isOpen={notificationsOpen} onClose={() => setNotificationsOpen(false)} />
+
+      {/* Feedback Reporter */}
+      <IssueReporter />
 
       {/* Back to Presentation pill — shown when navigated from presentation */}
       {typeof sessionStorage !== 'undefined' && sessionStorage.getItem('fromPresentation') && (

@@ -243,6 +243,13 @@ const routineActivities = [
   ))),
 ];
 
+// ─── Experience Agent Activity (resolved feedback) ──────────────────
+const experienceAgentActivity = [
+  { id: 'exp-001', agentId: 'experience-agent', trigger: 'User feedback submitted', action: 'Received feedback from DON on Clinical Command page — chart filters not persisting after navigation. Analyzed session context and component state.', result: 'Identified state reset on route change. Proposed filter persistence via session storage. Resolution approved and applied.', confidence: 0.94, timeSaved: '1.5 hrs', costImpact: 'Workflow improvement', status: 'completed', policiesChecked: ['Feedback triage protocol', 'Context-aware investigation', 'Resolution governance routing'], timestamp: '2026-03-14T14:30:00Z', facilityId: 'f1', details: 'Feedback from Maria Santos (DON). Page: /clinical. Issue: date range filter resets when navigating between Clinical sub-pages. Resolution: persist filter state in sessionStorage, restore on mount.' },
+  { id: 'exp-002', agentId: 'experience-agent', trigger: 'User feedback submitted', action: 'Received feedback from CFO — Revenue Command stat cards showing stale data after scope change. Investigated scope context propagation.', result: 'Found delayed state sync between ScopeProvider and data fetch. Proposed useEffect dependency fix. Approved and implemented.', confidence: 0.91, timeSaved: '2.0 hrs', costImpact: 'Data accuracy', status: 'completed', policiesChecked: ['Feedback triage protocol', 'Context-aware investigation', 'User notification on resolution'], timestamp: '2026-03-13T10:15:00Z', facilityId: 'all', details: 'Feedback from Jennifer Park (CFO). Page: /revenue. Issue: switching facility scope doesn\'t immediately refresh revenue metrics. Resolution: added scope dependency to data fetch effect.' },
+  { id: 'exp-003', agentId: 'experience-agent', trigger: 'Voice feedback received', action: 'Received voice feedback from Administrator — difficulty reading decision cards on tablet in bright lighting. Analyzed accessibility and contrast requirements.', result: 'Proposed contrast enhancement for decision card borders and text. Resolution approved.', confidence: 0.89, timeSaved: '1.0 hrs', costImpact: 'Accessibility improvement', status: 'completed', policiesChecked: ['Feedback triage protocol', 'Accessibility standards', 'Resolution governance routing'], timestamp: '2026-03-12T16:45:00Z', facilityId: 'f3', details: 'Voice feedback from Robert Kim (Administrator). Page: /exceptions. Issue: low contrast on decision card priority indicators under high ambient light. Resolution: increased border width and text weight for priority badges on tablet.' },
+];
+
 // Combine all activities and sort by timestamp (newest first)
 export const agentActivity = [
   ...margaretChenCascade,
@@ -250,6 +257,7 @@ export const agentActivity = [
   ...sarahMitchellCascade,
   ...overtimeCascade,
   ...maDiligenceCascade,
+  ...experienceAgentActivity,
   ...routineActivities,
 ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 

@@ -511,6 +511,25 @@ export const agentRegistry = [
     color: '#EF4444',
   },
 
+  // ─── Experience Agent (1) ───────────────────────────────────────────
+  {
+    id: 'experience-agent',
+    name: 'experience-agent',
+    displayName: 'Experience Agent',
+    domain: 'meta',
+    description: 'Receives user feedback and suggestions, analyzes context and session history, investigates issues, proposes resolutions, and routes fixes through governance approval.',
+    status: 'active',
+    lastRun: '2026-03-15T08:25:00Z',
+    actionsToday: 12,
+    exceptionsToday: 0,
+    confidenceAvg: 0.93,
+    policiesEnforced: ['Feedback triage protocol', 'Context-aware investigation', 'Resolution governance routing', 'User notification on resolution'],
+    triggers: ['User feedback submitted', 'Voice feedback received', 'Resolution approval event', 'Feedback trend detection'],
+    governanceLevel: 3,
+    icon: 'MessageSquareHeart',
+    color: '#8B5CF6',
+  },
+
   // ─── Meta Agent (1) ────────────────────────────────────────────────
   {
     id: 'platform-monitor',
