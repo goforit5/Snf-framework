@@ -244,6 +244,14 @@ const routineActivities = [
 ];
 
 // Combine all activities and sort by timestamp (newest first)
+const HERO_TRACE_MAP = {
+  'hero1': 'TRACE-MCF-001',
+  'hero2': 'TRACE-SYS-001',
+  'hero3': 'TRACE-SML-001',
+  'hero4': 'TRACE-OT-001',
+  'hero5': 'TRACE-MA-001',
+};
+
 export const agentActivity = [
   ...margaretChenCascade,
   ...syscoPriceCascade,
@@ -251,7 +259,10 @@ export const agentActivity = [
   ...overtimeCascade,
   ...maDiligenceCascade,
   ...routineActivities,
-].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+].map(a => {
+  const prefix = Object.keys(HERO_TRACE_MAP).find(k => a.id.startsWith(k));
+  return prefix ? { ...a, traceId: HERO_TRACE_MAP[prefix] } : a;
+}).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
 // Backward-compatible export matching mockData.js shape (agent name instead of agentId)
 // Import agentRegistry to resolve display names if needed

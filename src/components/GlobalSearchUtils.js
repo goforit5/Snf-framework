@@ -8,6 +8,10 @@ export function useGlobalSearchShortcut(setOpen) {
         e.preventDefault();
         setOpen(prev => !prev);
       }
+      if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        setOpen(prev => !prev);
+      }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);

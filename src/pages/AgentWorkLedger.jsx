@@ -309,7 +309,7 @@ export default function AgentWorkLedger() {
         <TabButton label="Anomaly Detection" icon={AlertTriangle} active={activeTab === 'anomalies'} onClick={() => setActiveTab('anomalies')} badge={allAnomalies.length > 0 ? allAnomalies.length : null} />
       </div>
 
-      {activeTab === 'activity' && <ActivityTab search={search} setSearch={setSearch} todayActivities={todayActivities} openActionDetail={openActionDetail} />}
+      {activeTab === 'activity' && <ActivityTab search={search} setSearch={setSearch} todayActivities={todayActivities} openActionDetail={openActionDetail} openReplay={_openReplay} />}
       {activeTab === 'replay' && <DecisionReplayTab open={open} />}
       {activeTab === 'graph' && <DependencyGraphTab />}
       {activeTab === 'performance' && <PerformanceTrendingTab />}

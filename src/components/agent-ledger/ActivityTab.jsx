@@ -1,4 +1,4 @@
-import { Bot, ArrowRight } from 'lucide-react';
+import { Bot, ArrowRight, RotateCcw } from 'lucide-react';
 import { agentById } from '../../data/agents';
 import { Card, ConfidenceBar, SectionLabel } from '../Widgets';
 import { SearchInput } from '../FilterComponents';
@@ -7,7 +7,7 @@ function formatTime(ts) {
   return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
-export default function ActivityTab({ search, setSearch, todayActivities, openActionDetail }) {
+export default function ActivityTab({ search, setSearch, todayActivities, openActionDetail, openReplay }) {
   const filtered = search.trim()
     ? todayActivities.filter(a => {
         const q = search.toLowerCase();
@@ -47,6 +47,16 @@ export default function ActivityTab({ search, setSearch, todayActivities, openAc
                       <div className="w-16 hidden md:block"><ConfidenceBar value={activity.confidence} /></div>
                     )}
                     <span className="text-[10px] text-emerald-600 font-medium">{activity.timeSaved}</span>
+                    {activity.traceId && openReplay && (
+                      <button
+                        onClick={e => { e.stopPropagation(); openReplay(activity.traceId); }}
+                        className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-violet-50 border border-violet-100 text-violet-600 hover:bg-violet-100 transition-colors text-[10px] font-medium"
+                        title="Replay decision chain"
+                      >
+                        <RotateCcw size={10} />
+                        Replay
+                      </button>
+                    )}
                     <ArrowRight size={14} className="text-gray-300" />
                   </div>
                 </div>
