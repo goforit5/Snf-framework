@@ -33,6 +33,8 @@ const InfectionControl = lazy(() => import('./pages/clinical/InfectionControl'))
 const DietaryNutrition = lazy(() => import('./pages/clinical/DietaryNutrition'));
 const SocialServices = lazy(() => import('./pages/clinical/SocialServices'));
 const MedicalRecords = lazy(() => import('./pages/clinical/MedicalRecords'));
+const CareTransitions = lazy(() => import('./pages/clinical/CareTransitions'));
+const DocumentationIntegrity = lazy(() => import('./pages/clinical/DocumentationIntegrity'));
 
 /* ─── Revenue Cycle ─── */
 const RevenueCycleCommand = lazy(() => import('./pages/revenue/RevenueCycleCommand'));
@@ -73,6 +75,7 @@ const ITServiceDesk = lazy(() => import('./pages/operations/ITServiceDesk'));
 const CensusCommand = lazy(() => import('./pages/admissions/CensusCommand'));
 const ReferralManagement = lazy(() => import('./pages/admissions/ReferralManagement'));
 const PreAdmissionScreening = lazy(() => import('./pages/admissions/PreAdmissionScreening'));
+const AdmissionsIntelligence = lazy(() => import('./pages/admissions/AdmissionsIntelligence'));
 const PayerMixOptimization = lazy(() => import('./pages/admissions/PayerMixOptimization'));
 const MarketingBD = lazy(() => import('./pages/admissions/MarketingBD'));
 
@@ -143,6 +146,8 @@ function AppRoutes() {
                         <Route path="/clinical/dietary" element={<DietaryNutrition />} />
                         <Route path="/clinical/social-services" element={<SocialServices />} />
                         <Route path="/clinical/medical-records" element={<MedicalRecords />} />
+                        <Route path="/clinical/care-transitions" element={<CareTransitions />} />
+                        <Route path="/clinical/documentation-integrity" element={<DocumentationIntegrity />} />
                         <Route path="/survey" element={<SurveyReadiness />} />
                         <Route path="/compliance" element={<ClinicalCompliance />} />
                         <Route path="/audits" element={<AuditLibrary />} />
@@ -185,6 +190,7 @@ function AppRoutes() {
                         <Route path="/admissions" element={<CensusCommand />} />
                         <Route path="/admissions/referrals" element={<ReferralManagement />} />
                         <Route path="/admissions/pre-admission" element={<PreAdmissionScreening />} />
+                        <Route path="/admissions/intelligence" element={<AdmissionsIntelligence />} />
                         <Route path="/admissions/payer-mix" element={<PayerMixOptimization />} />
                         <Route path="/admissions/marketing" element={<MarketingBD />} />
 
