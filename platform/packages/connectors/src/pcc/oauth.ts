@@ -4,6 +4,10 @@
  * Agents never hold credentials. This module handles token lifecycle:
  * request, cache, refresh, and expiry tracking. In production, tokens
  * are stored in AWS Secrets Manager. In dev, memory cache with env vars.
+ *
+ * @deprecated(wave-8) Token lifecycle will move to Claude Managed Agents
+ * Vaults (`beta.vaults.credentials`). This file will be deleted in Wave 8.
+ * Do not add new dependencies on it.
  */
 
 // ---------------------------------------------------------------------------

@@ -15,3 +15,4 @@ export * as pcc from './pcc/index.js';
 export * as workday from './workday/index.js';
 export * as m365 from './m365/index.js';
 export * as regulatory from './regulatory/index.js';
+export * as gateway from './gateway/index.js';

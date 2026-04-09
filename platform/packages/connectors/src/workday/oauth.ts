@@ -2,6 +2,10 @@
  * Workday OAuth2 flow.
  * Workday uses OAuth2 client credentials with tenant-scoped endpoints.
  * Agents never hold credentials — this module is invoked by the MCP server only.
+ *
+ * @deprecated(wave-8) Token lifecycle will move to Claude Managed Agents
+ * Vaults (`beta.vaults.credentials`). This file will be deleted in Wave 8.
+ * Do not add new dependencies on it.
  */
 
 import { WORKDAY_CREDENTIAL_TEMPLATE, type CredentialConfig } from '@snf/core';

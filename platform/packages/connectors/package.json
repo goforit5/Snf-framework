@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@snf/core": "*"
+    "@snf/core": "*",
+    "fastify": "^5.8.4"
   },
   "scripts": {
     "build": "tsc",
