@@ -23,7 +23,8 @@
       "@snf/hitl": ["./packages/hitl/src"],
       "@snf/audit": ["./packages/audit/src"],
       "@snf/connectors/*": ["./packages/connectors/src/*"],
-      "@snf/api": ["./packages/api/src"]
+      "@snf/api": ["./packages/api/src"],
+      "@snf/orchestrator": ["./packages/orchestrator/src"]
     }
   },
   "references": [
@@ -33,7 +34,8 @@
     { "path": "./packages/hitl" },
     { "path": "./packages/audit" },
     { "path": "./packages/connectors" },
-    { "path": "./packages/api" }
+    { "path": "./packages/api" },
+    { "path": "./packages/orchestrator" }
   ],
   "exclude": ["node_modules", "dist"]
 }
