@@ -5,14 +5,15 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
-    "@snf/core": "*",
-    "@snf/audit": "*",
-    "@snf/hitl": "*",
-    "@snf/connectors": "*",
-    "@snf/tasks": "*",
     "@anthropic-ai/sdk": "^0.87.0",
+    "@snf/audit": "*",
+    "@snf/connectors": "*",
+    "@snf/core": "*",
+    "@snf/hitl": "*",
+    "@snf/tasks": "*",
     "fastify": "^5.2.0",
     "pino": "^9.5.0",
+    "yaml": "^2.8.3",
     "zod": "^3.23.8"
   },
   "scripts": {

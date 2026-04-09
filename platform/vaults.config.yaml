@@ -1,0 +1,51 @@
+# vaults.config.yaml — source of truth for Claude Managed Agents vaults.
+#
+# Wave 2 (SNF-91). See: /Users/andrew/.claude/plans/shimmying-plotting-bear.md
+#
+# Edit this file to declare tenants and their credentials. Then run:
+#   tsx platform/scripts/provision-vaults.ts [--tenant=snf-ensign-prod] [--dry-run]
+#
+# The script is idempotent: it diffs against `beta.vaults.list()` and only
+# creates/updates what changed. Vault IDs are written back to the `id:` field
+# once provisioned — safe to commit (vault IDs are not secrets).
+#
+# Secrets are NEVER stored in this file. `*_env` fields name the environment
+# variable the script will read at provision time.
+
+tenants:
+  - name: snf-ensign-prod
+    description: "Ensign Group production tenant"
+    # id: vault_xxx  (written back by provision-vaults.ts)
+    credentials:
+      - name: pcc-oauth
+        type: mcp_oauth
+        client_id_env: PCC_CLIENT_ID
+        client_secret_env: PCC_CLIENT_SECRET
+        token_url: https://auth.pcc.com/oauth/token
+        scopes:
+          - read:residents
+          - read:census
+          - read:referrals
+          - write:admissions
+      - name: workday-oauth
+        type: mcp_oauth
+        client_id_env: WORKDAY_CLIENT_ID
+        client_secret_env: WORKDAY_CLIENT_SECRET
+        token_url: https://auth.workday.com/oauth/token
+        scopes:
+          - read:workers
+          - read:time
+          - read:finance
+      - name: m365-oauth
+        type: mcp_oauth
+        client_id_env: M365_CLIENT_ID
+        client_secret_env: M365_CLIENT_SECRET
+        token_url: https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+        scopes:
+          - Mail.Read
+          - Calendars.Read
+          - Sites.Read.All
+          - User.Read.All
+      - name: regulatory-bearer
+        type: static_bearer
+        token_env: REGULATORY_API_TOKEN

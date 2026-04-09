@@ -1,0 +1,45 @@
+# environments.config.yaml — source of truth for Managed Agents environments.
+#
+# Wave 3 (SNF-92). See: /Users/andrew/.claude/plans/shimmying-plotting-bear.md
+#
+# Edit this file to declare execution environments. Then run:
+#   tsx platform/scripts/provision-environments.ts [--dry-run]
+#
+# Three environments are defined for SNF:
+#   - snf-env-read-only:   analysis agents, no outbound network
+#   - snf-env-staff-action: most department agents, github.com allowed
+#                          for runbook checkout (session resource clone)
+#   - snf-env-exec:         heavy-lift agents; pandas + openpyxl for
+#                          briefing / spreadsheet generation
+#
+# Environment IDs are written back to the `id:` field — safe to commit.
+
+environments:
+  - name: snf-env-read-only
+    type: cloud
+    networking: limited
+    allow_mcp_servers: true
+    allowed_hosts: []
+    pip_packages: []
+    apt_packages: []
+    # id: env_xxx (written back by provision-environments.ts)
+
+  - name: snf-env-staff-action
+    type: cloud
+    networking: limited
+    allow_mcp_servers: true
+    allowed_hosts:
+      - github.com
+    pip_packages: []
+    apt_packages: []
+
+  - name: snf-env-exec
+    type: cloud
+    networking: limited
+    allow_mcp_servers: true
+    allowed_hosts:
+      - github.com
+    pip_packages:
+      - pandas
+      - openpyxl
+    apt_packages: []

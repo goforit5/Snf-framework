@@ -9,6 +9,22 @@
  */
 
 export { SessionManager } from './session-manager.js';
+export {
+  createBetaClient,
+  AnthropicBetaError,
+  MANAGED_AGENTS_BETA,
+  DEFAULT_BASE_URL,
+} from './beta-client.js';
+export type {
+  BetaClient,
+  CreateBetaClientOptions,
+  Vault,
+  VaultCredential,
+  Environment,
+  Agent,
+  Session,
+  SessionEvent,
+} from './beta-client.js';
 export { TriggerRouter } from './trigger-router.js';
 export { EventRelay } from './event-relay.js';
 export type { OrchestratorEventHandler } from './event-relay.js';
