@@ -1,0 +1,433 @@
+# SNF Managed Agents — source of truth (Wave 4, SNF-93)
+#
+# This file is the only place where the 12 department agents are defined.
+# `platform/scripts/provision-agents.ts` reads it, diffs each entry against
+# `beta.agents.list(metadata: {platform: snf})`, and calls create/update as
+# needed. Idempotent — re-running with no changes is a no-op.
+#
+# Multi-tenant model: tenant-per-vault-and-metadata. Agents are tenant-agnostic.
+# Tenant context is passed per-session via session metadata and resolved to a
+# vault at launch time by the session manager.
+#
+# PHI model: aggressive tokenization. Agents see `[RESIDENT_NNNN]` tokens only.
+# Re-identification happens server-side inside `snf_action__execute_approved_action`.
+#
+# After provisioning, the script writes back resolved `id` and `version` for
+# each agent. Those fields are committed back to this file by CI.
+
+defaults:
+  model: claude-sonnet-4-6
+  environment: snf-env-staff-action
+  mcp_gateway_base_url: https://mcp.ensign-snf.com
+  metadata:
+    platform: snf
+    wave: "4"
+
+agents:
+  # -------------------------------------------------------------------------
+  # 1. Clinical Operations
+  # -------------------------------------------------------------------------
+  - name: clinical-operations
+    department: clinical
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/clinical.md
+    runbook_file: runbooks/clinical.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config:
+          enabled: true
+          permission_policy: { type: always_allow }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config:
+          enabled: true
+          permission_policy: { type: always_ask }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config:
+          enabled: true
+          permission_policy: { type: always_ask }
+    metadata:
+      department: clinical
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 2. Financial Operations (enterprise finance, not revenue cycle)
+  # -------------------------------------------------------------------------
+  - name: financial-operations
+    department: financial
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/financial.md
+    runbook_file: runbooks/financial.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: financial
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 3. Workforce Operations
+  # -------------------------------------------------------------------------
+  - name: workforce-operations
+    department: workforce
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/workforce.md
+    runbook_file: runbooks/workforce.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: workforce
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 4. Admissions Operations
+  # -------------------------------------------------------------------------
+  - name: admissions-operations
+    department: admissions
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/admissions.md
+    runbook_file: runbooks/admissions.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: admissions
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 5. Quality & Safety
+  # -------------------------------------------------------------------------
+  - name: quality-safety
+    department: quality
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/quality.md
+    runbook_file: runbooks/quality.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: quality
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 6. Legal & Compliance
+  # -------------------------------------------------------------------------
+  - name: legal-compliance
+    department: legal
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/legal.md
+    runbook_file: runbooks/legal.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: legal
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 7. Operations & Facilities
+  # -------------------------------------------------------------------------
+  - name: operations-facilities
+    department: operations
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/operations.md
+    runbook_file: runbooks/operations.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: operations
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 8. Strategic M&A (Opus)
+  # -------------------------------------------------------------------------
+  - name: strategic-ma
+    department: strategic
+    model: claude-opus-4-6
+    system_prompt_file: prompts/strategic.md
+    runbook_file: runbooks/strategic.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: strategic
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 9. Revenue Cycle (claims/denials/payment/managed-care/write-offs)
+  # -------------------------------------------------------------------------
+  - name: revenue-cycle
+    department: revenue
+    model: claude-sonnet-4-6
+    system_prompt_file: prompts/revenue.md
+    runbook_file: runbooks/revenue.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: revenue
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 10. Command Center (Opus, all-access executive orchestrator)
+  # -------------------------------------------------------------------------
+  - name: command-center
+    department: command-center
+    model: claude-opus-4-6
+    system_prompt_file: prompts/command-center.md
+    runbook_file: runbooks/command-center.md
+    environment: snf-env-staff-action
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+      - { name: snf-action, url: "${MCP_GATEWAY_BASE_URL}/snf-action" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+      - type: mcp_toolset
+        mcp_server_name: snf-action
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: command-center
+      platform: snf
+
+  # -------------------------------------------------------------------------
+  # 11. Executive Briefing (Opus, READ-ONLY — no snf-action)
+  # -------------------------------------------------------------------------
+  - name: executive-briefing
+    department: executive
+    model: claude-opus-4-6
+    system_prompt_file: prompts/executive.md
+    runbook_file: runbooks/executive.md
+    environment: snf-env-read-only
+    mcp_servers:
+      - { name: pcc, url: "${MCP_GATEWAY_BASE_URL}/pcc" }
+      - { name: workday, url: "${MCP_GATEWAY_BASE_URL}/workday" }
+      - { name: m365, url: "${MCP_GATEWAY_BASE_URL}/m365" }
+      - { name: regulatory, url: "${MCP_GATEWAY_BASE_URL}/regulatory" }
+      - { name: snf-hitl, url: "${MCP_GATEWAY_BASE_URL}/snf-hitl" }
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      - type: mcp_toolset
+        mcp_server_name: pcc
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: workday
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: m365
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: regulatory
+        default_config: { enabled: true }
+      - type: mcp_toolset
+        mcp_server_name: snf-hitl
+        default_config: { enabled: true, permission_policy: { type: always_ask } }
+    metadata:
+      department: executive
+      platform: snf
+      read_only: "true"
+
+  # -------------------------------------------------------------------------
+  # 12. Agent Builder (Opus, meta-agent, exec env)
+  # -------------------------------------------------------------------------
+  - name: agent-builder
+    department: agent-builder
+    model: claude-opus-4-6
+    system_prompt_file: prompts/agent-builder.md
+    runbook_file: runbooks/agent-builder.md
+    environment: snf-env-exec
+    mcp_servers: []
+    tools:
+      - type: agent_toolset_20260401
+        default_config: { enabled: true, permission_policy: { type: always_allow } }
+      # github__open_pr is provisioned as a custom tool by the session manager
+      # at launch time (Wave 5). Listed here as a TODO so provision-agents.ts
+      # can set up the agent metadata correctly.
+      # TODO(wave-7): wire github__open_pr custom tool into agent tools[].
+    metadata:
+      department: agent-builder
+      platform: snf
+      meta: "true"
