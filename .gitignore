@@ -9,5 +9,12 @@ logs/
 SNFKit/.build/
 SNF_macOS/.build/
 SNF_iOS/.build/
+SNF_iOS/build/
+SNF_macOS/build/
 *.xcodeproj
 xcuserdata/
+
+# Office lock files
+~$*.xlsx
+~$*.docx
+~$*.pptx
