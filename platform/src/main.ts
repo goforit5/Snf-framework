@@ -1,83 +1,30 @@
 /**
  * SNF Agentic Platform — Main Entry Point
  *
- * Wires together all platform subsystems:
- *   - PostgreSQL connection pool
- *   - Database migrations
- *   - Audit engine + chain verifier
- *   - Event bus + governance engine
- *   - Decision service
- *   - Task registry + scheduler + event processor
- *   - Agent registry + 30 agents (26 domain + 4 orchestration/meta)
- *   - Health monitor + metrics collector
- *   - Fastify API server
- *   - Graceful shutdown
+ * Wave 8 (SNF-97): the legacy custom agent runtime (BaseSnfAgent loop, in-process
+ * EventBus, AgentRegistry, GovernanceEngine, 30 agent subclasses, 56 task YAMLs)
+ * has been deleted. The platform now boots Anthropic's Claude Managed Agents
+ * orchestrator from `@snf/orchestrator` and routes cron ticks through the
+ * `TriggerRouter` into managed sessions.
+ *
+ * Boot sequence:
+ *   1. PostgreSQL connection pool
+ *   2. Database migrations (HITL schema)
+ *   3. AuditEngine + ChainVerifier (immutable hash-chained audit log — KEPT)
+ *   4. DecisionService (HITL queue — KEPT)
+ *   5. Orchestrator: SessionManager, TriggerRouter, EventRelay, HITLBridge, AuditMirror
+ *   6. TaskScheduler — every cron tick calls `triggerRouter.routeCronTick`
+ *   7. Fastify API server (with `triggerRouter` injected for /api/sessions/trigger)
+ *   8. Graceful shutdown
  */
 
 import { Pool } from 'pg';
 import { resolve } from 'node:path';
 import { execFileSync } from 'node:child_process';
-
-import type { AgentEvent, Decision, TaskDefinition } from '@snf/core';
+import pino from 'pino';
 
 // --- @snf/audit ---
-import { AuditEngine, ChainVerifier, createAgentLogger } from '@snf/audit';
-
-// --- @snf/agents ---
-import {
-  AgentRegistry,
-  EventBus,
-  GovernanceEngine,
-  AgentHealthMonitor,
-  MetricsCollector,
-} from '@snf/agents';
-
-import type { DecisionQueue, AgentDependencies } from '../packages/agents/src/base-agent.js';
-
-// --- @snf/agents — Domain agents (26) ────────────────────────────────────────
-
-// Clinical (7)
-import { ClinicalMonitorAgent } from '../packages/agents/src/domain/clinical/clinical-monitor-agent.js';
-import { PharmacyAgent } from '../packages/agents/src/domain/clinical/pharmacy-agent.js';
-import { InfectionControlAgent } from '../packages/agents/src/domain/clinical/infection-control-agent.js';
-import { TherapyAgent } from '../packages/agents/src/domain/clinical/therapy-agent.js';
-import { DietaryAgent } from '../packages/agents/src/domain/clinical/dietary-agent.js';
-import { MedicalRecordsAgent } from '../packages/agents/src/domain/clinical/medical-records-agent.js';
-import { SocialServicesAgent } from '../packages/agents/src/domain/clinical/social-services-agent.js';
-
-// Financial (6)
-import { BillingAgent } from '../packages/agents/src/domain/financial/billing-agent.js';
-import { ArAgent } from '../packages/agents/src/domain/financial/ar-agent.js';
-import { ApAgent } from '../packages/agents/src/domain/financial/ap-agent.js';
-import { PayrollAgent } from '../packages/agents/src/domain/financial/payroll-agent.js';
-import { TreasuryAgent } from '../packages/agents/src/domain/financial/treasury-agent.js';
-import { BudgetAgent } from '../packages/agents/src/domain/financial/budget-agent.js';
-
-// Workforce (5)
-import { RecruitingAgent } from '../packages/agents/src/domain/workforce/recruiting-agent.js';
-import { SchedulingAgent } from '../packages/agents/src/domain/workforce/scheduling-agent.js';
-import { CredentialingAgent } from '../packages/agents/src/domain/workforce/credentialing-agent.js';
-import { TrainingAgent } from '../packages/agents/src/domain/workforce/training-agent.js';
-import { RetentionAgent } from '../packages/agents/src/domain/workforce/retention-agent.js';
-
-// Operations (4)
-import { SupplyChainAgent } from '../packages/agents/src/domain/operations/supply-chain-agent.js';
-import { MaintenanceAgent } from '../packages/agents/src/domain/operations/maintenance-agent.js';
-import { CensusAgent } from '../packages/agents/src/domain/operations/census-agent.js';
-import { LifeSafetyAgent } from '../packages/agents/src/domain/operations/life-safety-agent.js';
-
-// Governance (4)
-import { QualityAgent } from '../packages/agents/src/domain/governance/quality-agent.js';
-import { RiskAgent } from '../packages/agents/src/domain/governance/risk-agent.js';
-import { ComplianceAgent } from '../packages/agents/src/domain/governance/compliance-agent.js';
-import { LegalAgent } from '../packages/agents/src/domain/governance/legal-agent.js';
-
-// --- @snf/agents — Orchestration + Meta agents (4) ──────────────────────────
-
-import { ExceptionRouterAgent } from '../packages/agents/src/domain/orchestration/exception-router-agent.js';
-import { ExecutiveBriefingAgent } from '../packages/agents/src/domain/orchestration/executive-briefing-agent.js';
-import { AuditAgent } from '../packages/agents/src/domain/orchestration/audit-agent.js';
-import { PlatformAgent } from '../packages/agents/src/domain/orchestration/platform-agent.js';
+import { AuditEngine, ChainVerifier } from '@snf/audit';
 
 // --- @snf/hitl ---
 import { DecisionService } from '../packages/hitl/src/decisions/index.js';
@@ -86,10 +33,11 @@ import { DecisionService } from '../packages/hitl/src/decisions/index.js';
 import {
   TaskRegistry,
   TaskScheduler,
-  EventProcessor,
   RunManager,
 } from '@snf/tasks';
-import type { RunResult } from '@snf/tasks';
+
+// --- @snf/orchestrator ---
+import { bootOrchestrator } from '@snf/orchestrator';
 
 // --- @snf/api ---
 import { buildServer } from '@snf/api';
@@ -104,15 +52,11 @@ const config = {
   host: process.env.HOST ?? '0.0.0.0',
   logLevel: process.env.LOG_LEVEL ?? 'info',
   anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-
-  // Task definitions directory (YAML files)
-  taskDefinitionsDir: resolve(__dirname, '..', 'task-definitions'),
-
-  // Health monitor
-  healthCheckIntervalMs: parseInt(
-    process.env.HEALTH_CHECK_INTERVAL_MS ?? '30000',
-    10,
-  ),
+  runbookPAT: process.env.GITHUB_RUNBOOK_PAT,
+  runbookRepoUrl: process.env.RUNBOOK_REPO_URL,
+  mcpGatewayBase: process.env.MCP_GATEWAY_BASE_URL ?? 'https://mcp.ensign-snf.com',
+  defaultTenant: process.env.DEFAULT_TENANT ?? 'snf-ensign-prod',
+  platformRoot: process.env.PLATFORM_ROOT ?? resolve(__dirname, '..'),
 
   // Chain verifier
   chainVerifyIntervalMin: parseInt(
@@ -125,6 +69,14 @@ const config = {
   ),
 };
 
+function requireEnv(name: string, value: string | undefined): string {
+  if (!value) {
+    console.error(`FATAL: ${name} environment variable is required.`);
+    process.exit(1);
+  }
+  return value;
+}
+
 // ---------------------------------------------------------------------------
 // Startup
 // ---------------------------------------------------------------------------
@@ -133,26 +85,24 @@ async function main(): Promise<void> {
   const startTime = Date.now();
 
   console.log('='.repeat(60));
-  console.log('SNF Agentic Platform — Starting');
+  console.log('SNF Agentic Platform — Starting (Managed Agents runtime)');
   console.log(`  Environment: ${process.env.NODE_ENV ?? 'development'}`);
   console.log(`  Timestamp:   ${new Date().toISOString()}`);
   console.log('='.repeat(60));
 
+  const logger = pino({ level: config.logLevel });
+
   // ── 1. Database Pool ────────────────────────────────────────────────────
 
-  if (!config.databaseUrl) {
-    console.error('FATAL: DATABASE_URL environment variable is required.');
-    process.exit(1);
-  }
+  const databaseUrl = requireEnv('DATABASE_URL', config.databaseUrl);
 
   const pool = new Pool({
-    connectionString: config.databaseUrl,
+    connectionString: databaseUrl,
     max: 20,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
   });
 
-  // Verify connectivity
   try {
     const client = await pool.connect();
     const result = await client.query('SELECT NOW() AS now');
@@ -172,7 +122,7 @@ async function main(): Promise<void> {
     );
     execFileSync('node', [migrationScript], {
       stdio: 'inherit',
-      env: { ...process.env, DATABASE_URL: config.databaseUrl },
+      env: { ...process.env, DATABASE_URL: databaseUrl },
     });
     console.log('[migrations] Migrations complete.');
   } catch (err) {
@@ -184,222 +134,64 @@ async function main(): Promise<void> {
 
   const auditEngine = new AuditEngine(pool);
   const chainVerifier = new ChainVerifier(pool);
+  console.log('[audit] AuditEngine + ChainVerifier initialized.');
 
-  console.log('[audit] AuditEngine initialized.');
-  console.log('[audit] ChainVerifier initialized.');
-
-  // ── 4. Event Bus ────────────────────────────────────────────────────────
-
-  const eventBus = new EventBus({ maxLogSize: 50_000 });
-  console.log('[events] EventBus initialized.');
-
-  // ── 5. Governance Engine ────────────────────────────────────────────────
-
-  const governanceEngine = new GovernanceEngine();
-  console.log('[governance] GovernanceEngine initialized.');
-
-  // ── 6. Decision Service ─────────────────────────────────────────────────
+  // ── 4. Decision Service ─────────────────────────────────────────────────
 
   const decisionService = new DecisionService({
     pool,
-    onStateChange: async (event) => {
-      console.log(
-        `[decisions] Decision ${event.decisionId} transitioned to ${event.newStatus} by ${event.actor}`,
+    onStateChange: (event) => {
+      logger.info(
+        { decisionId: event.decisionId, status: event.newStatus, userId: event.userId },
+        'decision.state.changed',
       );
     },
   });
   console.log('[decisions] DecisionService initialized.');
 
-  // ── 7. Audit Logger (shared dependency for agents) ──────────────────────
+  // ── 5. Orchestrator (Managed Agents) ────────────────────────────────────
 
-  const auditLogger = createAgentLogger({
-    engine: auditEngine,
-  });
-
-  // ── 8. Decision Queue adapter ─────────────────────────────────────────
-  //
-  // DecisionService.submit takes a partial Decision (Omit<Decision, ...>)
-  // and returns Promise<Decision>. The DecisionQueue interface expected by
-  // BaseSnfAgent takes a full Decision and returns Promise<void>.
-  // This adapter bridges the two signatures.
-
-  const decisionQueue: DecisionQueue = {
-    async submit(decision: Decision): Promise<void> {
-      await decisionService.submit(decision);
+  const orchestrator = await bootOrchestrator({
+    db: pool,
+    decisionService,
+    auditEngine,
+    logger,
+    config: {
+      anthropicApiKey: requireEnv('ANTHROPIC_API_KEY', config.anthropicApiKey),
+      runbookPAT: requireEnv('GITHUB_RUNBOOK_PAT', config.runbookPAT),
+      runbookRepoUrl: config.runbookRepoUrl,
+      platformRoot: config.platformRoot,
+      defaultTenant: config.defaultTenant,
+      mcpGatewayBase: config.mcpGatewayBase,
     },
-  };
+  });
+  console.log('[orchestrator] SessionManager + TriggerRouter + EventRelay + HITLBridge + AuditMirror booted.');
 
-  // ── 9. Agent Dependencies (shared across all agents) ────────────────────
-
-  const agentDeps: AgentDependencies = {
-    auditLogger,
-    decisionQueue,
-    eventBus,
-    governanceEngine,
-    anthropicApiKey: config.anthropicApiKey,
-  };
-
-  // ── 10. Agent Registry — Register all 30 agents ────────────────────────
-
-  const agentRegistry = new AgentRegistry();
-
-  const agents = [
-    // ── Clinical domain (7 agents) ──
-    new ClinicalMonitorAgent(agentDeps),
-    new PharmacyAgent(agentDeps),
-    new InfectionControlAgent(agentDeps),
-    new TherapyAgent(agentDeps),
-    new DietaryAgent(agentDeps),
-    new MedicalRecordsAgent(agentDeps),
-    new SocialServicesAgent(agentDeps),
-
-    // ── Financial domain (6 agents) ──
-    new BillingAgent(agentDeps),
-    new ArAgent(agentDeps),
-    new ApAgent(agentDeps),
-    new PayrollAgent(agentDeps),
-    new TreasuryAgent(agentDeps),
-    new BudgetAgent(agentDeps),
-
-    // ── Workforce domain (5 agents) ──
-    new RecruitingAgent(agentDeps),
-    new SchedulingAgent(agentDeps),
-    new CredentialingAgent(agentDeps),
-    new TrainingAgent(agentDeps),
-    new RetentionAgent(agentDeps),
-
-    // ── Operations domain (4 agents) ──
-    new SupplyChainAgent(agentDeps),
-    new MaintenanceAgent(agentDeps),
-    new CensusAgent(agentDeps),
-    new LifeSafetyAgent(agentDeps),
-
-    // ── Governance domain (4 agents) ──
-    new QualityAgent(agentDeps),
-    new RiskAgent(agentDeps),
-    new ComplianceAgent(agentDeps),
-    new LegalAgent(agentDeps),
-
-    // ── Orchestration + Meta (4 agents) ──
-    new ExceptionRouterAgent(agentDeps),
-    new ExecutiveBriefingAgent(agentDeps),
-    new AuditAgent(agentDeps),
-    new PlatformAgent(agentDeps),
-  ];
-
-  for (const agent of agents) {
-    agentRegistry.register(agent);
-    // Start in probation mode — all actions require human approval
-    agentRegistry.setProbation(agent.definition.id);
-  }
-
-  console.log(`[agents] Registered ${agents.length} agents (26 domain + 4 orchestration/meta, all in probation mode).`);
-
-  // ── 11. Task Registry — Load YAML task definitions ──────────────────────
+  // ── 6. Task Scheduler — cron ticks route through TriggerRouter ─────────
 
   const taskRegistry = TaskRegistry.getInstance();
-  const loadResult = await taskRegistry.loadFromDirectory(config.taskDefinitionsDir);
-
-  if (loadResult.errors.length > 0) {
-    console.warn(`[tasks] Loaded ${loadResult.loaded} tasks with ${loadResult.errors.length} errors:`);
-    for (const err of loadResult.errors) {
-      console.warn(`  ${err.file}: ${err.errors.join(', ')}`);
-    }
-  } else {
-    console.log(`[tasks] Loaded ${loadResult.loaded} task definitions from ${config.taskDefinitionsDir}`);
-  }
-
-  // ── 12. Run Manager ────────────────────────────────────────────────────
-
   const runManager = new RunManager({ maxCompletedHistory: 50_000 });
-
-  // ── 13. Task Executor (bridges task scheduler -> agent execution) ───────
-
-  const taskExecutor = async (taskDef: TaskDefinition, runId: string): Promise<RunResult> => {
-    const agent = agentRegistry.get(taskDef.agentId);
-    const agentRun = await agent.run({
-      traceId: runId,
-      taskDefinitionId: taskDef.id,
-      facilityId: (taskDef.trigger.config?.facilityId as string) ?? '*',
-      channel: 'schedule',
-      source: 'task-scheduler',
-      payload: taskDef.trigger.config ?? {},
-    });
-    return {
-      output: agentRun as unknown as Record<string, unknown>,
-    };
-  };
-
-  // ── 14. Task Scheduler (cron-based recurring tasks) ─────────────────────
 
   const taskScheduler = new TaskScheduler({
     registry: taskRegistry,
     runManager,
-    executor: taskExecutor,
+    sessionRouter: orchestrator.triggerRouter,
     tickIntervalMs: 30_000,
     defaultRetries: 2,
     onError: (taskId, err) => {
-      console.error(`[scheduler] Task ${taskId} failed: ${err.message}`);
+      logger.error({ taskId, err: err.message }, 'scheduler.task.failed');
     },
   });
-
   taskScheduler.start();
   const schedule = taskScheduler.getSchedule();
   console.log(`[scheduler] TaskScheduler started — ${schedule.length} cron jobs scheduled.`);
 
-  // ── 15. Event Processor (event-triggered tasks) ─────────────────────────
+  // Note: webhook events arrive via the API (`POST /api/sessions/trigger`)
+  // which routes through `triggerRouter.routeWebhook`. The legacy
+  // EventProcessor (which subscribed to an in-process EventBus) was deleted
+  // in Wave 8 alongside the EventBus itself.
 
-  const eventProcessor = new EventProcessor({
-    registry: taskRegistry,
-    eventBus,
-    runManager,
-    executor: async (taskDef: TaskDefinition, runId: string, triggerEvent: AgentEvent): Promise<RunResult> => {
-      const agent = agentRegistry.get(taskDef.agentId);
-      const agentRun = await agent.run({
-        traceId: runId,
-        taskDefinitionId: taskDef.id,
-        facilityId: triggerEvent.facilityId ?? '*',
-        channel: 'event',
-        source: `event:${triggerEvent.eventType}`,
-        payload: triggerEvent.payload ?? {},
-      });
-      return {
-        output: agentRun as unknown as Record<string, unknown>,
-      };
-    },
-    onError: (taskId, _event, err) => {
-      console.error(`[events] Event-triggered task ${taskId} failed: ${err.message}`);
-    },
-  });
-
-  eventProcessor.start();
-  console.log('[events] EventProcessor started — listening for event-triggered tasks.');
-
-  // ── 16. Metrics Collector + Health Monitor ──────────────────────────────
-
-  const metricsCollector = new MetricsCollector({
-    retentionMs: 24 * 60 * 60 * 1000, // 24 hours
-  });
-
-  const healthMonitor = new AgentHealthMonitor(
-    agentRegistry,
-    eventBus,
-    metricsCollector,
-    {
-      degradedErrorRate: 0.05,
-      unhealthyErrorRate: 0.15,
-      degradedResponseTimeMs: 15_000,
-      unhealthyResponseTimeMs: 30_000,
-      deadThresholdMs: 60 * 60 * 1000, // 1 hour
-    },
-  );
-
-  healthMonitor.startMonitoring(config.healthCheckIntervalMs);
-  console.log(
-    `[health] AgentHealthMonitor started — checking every ${config.healthCheckIntervalMs / 1000}s.`,
-  );
-
-  // ── 17. Chain Verifier — Periodic audit trail integrity checks ──────────
+  // ── 7. Chain Verifier — Periodic audit trail integrity checks ──────────
 
   chainVerifier.startPeriodicVerification(
     config.chainVerifyIntervalMin,
@@ -407,26 +199,28 @@ async function main(): Promise<void> {
   );
 
   chainVerifier.on('chain:break', (breaks) => {
-    console.error(`[CRITICAL] Audit trail chain break detected: ${breaks.length} break(s)`, breaks);
+    logger.error({ breaks }, 'audit.chain.break');
   });
-
   chainVerifier.on('chain:verified', (report) => {
-    console.log(
-      `[audit] Chain verification passed — ${report.entriesChecked} entries verified in ${report.duration}ms.`,
+    logger.info(
+      { entries: report.entriesChecked, durationMs: report.duration },
+      'audit.chain.verified',
     );
   });
-
   chainVerifier.on('chain:error', (error) => {
-    console.error('[audit] Chain verification error:', error.message);
+    logger.error({ err: error.message }, 'audit.chain.error');
   });
 
   console.log(
-    `[audit] ChainVerifier started — verifying every ${config.chainVerifyIntervalMin}min (${config.chainVerifyLookbackHr}h lookback).`,
+    `[audit] ChainVerifier started — every ${config.chainVerifyIntervalMin}min (${config.chainVerifyLookbackHr}h lookback).`,
   );
 
-  // ── 18. Fastify API Server ──────────────────────────────────────────────
+  // ── 8. Fastify API Server ──────────────────────────────────────────────
 
-  const server = await buildServer({ logger: true });
+  const server = await buildServer({
+    logger: true,
+    triggerRouter: orchestrator.triggerRouter,
+  });
 
   try {
     await server.listen({ port: config.port, host: config.host });
@@ -436,42 +230,23 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  // ── 19. Graceful Shutdown ───────────────────────────────────────────────
+  // ── 9. Graceful Shutdown ───────────────────────────────────────────────
 
   const shutdown = async (signal: string) => {
     console.log(`\n[shutdown] Received ${signal} — shutting down gracefully...`);
 
-    // 1. Stop accepting new requests
     console.log('[shutdown] Closing API server...');
     await server.close();
 
-    // 2. Stop scheduling new tasks
     console.log('[shutdown] Stopping TaskScheduler...');
     taskScheduler.stop();
 
-    // 3. Stop event processor
-    console.log('[shutdown] Stopping EventProcessor...');
-    eventProcessor.stop();
-
-    // 4. Stop health monitor
-    console.log('[shutdown] Stopping AgentHealthMonitor...');
-    healthMonitor.stopMonitoring();
-
-    // 5. Stop chain verifier
     console.log('[shutdown] Stopping ChainVerifier...');
     chainVerifier.stopPeriodicVerification();
 
-    // 6. Stop all agents
-    console.log('[shutdown] Stopping all agents...');
-    for (const agentId of agentRegistry.listAgentIds()) {
-      try {
-        agentRegistry.stop(agentId);
-      } catch {
-        // Agent may already be stopped
-      }
-    }
+    console.log('[shutdown] Shutting down orchestrator...');
+    await orchestrator.shutdown();
 
-    // 7. Close database pool
     console.log('[shutdown] Closing database pool...');
     await pool.end();
 
@@ -483,28 +258,20 @@ async function main(): Promise<void> {
   process.on('SIGINT', () => void shutdown('SIGINT'));
   process.on('SIGTERM', () => void shutdown('SIGTERM'));
 
-  // ── 20. Startup Summary ─────────────────────────────────────────────────
+  // ── 10. Startup Summary ────────────────────────────────────────────────
 
   const elapsedMs = Date.now() - startTime;
-  const statusSummary = agentRegistry.statusSummary();
 
   console.log('');
   console.log('='.repeat(60));
   console.log('SNF Agentic Platform — Running');
   console.log('='.repeat(60));
+  console.log(`  Runtime:          Claude Managed Agents (orchestrator)`);
   console.log(`  API:              http://${config.host}:${config.port}`);
-  console.log(`  Agents:           ${agents.length} registered`);
-  console.log(`    Domain:         26`);
-  console.log(`    Orchestration:  3`);
-  console.log(`    Meta:           1`);
-  console.log(`    Active:         ${statusSummary.active}`);
-  console.log(`    Probation:      ${statusSummary.probation}`);
-  console.log(`    Paused:         ${statusSummary.paused}`);
-  console.log(`    Disabled:       ${statusSummary.disabled}`);
-  console.log(`  Tasks:            ${taskRegistry.size} definitions loaded`);
   console.log(`  Scheduled Jobs:   ${schedule.length}`);
-  console.log(`  Health Monitor:   every ${config.healthCheckIntervalMs / 1000}s`);
   console.log(`  Chain Verifier:   every ${config.chainVerifyIntervalMin}min`);
+  console.log(`  MCP Gateway:      ${config.mcpGatewayBase}`);
+  console.log(`  Default Tenant:   ${config.defaultTenant}`);
   console.log(`  Startup Time:     ${elapsedMs}ms`);
   console.log('='.repeat(60));
   console.log('');

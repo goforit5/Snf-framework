@@ -4,19 +4,15 @@
  * Provides MCP-compliant tools for regulatory compliance and financial data.
  * Agents use these tools to access CMS quality ratings, survey/inspection results,
  * OIG exclusion screening, SAM.gov debarment checks, and bank transaction feeds.
+ *
+ * Wave 8 (SNF-97): legacy `server.ts` and `oauth.ts` deleted. The new
+ * gateway in `connectors/src/gateway/` mounts a connector instance via
+ * reflection and Vaults supply API keys at request time.
  */
-
-// Server
-export { RegulatoryMCPServer, createRegulatoryServer, RegulatoryRequestError } from './server.js';
-export type { MCPServerConfig, MCPRequest, MCPResponse, MCPError, RegulatoryApiClient, RegulatorySource, RegulatoryErrorCode } from './server.js';
 
 // Tools
 export { regulatoryTools } from './tools.js';
 export type { MCPToolDefinition } from './tools.js';
-
-// Auth (API key, not OAuth)
-export { getApiConfig, getApiKey, getBaseUrl, invalidateConfig } from './oauth.js';
-export type { RegulatoryApiKeyConfig } from './oauth.js';
 
 // Types
 export type {

@@ -8,7 +8,6 @@
     "@snf/core": "*",
     "@snf/hitl": "*",
     "@snf/audit": "*",
-    "@snf/agents": "*",
     "@snf/tasks": "*",
     "@snf/orchestrator": "*",
     "fastify": "^5.2.0",

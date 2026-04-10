@@ -4,19 +4,15 @@
  * Provides MCP-compliant tools for reading HR data from Workday.
  * Agents use these tools to access employee records, payroll, benefits,
  * timecards, org charts, PTO, and staffing positions across 330+ facilities.
+ *
+ * Wave 8 (SNF-97): legacy `server.ts` and `oauth.ts` deleted. The new
+ * gateway in `connectors/src/gateway/` mounts a connector instance via
+ * reflection and Vaults supply OAuth tokens at request time.
  */
-
-// Server
-export { WorkdayMCPServer, createWorkdayServer, WorkdayRequestError } from './server.js';
-export type { MCPServerConfig, MCPRequest, MCPResponse, MCPError, WorkdayApiClient, WorkdayErrorCode } from './server.js';
 
 // Tools
 export { workdayTools } from './tools.js';
 export type { MCPToolDefinition } from './tools.js';
-
-// OAuth
-export { getAccessToken, getBaseUrl, invalidateToken } from './oauth.js';
-export type { WorkdayTokenResponse } from './oauth.js';
 
 // Types
 export type {

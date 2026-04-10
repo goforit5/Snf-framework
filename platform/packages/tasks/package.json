@@ -6,7 +6,6 @@
   "types": "dist/index.d.ts",
   "dependencies": {
     "@snf/core": "*",
-    "@snf/agents": "*",
     "yaml": "^2.4.0",
     "ajv": "^8.17.0"
   },

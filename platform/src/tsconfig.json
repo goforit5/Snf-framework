@@ -9,10 +9,10 @@
   "include": ["."],
   "references": [
     { "path": "../packages/core" },
-    { "path": "../packages/agents" },
     { "path": "../packages/tasks" },
     { "path": "../packages/hitl" },
     { "path": "../packages/audit" },
-    { "path": "../packages/api" }
+    { "path": "../packages/api" },
+    { "path": "../packages/orchestrator" }
   ]
 }

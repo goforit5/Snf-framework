@@ -1,7 +1,6 @@
 import type { TaskDefinition } from '@snf/core';
 import { TaskRegistry } from './registry.js';
 import { RunManager } from './run-manager.js';
-import type { RunResult } from './run-manager.js';
 
 /**
  * ScheduledEntry — internal record for a scheduled cron job.
@@ -25,24 +24,14 @@ export interface ScheduleInfo {
 }
 
 /**
- * TaskExecutor — callback to actually run a task. Injected by the platform
- * so the scheduler doesn't depend on agent execution internals.
- */
-export type TaskExecutor = (
-  taskDef: TaskDefinition,
-  runId: string,
-) => Promise<RunResult>;
-
-/**
  * SessionRouterLike — minimal structural interface the scheduler uses to
  * route cron ticks to the orchestrator's TriggerRouter. Declared here so
  * @snf/tasks does not take a runtime dependency on @snf/orchestrator
  * (which would be circular).
  *
- * Wave 5 (SNF-94) surgical rewire: when `sessionRouter` is injected into
- * the scheduler, `executeTask` routes each cron tick through it instead
- * of calling the legacy `executor` callback. The legacy path is kept for
- * backward compat until Wave 8 deletes it.
+ * Wave 8 (SNF-97): the legacy in-process `TaskExecutor` callback path was
+ * removed. The scheduler now hands every cron tick to the orchestrator —
+ * `sessionRouter` is required, not optional.
  */
 export interface SessionRouterLike {
   routeCronTick(trigger: {
@@ -71,8 +60,7 @@ export class TaskScheduler {
 
   private registry: TaskRegistry;
   private runManager: RunManager;
-  private executor: TaskExecutor;
-  private sessionRouter: SessionRouterLike | null;
+  private sessionRouter: SessionRouterLike;
   private tickIntervalMs: number;
   private defaultRetries: number;
   private onError: (taskId: string, error: Error) => void;
@@ -80,21 +68,19 @@ export class TaskScheduler {
   constructor(options: {
     registry: TaskRegistry;
     runManager: RunManager;
-    executor: TaskExecutor;
     /**
-     * Wave 5 (SNF-94): optional orchestrator session router. When set,
-     * `executeTask` routes cron ticks through `routeCronTick` instead of
-     * calling the legacy `executor` callback.
+     * Wave 8 (SNF-97): orchestrator session router. Every cron tick is
+     * routed through `routeCronTick` which launches a Claude Managed
+     * Agents session via the orchestrator's TriggerRouter.
      */
-    sessionRouter?: SessionRouterLike;
+    sessionRouter: SessionRouterLike;
     tickIntervalMs?: number;
     defaultRetries?: number;
     onError?: (taskId: string, error: Error) => void;
   }) {
     this.registry = options.registry;
     this.runManager = options.runManager;
-    this.executor = options.executor;
-    this.sessionRouter = options.sessionRouter ?? null;
+    this.sessionRouter = options.sessionRouter;
     this.tickIntervalMs = options.tickIntervalMs ?? 30_000;
     this.defaultRetries = options.defaultRetries ?? 2;
     this.onError =
@@ -258,24 +244,19 @@ export class TaskScheduler {
       );
 
       try {
-        let result: RunResult;
-        if (this.sessionRouter) {
-          // Wave 5 path: orchestrator TriggerRouter launches a Managed
-          // Agents session. The RunManager still tracks the attempt for
-          // observability; the actual agent execution is handed off.
-          await this.sessionRouter.routeCronTick({
-            taskId: taskDef.id,
-            taskName: taskDef.name,
-            department: taskDef.agentId,
-            payload: { runId: run.runId },
-          });
-          result = {
-            output: { routedVia: 'orchestrator' },
-          };
-        } else {
-          result = await this.executor(taskDef, run.runId);
-        }
-        this.runManager.completeRun(run.runId, result);
+        // Wave 8 (SNF-97): orchestrator TriggerRouter launches a Claude
+        // Managed Agents session. RunManager still tracks each tick for
+        // observability; actual agent execution happens out-of-process
+        // inside the managed session.
+        await this.sessionRouter.routeCronTick({
+          taskId: taskDef.id,
+          taskName: taskDef.name,
+          department: taskDef.agentId,
+          payload: { runId: run.runId },
+        });
+        this.runManager.completeRun(run.runId, {
+          output: { routedVia: 'orchestrator' },
+        });
         lastError = null;
         break;
       } catch (err) {

@@ -4,19 +4,15 @@
  * Provides MCP-compliant tools for reading and writing M365 data via Microsoft Graph.
  * Agents use these tools to access Outlook email, calendar, SharePoint documents,
  * and Teams messages across the Ensign enterprise.
+ *
+ * Wave 8 (SNF-97): legacy `server.ts` and `oauth.ts` deleted. The new
+ * gateway in `connectors/src/gateway/` mounts a connector instance via
+ * reflection and Vaults supply OAuth tokens at request time.
  */
-
-// Server
-export { M365MCPServer, createM365Server, M365RequestError } from './server.js';
-export type { MCPServerConfig, MCPRequest, MCPResponse, MCPError, GraphApiClient, M365ErrorCode } from './server.js';
 
 // Tools
 export { m365Tools } from './tools.js';
 export type { MCPToolDefinition } from './tools.js';
-
-// OAuth
-export { getAccessToken, getGraphBaseUrl, invalidateToken } from './oauth.js';
-export type { AzureADTokenResponse } from './oauth.js';
 
 // Types
 export type {
