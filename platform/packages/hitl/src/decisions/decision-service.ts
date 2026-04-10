@@ -55,9 +55,38 @@ export type StateChangeEvent = {
 
 export type OnStateChange = (event: StateChangeEvent) => void;
 
+/**
+ * Resolution callback invoked after a decision has been successfully
+ * persisted as approved / overridden / escalated / deferred. Wired by the
+ * orchestrator boot to `HITLBridge.resolveDecision` so Claude Managed
+ * Agents sessions that are paused on a `snf_hitl__request_decision` tool
+ * call can be resumed with `user.tool_confirmation` / `user.custom_tool_result`.
+ *
+ * Errors thrown by the hook are caught by DecisionService and logged; they
+ * never fail the underlying DB transition.
+ */
+export type ResolveHook = (
+  decisionId: string,
+  resolution: ResolveHookResolution,
+) => void | Promise<void>;
+
+export type ResolveHookResolution =
+  | { kind: 'approve'; userId: string; note?: string | null }
+  | {
+      kind: 'override';
+      userId: string;
+      overrideValue: string;
+      reason: string;
+      correctedPayload?: Record<string, unknown>;
+    }
+  | { kind: 'deny'; userId: string; reason: string }
+  | { kind: 'escalate'; userId: string; toUserId?: string; note?: string | null }
+  | { kind: 'defer'; userId: string; until?: string; note?: string | null };
+
 export interface DecisionServiceConfig {
   pool: Pool;
   onStateChange?: OnStateChange;
+  resolveHook?: ResolveHook;
 }
 
 // ---------------------------------------------------------------------------
@@ -106,10 +135,21 @@ function rowToDecision(row: Record<string, unknown>): Decision {
 export class DecisionService {
   private pool: Pool;
   private onStateChange: OnStateChange | null;
+  private resolveHook: ResolveHook | null;
 
   constructor(config: DecisionServiceConfig) {
     this.pool = config.pool;
     this.onStateChange = config.onStateChange ?? null;
+    this.resolveHook = config.resolveHook ?? null;
+  }
+
+  /**
+   * Install (or replace) the resolve hook after construction. Used by
+   * orchestrator boot to wire DecisionService → HITLBridge without a
+   * circular constructor dependency.
+   */
+  setResolveHook(hook: ResolveHook | null): void {
+    this.resolveHook = hook;
   }
 
   // -------------------------------------------------------------------------
@@ -215,6 +255,12 @@ export class DecisionService {
         timestamp: updated.resolvedAt!,
       });
 
+      await this.invokeResolveHook(decisionId, {
+        kind: 'approve',
+        userId,
+        note: note ?? null,
+      });
+
       return updated;
     });
   }
@@ -253,6 +299,13 @@ export class DecisionService {
         timestamp: updated.resolvedAt!,
       });
 
+      await this.invokeResolveHook(decisionId, {
+        kind: 'override',
+        userId,
+        overrideValue,
+        reason,
+      });
+
       return updated;
     });
   }
@@ -286,6 +339,12 @@ export class DecisionService {
         timestamp: updated.resolvedAt!,
       });
 
+      await this.invokeResolveHook(decisionId, {
+        kind: 'escalate',
+        userId,
+        note: note ?? null,
+      });
+
       return updated;
     });
   }
@@ -317,6 +376,12 @@ export class DecisionService {
         newStatus: 'deferred',
         userId,
         timestamp: updated.resolvedAt!,
+      });
+
+      await this.invokeResolveHook(decisionId, {
+        kind: 'defer',
+        userId,
+        note: note ?? null,
       });
 
       return updated;
@@ -579,6 +644,19 @@ export class DecisionService {
         // Never let callback errors break the service
         console.error('[DecisionService] onStateChange callback error:', err);
       }
+    }
+  }
+
+  private async invokeResolveHook(
+    decisionId: string,
+    resolution: ResolveHookResolution,
+  ): Promise<void> {
+    if (!this.resolveHook) return;
+    try {
+      await this.resolveHook(decisionId, resolution);
+    } catch (err) {
+      // Never let hook errors break the DB transition — log and swallow.
+      console.error('[DecisionService] resolveHook error:', err);
     }
   }
 }

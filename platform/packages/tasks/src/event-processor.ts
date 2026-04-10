@@ -30,6 +30,24 @@ export type EventTaskExecutor = (
 ) => Promise<RunResult>;
 
 /**
+ * SessionRouterLike — minimal structural interface for Wave 5 (SNF-94)
+ * surgical rewire. When injected, the processor routes webhook events
+ * through the orchestrator's TriggerRouter instead of the legacy executor.
+ * Declared structurally so @snf/tasks stays free of a runtime dependency
+ * on @snf/orchestrator.
+ */
+export interface SessionRouterLike {
+  routeWebhook(event: {
+    eventType: string;
+    taskId?: string;
+    taskName?: string;
+    department?: string;
+    facilityId?: string;
+    payload?: Record<string, unknown>;
+  }): Promise<unknown>;
+}
+
+/**
  * EventProcessor — subscribes to the event bus and triggers tasks
  * based on event-triggered task definitions.
  *
@@ -44,6 +62,7 @@ export class EventProcessor {
   private eventBus: EventBus;
   private runManager: RunManager;
   private executor: EventTaskExecutor;
+  private sessionRouter: SessionRouterLike | null;
 
   /** Map of eventType -> taskIds that trigger on that event */
   private eventTaskMap: Map<string, string[]> = new Map();
@@ -67,6 +86,12 @@ export class EventProcessor {
     eventBus: EventBus;
     runManager: RunManager;
     executor: EventTaskExecutor;
+    /**
+     * Wave 5 (SNF-94): optional orchestrator session router. When set,
+     * webhook events are routed through `routeWebhook` instead of the
+     * legacy `executor` callback.
+     */
+    sessionRouter?: SessionRouterLike;
     maxDeadLetters?: number;
     maxRetries?: number;
     onError?: (taskId: string, event: AgentEvent, error: Error) => void;
@@ -75,6 +100,7 @@ export class EventProcessor {
     this.eventBus = options.eventBus;
     this.runManager = options.runManager;
     this.executor = options.executor;
+    this.sessionRouter = options.sessionRouter ?? null;
     this.maxDeadLetters = options.maxDeadLetters ?? 1000;
     this.maxRetries = options.maxRetries ?? 3;
     this.onError =
@@ -302,7 +328,22 @@ export class EventProcessor {
     );
 
     try {
-      const result = await this.executor(taskDef, run.runId, event);
+      let result: RunResult;
+      if (this.sessionRouter) {
+        // Wave 5 path: orchestrator TriggerRouter launches a Managed
+        // Agents session. Legacy `executor` is bypassed.
+        await this.sessionRouter.routeWebhook({
+          eventType: event.eventType,
+          taskId: taskDef.id,
+          taskName: taskDef.name,
+          department: taskDef.agentId,
+          facilityId: event.facilityId,
+          payload: { runId: run.runId, event },
+        });
+        result = { output: { routedVia: 'orchestrator' } };
+      } else {
+        result = await this.executor(taskDef, run.runId, event);
+      }
       this.runManager.completeRun(run.runId, result);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));

@@ -34,6 +34,26 @@ export type TaskExecutor = (
 ) => Promise<RunResult>;
 
 /**
+ * SessionRouterLike — minimal structural interface the scheduler uses to
+ * route cron ticks to the orchestrator's TriggerRouter. Declared here so
+ * @snf/tasks does not take a runtime dependency on @snf/orchestrator
+ * (which would be circular).
+ *
+ * Wave 5 (SNF-94) surgical rewire: when `sessionRouter` is injected into
+ * the scheduler, `executeTask` routes each cron tick through it instead
+ * of calling the legacy `executor` callback. The legacy path is kept for
+ * backward compat until Wave 8 deletes it.
+ */
+export interface SessionRouterLike {
+  routeCronTick(trigger: {
+    taskId: string;
+    taskName: string;
+    department?: string;
+    payload?: Record<string, unknown>;
+  }): Promise<unknown>;
+}
+
+/**
  * TaskScheduler — cron-based scheduler for recurring task definitions.
  *
  * Loads all 'schedule' trigger tasks from TaskRegistry, parses their cron
@@ -52,6 +72,7 @@ export class TaskScheduler {
   private registry: TaskRegistry;
   private runManager: RunManager;
   private executor: TaskExecutor;
+  private sessionRouter: SessionRouterLike | null;
   private tickIntervalMs: number;
   private defaultRetries: number;
   private onError: (taskId: string, error: Error) => void;
@@ -60,6 +81,12 @@ export class TaskScheduler {
     registry: TaskRegistry;
     runManager: RunManager;
     executor: TaskExecutor;
+    /**
+     * Wave 5 (SNF-94): optional orchestrator session router. When set,
+     * `executeTask` routes cron ticks through `routeCronTick` instead of
+     * calling the legacy `executor` callback.
+     */
+    sessionRouter?: SessionRouterLike;
     tickIntervalMs?: number;
     defaultRetries?: number;
     onError?: (taskId: string, error: Error) => void;
@@ -67,6 +94,7 @@ export class TaskScheduler {
     this.registry = options.registry;
     this.runManager = options.runManager;
     this.executor = options.executor;
+    this.sessionRouter = options.sessionRouter ?? null;
     this.tickIntervalMs = options.tickIntervalMs ?? 30_000;
     this.defaultRetries = options.defaultRetries ?? 2;
     this.onError =
@@ -230,7 +258,23 @@ export class TaskScheduler {
       );
 
       try {
-        const result = await this.executor(taskDef, run.runId);
+        let result: RunResult;
+        if (this.sessionRouter) {
+          // Wave 5 path: orchestrator TriggerRouter launches a Managed
+          // Agents session. The RunManager still tracks the attempt for
+          // observability; the actual agent execution is handed off.
+          await this.sessionRouter.routeCronTick({
+            taskId: taskDef.id,
+            taskName: taskDef.name,
+            department: taskDef.agentId,
+            payload: { runId: run.runId },
+          });
+          result = {
+            output: { routedVia: 'orchestrator' },
+          };
+        } else {
+          result = await this.executor(taskDef, run.runId);
+        }
         this.runManager.completeRun(run.runId, result);
         lastError = null;
         break;

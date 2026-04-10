@@ -11,6 +11,8 @@ export {
   type DecisionStats,
   type StateChangeEvent,
   type OnStateChange,
+  type ResolveHook,
+  type ResolveHookResolution,
 } from './decision-service.js';
 
 export {

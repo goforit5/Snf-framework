@@ -9,6 +9,9 @@
  */
 
 export { SessionManager } from './session-manager.js';
+export type { SessionManagerOptions, SessionManagerEvent } from './session-manager.js';
+export { bootOrchestrator } from './boot.js';
+export type { BootOrchestratorDeps, OrchestratorHandle } from './boot.js';
 export {
   createBetaClient,
   AnthropicBetaError,
@@ -26,15 +29,54 @@ export type {
   SessionEvent,
 } from './beta-client.js';
 export { TriggerRouter } from './trigger-router.js';
+export type {
+  CronTriggerInput,
+  WebhookEventInput,
+  TenantResolver,
+} from './trigger-router.js';
 export { EventRelay } from './event-relay.js';
-export type { OrchestratorEventHandler } from './event-relay.js';
+export type {
+  OrchestratorEventHandler,
+  EventRelayOptions,
+  WsFanOut,
+} from './event-relay.js';
 export { HITLBridge } from './hitl-bridge.js';
-export { AuditMirror } from './audit-mirror.js';
+export type { HITLBridgeOptions, GatewayDecisionRequest } from './hitl-bridge.js';
+export { AuditMirror, computeContentHash } from './audit-mirror.js';
+export type { AuditMirrorOptions } from './audit-mirror.js';
 
-export { ingestSop } from './agent-builder/ingest.js';
-export type { IngestRequest, IngestResult } from './agent-builder/ingest.js';
+// Wave 7 — Agent Builder SOP → Runbook pipeline.
+export {
+  ingest,
+  compile,
+  writePr,
+  runAgentBuilderPipeline,
+  extractJsonBlock,
+  renderMarkdownDelta,
+} from './agent-builder/index.js';
+export type {
+  IngestInput,
+  IngestUpload,
+  IngestResult,
+  IngestedDocument,
+  DocumentKind,
+  CompileInput,
+  CompileResult,
+  RunbookDelta,
+  RunbookTaskDelta,
+  NewToolRequired,
+  PrWriterInput,
+  PrWriterResult,
+  SessionManagerLike,
+  PipelineStage,
+  PipelineRunSummary,
+  RunAgentBuilderPipelineInput,
+  RunAgentBuilderPipelineResult,
+} from './agent-builder/index.js';
+
+// Deprecated Wave 0 stub exports — kept for backward compat until Wave 8.
 export { compileRunbook } from './agent-builder/compile.js';
-export type { CompileRequest, CompileResult, RunbookTaskDraft } from './agent-builder/compile.js';
+export type { CompileRequest, RunbookTaskDraft } from './agent-builder/compile.js';
 export { openRunbookPr } from './agent-builder/pr-writer.js';
 export type { OpenPrRequest, OpenPrResult } from './agent-builder/pr-writer.js';
 
@@ -43,6 +85,9 @@ export type {
   SessionTrigger,
   SessionLaunchRequest,
   SessionLaunchResult,
+  SessionLaunchContext,
+  ActiveSessionRef,
+  SessionMetadata,
   AgentDepartment,
   OrchestratorEvent,
   HitlDecisionRequest,

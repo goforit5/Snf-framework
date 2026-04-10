@@ -22,6 +22,17 @@ export interface TenantContext {
 }
 
 /**
+ * Optional request-scoped context attached to a session via metadata. Used by
+ * the orchestrator to thread facility/region/user information into the
+ * HITL bridge, audit mirror and WebSocket fan-out.
+ */
+export interface SessionLaunchContext {
+  facilityId?: string;
+  regionId?: string;
+  userId?: string;
+}
+
+/**
  * A trigger that can launch a Managed Agents session. Produced by
  * TaskScheduler (cron) or event-processor (webhook).
  */
@@ -38,10 +49,11 @@ export interface SessionTrigger {
  * Input to SessionManager.launch().
  */
 export interface SessionLaunchRequest {
-  tenant: TenantContext;
-  agentName: AgentDepartment;
+  /** Tenant identifier (e.g. "snf-ensign-prod"). Resolved to a vault. */
+  tenant: string;
+  department: AgentDepartment;
   trigger: SessionTrigger;
-  contextPayload: Record<string, unknown>;
+  context?: SessionLaunchContext;
 }
 
 /**
@@ -50,10 +62,45 @@ export interface SessionLaunchRequest {
  */
 export interface SessionLaunchResult {
   sessionId: string;
+  runId: string;
+  triggerId: string;
   agentId: string;
   agentVersion: number;
   environmentId: string;
   startedAt: string;
+}
+
+/**
+ * Public accessor row for an active (or historical) orchestrator session.
+ * Returned by SessionManager.getActiveSessions().
+ */
+export interface ActiveSessionRef {
+  sessionId: string;
+  tenant: string;
+  department: AgentDepartment;
+  runId: string;
+  triggerId: string;
+  facilityId: string | null;
+  regionId: string | null;
+  launchedAt: string;
+  status: 'active' | 'completed' | 'failed' | 'cancelled';
+}
+
+/**
+ * Persisted metadata for a session — resolved by SessionManager.getSessionMetadata
+ * and used by HITLBridge when building a Decision row from a session event.
+ */
+export interface SessionMetadata {
+  sessionId: string;
+  tenant: string;
+  department: AgentDepartment;
+  runId: string;
+  triggerId: string;
+  triggerName: string;
+  facilityId: string | null;
+  regionId: string | null;
+  agentId: string;
+  agentVersion: number;
 }
 
 /**

@@ -15,12 +15,17 @@ export type {
 } from './registry.js';
 
 export { TaskScheduler, getNextCronRun, parseDuration } from './scheduler.js';
-export type { ScheduleInfo, TaskExecutor } from './scheduler.js';
+export type {
+  ScheduleInfo,
+  TaskExecutor,
+  SessionRouterLike as SchedulerSessionRouterLike,
+} from './scheduler.js';
 
 export { EventProcessor } from './event-processor.js';
 export type {
   DeadLetterEntry,
   EventTaskExecutor,
+  SessionRouterLike as EventProcessorSessionRouterLike,
 } from './event-processor.js';
 
 export { RunManager } from './run-manager.js';

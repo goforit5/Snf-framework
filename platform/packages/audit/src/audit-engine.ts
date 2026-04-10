@@ -146,6 +146,94 @@ export class AuditEngine {
   }
 
   // -------------------------------------------------------------------------
+  // logSessionEvent — Wave 6 entry point for AuditMirror
+  // -------------------------------------------------------------------------
+
+  /**
+   * Thin wrapper around `log()` specifically for mirroring Claude Managed
+   * Agents session events into the hash chain. Wave 6 (SNF-95) — see
+   * `@snf/orchestrator` AuditMirror for the only caller.
+   *
+   * Every session event — every agent message, tool use, tool result, stop —
+   * is hashed into the same audit_trail used by everything else in the
+   * platform. This gives us two independent sources of truth: Anthropic's
+   * native event history, and our own tamper-evident hash chain.
+   */
+  async logSessionEvent(params: {
+    sessionId: string;
+    eventId: string;
+    eventType: string;
+    timestamp: string;
+    contentHash: string;
+    traceId: string;
+    agentId: string;
+    agentVersion: string;
+    modelId: string;
+    tenant: string;
+    department: string;
+    facilityId: string | null;
+    payload: unknown;
+  }): Promise<AuditEntry> {
+    // Map department → AuditActionCategory. Fall back to 'platform' for the
+    // orchestration departments which don't have a 1:1 category.
+    const categoryMap: Record<string, AuditActionCategory> = {
+      clinical: 'clinical',
+      financial: 'financial',
+      workforce: 'workforce',
+      operations: 'operations',
+      admissions: 'admissions',
+      quality: 'quality',
+      legal: 'legal',
+      strategic: 'strategic',
+      revenue: 'financial',
+      'command-center': 'platform',
+      executive: 'platform',
+      'agent-builder': 'platform',
+    };
+    const actionCategory: AuditActionCategory =
+      categoryMap[params.department] ?? 'platform';
+
+    return this.log({
+      traceId: params.traceId,
+      parentId: null,
+      timestamp: params.timestamp,
+      facilityLocalTime: params.timestamp,
+      agentId: params.agentId,
+      agentVersion: params.agentVersion,
+      modelId: params.modelId,
+      action: `session_event:${params.eventType}`,
+      actionCategory,
+      governanceLevel: 1 as GovernanceLevel,
+      target: {
+        type: 'managed_agents_session',
+        id: params.sessionId,
+        label: params.eventId,
+        facilityId: params.facilityId ?? '',
+      },
+      input: {
+        channel: 'internal',
+        source: `orchestrator:${params.tenant}`,
+        receivedAt: params.timestamp,
+        rawDocumentRef: null,
+      },
+      decision: {
+        confidence: 1,
+        outcome: 'AUTO_EXECUTED',
+        reasoning: [`content_hash=${params.contentHash}`],
+        alternativesConsidered: [],
+        policiesApplied: [],
+      },
+      result: {
+        status: 'completed',
+        actionsPerformed: [],
+        timeSaved: null,
+        costImpact: null,
+      },
+      humanOverride: null,
+    });
+  }
+
+  // -------------------------------------------------------------------------
   // computeHash — Deterministic SHA-256 of an audit entry
   // -------------------------------------------------------------------------
 
