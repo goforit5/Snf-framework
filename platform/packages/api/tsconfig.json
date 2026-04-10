@@ -10,6 +10,7 @@
     { "path": "../hitl" },
     { "path": "../audit" },
     { "path": "../agents" },
-    { "path": "../tasks" }
+    { "path": "../tasks" },
+    { "path": "../orchestrator" }
   ]
 }

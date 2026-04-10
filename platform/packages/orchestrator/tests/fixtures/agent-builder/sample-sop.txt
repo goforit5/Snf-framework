@@ -1,0 +1,16 @@
+Medication Error Reporting SOP
+
+Trigger: any medication administration variance reported by nursing staff.
+
+Procedure:
+1. Nurse documents the variance in the MAR within 30 minutes.
+2. DON reviews within 4 hours and classifies severity (A-I).
+3. If severity C or higher, notify physician and pharmacist.
+4. Submit incident report to QAPI committee within 24 hours.
+5. Provider updates care plan within 72 hours if indicated.
+
+Success criteria:
+- All Level C+ events reported to QAPI within 24 hours.
+- No repeat errors with same drug-nurse pair in 30 days.
+
+Governance: L3 staff review for severity A-B, L4 clinical for C-F, L5 executive for G-I.

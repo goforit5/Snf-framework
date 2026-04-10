@@ -10,9 +10,11 @@
     "@snf/audit": "*",
     "@snf/agents": "*",
     "@snf/tasks": "*",
+    "@snf/orchestrator": "*",
     "fastify": "^5.2.0",
     "@fastify/websocket": "^11.0.0",
-    "@fastify/cors": "^10.0.0"
+    "@fastify/cors": "^10.0.0",
+    "@fastify/multipart": "^9.0.0"
   },
   "scripts": {
     "build": "tsc",

@@ -21,6 +21,7 @@ const AgentOperations = lazy(() => import('./pages/AgentWorkLedger'));
 const MorningBriefing = lazy(() => import('./pages/MorningStandup'));
 const AuditTrail = lazy(() => import('./pages/AuditTrail'));
 const SettingsPage = lazy(() => import('./pages/platform/Settings'));
+const AgentBuilder = lazy(() => import('./pages/platform/AgentBuilder'));
 
 /* ─── Clinical ─── */
 const ClinicalCommand = lazy(() => import('./pages/ClinicalCommand'));
@@ -133,6 +134,7 @@ function AppRoutes() {
                         <Route path="/briefing" element={<MorningBriefing />} />
                         <Route path="/audit" element={<AuditTrail />} />
                         <Route path="/settings" element={<SettingsPage />} />
+                        <Route path="/platform/agent-builder" element={<AgentBuilder />} />
 
                         {/* Backward compat */}
                         <Route path="/standup" element={<MorningBriefing />} />

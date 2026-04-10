@@ -16,3 +16,19 @@ export * as workday from './workday/index.js';
 export * as m365 from './m365/index.js';
 export * as regulatory from './regulatory/index.js';
 export * as gateway from './gateway/index.js';
+
+// Re-export PHI redaction primitives so downstream packages (e.g. orchestrator
+// Agent Builder ingest) can tokenize SOPs before sending them to Claude
+// without reaching into the gateway directory directly.
+export {
+  PhiTokenizer,
+  InMemoryTokenStore,
+  DefaultNameMatcher,
+} from './gateway/redaction.js';
+export type {
+  PhiToken,
+  PhiKind,
+  TokenStore,
+  NameMatcher,
+  PhiTokenizerOptions,
+} from './gateway/redaction.js';

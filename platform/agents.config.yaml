@@ -423,11 +423,31 @@ agents:
     tools:
       - type: agent_toolset_20260401
         default_config: { enabled: true, permission_policy: { type: always_allow } }
-      # github__open_pr is provisioned as a custom tool by the session manager
-      # at launch time (Wave 5). Listed here as a TODO so provision-agents.ts
-      # can set up the agent metadata correctly.
-      # TODO(wave-7): wire github__open_pr custom tool into agent tools[].
+      # Wave 7 (SNF-96): custom github tool. The pipeline in
+      # platform/packages/orchestrator/src/agent-builder/pr-writer.ts opens the
+      # actual PR via the `gh` CLI; the custom tool exposed here is a no-op
+      # adapter so the agent can reference `github__open_pr` from its runbook
+      # without having runtime authority — the PR itself is always opened by
+      # the orchestrator after the session ends (human-review gate, SNF-100).
+      - type: custom
+        name: github__open_pr
+        description: >-
+          Request a PR against goforit5/snf-runbooks with the compiled runbook
+          delta. The orchestrator opens the PR after the session completes;
+          this tool simply records the agent's intent + classification rationale
+          into the session event stream so the orchestrator PR writer can
+          attach it to the PR body.
+        input_schema:
+          type: object
+          required: [target_runbook, delta_markdown, tasks_extracted, overall_confidence]
+          properties:
+            target_runbook: { type: string }
+            delta_markdown: { type: string }
+            tasks_extracted: { type: array }
+            new_tool_specs: { type: array }
+            overall_confidence: { type: number }
     metadata:
       department: agent-builder
       platform: snf
       meta: "true"
+      wave_7_tool: github__open_pr

@@ -10,7 +10,7 @@ import {
   Award, ShieldAlert, HeartPulse, MessageSquare, Target,
   Scale, FileSignature, Gavel, FileCheck, Home,
   Building, Globe, Landmark, LineChart, Flag,
-  Menu, X, ChevronDown, ChevronLeft, ChevronRight, Bot, Search, Bell, Play, Sun, Moon
+  Menu, X, ChevronDown, ChevronLeft, ChevronRight, Bot, Search, Bell, Play, Sun, Moon, Wand2
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useDarkModeContext } from '../hooks/useDarkMode';
@@ -38,6 +38,7 @@ const NAV_SECTIONS = [
       { path: '/agents', label: 'Agent Operations', icon: Activity },
       { path: '/briefing', label: 'Morning Briefing', icon: Coffee },
       { path: '/audit', label: 'Audit Trail', icon: Shield },
+      { path: '/platform/agent-builder', label: 'Agent Builder', icon: Wand2 },
       { path: '/settings', label: 'Settings', icon: Settings },
     ],
   },
