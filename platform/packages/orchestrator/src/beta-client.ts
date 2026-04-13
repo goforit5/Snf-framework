@@ -1,31 +1,25 @@
 /**
- * beta-client.ts — direct REST shim for Claude Managed Agents (beta).
+ * beta-client.ts — SDK adapter for Claude Managed Agents.
  *
- * Why this exists: `@anthropic-ai/sdk@0.87.0` (the version installed in this
- * workspace — see package.json) does NOT yet expose `client.beta.agents`,
- * `client.beta.sessions`, `client.beta.environments`, or `client.beta.vaults`
- * under the `managed-agents-2026-04-01` beta header. The Wave 0 scaffold at
- * `session-manager.ts` called this out with a TODO. Until the SDK catches up,
- * we hit the REST endpoints directly via `fetch`.
+ * History: this file was originally a hand-written REST shim because
+ * `@anthropic-ai/sdk@0.87.0` did not yet expose `client.beta.agents`,
+ * `client.beta.sessions`, `client.beta.environments`, or
+ * `client.beta.vaults`. The SDK now ships full typed namespaces under
+ * `beta.*`, so this file is a thin adapter that wraps the SDK and
+ * exposes the stable `BetaClient` interface the orchestrator already
+ * programs against.
  *
- * This file is intentionally the ONLY place in the orchestrator that knows
- * how to talk HTTP(S) to api.anthropic.com for managed-agents. Everywhere else
- * imports `createBetaClient` and uses the typed namespaces. When the SDK
- * exposes these namespaces (tracked in Wave 5), this shim can either be
- * deleted in favor of direct SDK imports, or kept as a stable typed wrapper.
- *
- * Field names for request/response payloads are inferred from the plan's
- * "Mapping old → new" table in
- * /Users/andrew/.claude/plans/shimmying-plotting-bear.md. Anywhere the exact
- * schema has not been verified against live docs, a `TODO(wave-5-verify)`
- * marker is left so Wave 5 can reconcile.
- *
- * See also: `src/session-manager.ts` (Wave 0 scaffold), and the plan sections
- * "Wave 2 — Vaults + credentials", "Wave 3 — Environments", "Wave 5 — Session
- * Manager", "Wave 6 — HITL Bridge + Event Relay + Audit Mirror".
+ * Why keep the adapter rather than using the SDK directly everywhere?
+ * - All consumers (session-manager, event-relay, hitl-bridge, boot,
+ *   provision scripts, tests) program against the `BetaClient`
+ *   interface. The adapter maps that interface onto the SDK's
+ *   auto-paginating cursors, field-name differences, and method-shape
+ *   changes in one place.
+ * - Tests mock the `BetaClient` duck type. This keeps working.
+ * - If Anthropic changes endpoint shapes again, only this file changes.
  */
 
-import { z } from 'zod';
+import Anthropic from '@anthropic-ai/sdk';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -37,11 +31,8 @@ export const MANAGED_AGENTS_BETA = 'managed-agents-2026-04-01';
 /** Default base URL. Override in tests or for staging endpoints. */
 export const DEFAULT_BASE_URL = 'https://api.anthropic.com';
 
-/** Anthropic API version header. */
-const API_VERSION = '2023-06-01';
-
 // ---------------------------------------------------------------------------
-// Error type
+// Error type (kept for backward compat — callers may catch this)
 // ---------------------------------------------------------------------------
 
 export class AnthropicBetaError extends Error {
@@ -57,431 +48,451 @@ export class AnthropicBetaError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Shared zod schemas (minimal — expand in Wave 5 when the SDK ships)
+// Slim response types consumed by the orchestrator
+//
+// These are intentionally loose duck types so mocks in tests don't need
+// to match every SDK field. The real SDK types are supersets.
 // ---------------------------------------------------------------------------
 
-const IdString = z.string().min(1);
-const IsoTimestamp = z.string().min(1);
-
-/** TODO(wave-5-verify): confirm vault object shape against live API. */
-export const VaultSchema = z.object({
-  id: IdString,
-  name: z.string(),
-  description: z.string().optional().nullable(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  created_at: IsoTimestamp.optional(),
-  updated_at: IsoTimestamp.optional(),
-});
-export type Vault = z.infer<typeof VaultSchema>;
-
-/** TODO(wave-5-verify): credential payload fields (`type`, `token_url`, etc). */
-export const VaultCredentialSchema = z.object({
-  id: IdString,
-  vault_id: IdString,
-  name: z.string(),
-  type: z.string(), // "mcp_oauth" | "static_bearer" | ...
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  created_at: IsoTimestamp.optional(),
-  updated_at: IsoTimestamp.optional(),
-});
-export type VaultCredential = z.infer<typeof VaultCredentialSchema>;
-
-/** TODO(wave-5-verify): confirm environment object shape. */
-export const EnvironmentSchema = z.object({
-  id: IdString,
-  name: z.string(),
-  type: z.string(), // "cloud" | ...
-  networking: z.string().optional(),
-  allow_mcp_servers: z.boolean().optional(),
-  allowed_hosts: z.array(z.string()).optional(),
-  pip_packages: z.array(z.string()).optional(),
-  apt_packages: z.array(z.string()).optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  created_at: IsoTimestamp.optional(),
-  updated_at: IsoTimestamp.optional(),
-});
-export type Environment = z.infer<typeof EnvironmentSchema>;
-
-/** TODO(wave-5-verify): minimal agent shape. Wave 4 will expand for provision-agents.ts. */
-export const AgentSchema = z.object({
-  id: IdString,
-  name: z.string(),
-  version: z.number().int().nonnegative(),
-  model: z.string().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  created_at: IsoTimestamp.optional(),
-  updated_at: IsoTimestamp.optional(),
-});
-export type Agent = z.infer<typeof AgentSchema>;
-
-/** TODO(wave-5-verify): minimal session shape. */
-export const SessionSchema = z.object({
-  id: IdString,
-  agent_id: IdString,
-  agent_version: z.number().int().nonnegative().optional(),
-  environment_id: IdString.optional(),
-  title: z.string().optional(),
-  status: z.string().optional(),
-  metadata: z.record(z.string(), z.unknown()).optional(),
-  created_at: IsoTimestamp.optional(),
-  updated_at: IsoTimestamp.optional(),
-});
-export type Session = z.infer<typeof SessionSchema>;
-
-/** TODO(wave-5-verify): session event shape. Wave 6 will lean heavily on this. */
-export const SessionEventSchema = z.object({
-  id: IdString,
-  session_id: IdString,
-  type: z.string(),
-  sequence: z.number().int().nonnegative().optional(),
-  content: z.unknown().optional(),
-  created_at: IsoTimestamp.optional(),
-});
-export type SessionEvent = z.infer<typeof SessionEventSchema>;
-
-const ListEnvelope = <T extends z.ZodTypeAny>(item: T) =>
-  z.object({
-    data: z.array(item),
-    has_more: z.boolean().optional(),
-    next_cursor: z.string().optional().nullable(),
-    last_id: z.string().optional().nullable(),
-  });
-
-// ---------------------------------------------------------------------------
-// Low-level request helper
-// ---------------------------------------------------------------------------
-
-interface RawRequestOptions {
-  method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
-  path: string;
-  query?: Record<string, string | number | undefined>;
-  body?: unknown;
+export interface Vault {
+  id: string;
+  display_name: string;
+  /** Backfill alias for provision-vaults compat. */
+  name?: string;
+  metadata: Record<string, string>;
+  created_at: string;
+  updated_at: string;
 }
 
-interface ClientConfig {
-  apiKey: string;
-  baseUrl: string;
-  fetchImpl: typeof fetch;
+export interface VaultCredential {
+  id: string;
+  vault_id: string;
+  display_name?: string | null;
+  /** Adapter backfill from auth.type for compat. */
+  name?: string;
+  /** Adapter backfill from auth.type for compat. */
+  type?: string;
+  auth?: { type: string; [key: string]: unknown };
+  metadata: Record<string, string>;
+  created_at: string;
+  updated_at: string;
 }
 
-async function rawRequest<T>(
-  cfg: ClientConfig,
-  opts: RawRequestOptions,
-  schema: z.ZodType<T>,
-): Promise<T> {
-  const url = new URL(opts.path, cfg.baseUrl);
-  if (opts.query) {
-    for (const [k, v] of Object.entries(opts.query)) {
-      if (v !== undefined) url.searchParams.set(k, String(v));
-    }
-  }
-
-  const headers: Record<string, string> = {
-    'x-api-key': cfg.apiKey,
-    'anthropic-version': API_VERSION,
-    'anthropic-beta': MANAGED_AGENTS_BETA,
+export interface Environment {
+  id: string;
+  name: string;
+  description: string;
+  config: {
+    type: string;
+    networking: { type: string; allowed_hosts?: string[]; allow_mcp_servers?: boolean; allow_package_managers?: boolean };
+    packages?: Record<string, string[] | undefined>;
   };
-  if (opts.body !== undefined) headers['content-type'] = 'application/json';
-
-  const res = await cfg.fetchImpl(url.toString(), {
-    method: opts.method,
-    headers,
-    body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
-  });
-
-  const requestId = res.headers.get('request-id') ?? undefined;
-  const text = await res.text();
-  let parsed: unknown = undefined;
-  if (text.length > 0) {
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      parsed = text;
-    }
-  }
-
-  if (!res.ok) {
-    throw new AnthropicBetaError(
-      `Anthropic beta API ${opts.method} ${opts.path} failed: ${res.status}`,
-      res.status,
-      parsed,
-      requestId,
-    );
-  }
-
-  return schema.parse(parsed);
+  metadata: Record<string, string>;
+  created_at: string;
+  updated_at: string;
 }
 
-/** Paginate through a list endpoint using `after_id` cursor. */
-async function listAll<T>(
-  cfg: ClientConfig,
-  path: string,
-  itemSchema: z.ZodType<T>,
-  extraQuery: Record<string, string | number | undefined> = {},
+export interface Agent {
+  id: string;
+  name: string;
+  version: number;
+  model: string | { id: string; speed?: string };
+  description?: string | null;
+  system?: string | null;
+  metadata: Record<string, string>;
+  mcp_servers?: Array<{ name: string; url: string; type: string }>;
+  tools?: unknown[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Session {
+  id: string;
+  status?: string;
+  title?: string;
+  metadata?: Record<string, string>;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SessionEvent {
+  id: string;
+  session_id?: string;
+  type: string;
+  sequence?: number;
+  content?: unknown;
+  created_at?: string;
+}
+
+// ---------------------------------------------------------------------------
+// BetaClient interface — the stable contract consumed by the orchestrator
+// ---------------------------------------------------------------------------
+
+export interface BetaClient {
+  vaults: {
+    list(): Promise<Vault[]>;
+    retrieve(id: string): Promise<Vault>;
+    create(input: { display_name?: string; name?: string; description?: string; metadata?: Record<string, unknown> }): Promise<Vault>;
+    update(id: string, input: { display_name?: string; name?: string; description?: string; metadata?: Record<string, unknown> }): Promise<Vault>;
+    delete(id: string): Promise<void>;
+    credentials: {
+      list(vaultId: string): Promise<VaultCredential[]>;
+      retrieve(vaultId: string, credId: string): Promise<VaultCredential>;
+      create(vaultId: string, input: Record<string, unknown> & { name?: string; type?: string; auth?: unknown }): Promise<VaultCredential>;
+      update(vaultId: string, credId: string, input: Record<string, unknown>): Promise<VaultCredential>;
+      delete(vaultId: string, credId: string): Promise<void>;
+    };
+  };
+  environments: {
+    list(): Promise<Environment[]>;
+    retrieve(id: string): Promise<Environment>;
+    create(input: Record<string, unknown> & { name: string }): Promise<Environment>;
+    update(id: string, input: Record<string, unknown>): Promise<Environment>;
+    delete(id: string): Promise<void>;
+  };
+  agents: {
+    list(params?: { metadata?: Record<string, string> }): Promise<Agent[]>;
+    retrieve(id: string, version?: number): Promise<Agent>;
+    create(input: Record<string, unknown> & { name: string }): Promise<Agent>;
+    update(id: string, input: Record<string, unknown>): Promise<Agent>;
+    delete(id: string): Promise<void>;
+  };
+  sessions: {
+    list(): Promise<Session[]>;
+    retrieve(id: string): Promise<Session>;
+    create(input: Record<string, unknown>): Promise<Session>;
+    update(id: string, input: Record<string, unknown>): Promise<Session>;
+    delete(id: string): Promise<void>;
+    events: {
+      list(
+        sessionId: string,
+        opts?: { order?: 'asc' | 'desc'; afterId?: string; limit?: number },
+      ): Promise<SessionEvent[]>;
+      create(sessionId: string, event: Record<string, unknown>): Promise<SessionEvent>;
+    };
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Helper: collect a PageCursor iterator into a plain array
+// ---------------------------------------------------------------------------
+
+async function collectPage<T>(
+  page: AsyncIterable<T>,
+  maxItems = 10_000,
 ): Promise<T[]> {
-  const envelope = ListEnvelope(itemSchema);
   const out: T[] = [];
-  let afterId: string | undefined;
-  // TODO(wave-5-verify): confirm cursor field name (`after_id` vs `starting_after` vs `next_cursor`).
-  for (let i = 0; i < 100; i++) {
-    const page = await rawRequest(
-      cfg,
-      {
-        method: 'GET',
-        path,
-        query: { ...extraQuery, limit: 100, after_id: afterId },
-      },
-      envelope,
-    );
-    out.push(...page.data);
-    if (!page.has_more) break;
-    afterId = page.last_id ?? page.next_cursor ?? undefined;
-    if (!afterId) break;
+  for await (const item of page) {
+    out.push(item);
+    if (out.length >= maxItems) break;
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Adapter: map SDK response objects → slim types
+// ---------------------------------------------------------------------------
+
+function toVault(v: { id: string; display_name: string; metadata: Record<string, string>; created_at: string; updated_at: string }): Vault {
+  return {
+    id: v.id,
+    display_name: v.display_name,
+    name: v.display_name,
+    metadata: v.metadata ?? {},
+    created_at: v.created_at,
+    updated_at: v.updated_at,
+  };
+}
+
+function toCredential(c: {
+  id: string; vault_id: string; display_name?: string | null;
+  auth: { type: string; [key: string]: unknown };
+  metadata: Record<string, string>; created_at: string; updated_at: string;
+}): VaultCredential {
+  return {
+    id: c.id,
+    vault_id: c.vault_id,
+    display_name: c.display_name,
+    name: c.display_name ?? '',
+    type: c.auth?.type ?? 'unknown',
+    auth: c.auth,
+    metadata: c.metadata ?? {},
+    created_at: c.created_at,
+    updated_at: c.updated_at,
+  };
+}
+
+function toEnvironment(e: {
+  id: string; name: string; description: string;
+  config: unknown; metadata: Record<string, string>;
+  created_at: string; updated_at: string;
+}): Environment {
+  const config = e.config as Environment['config'];
+  return {
+    id: e.id,
+    name: e.name,
+    description: e.description,
+    config,
+    metadata: e.metadata ?? {},
+    created_at: e.created_at,
+    updated_at: e.updated_at,
+  };
+}
+
+function toAgent(a: {
+  id: string; name: string; version: number;
+  model: unknown; description?: string | null; system?: string | null;
+  metadata: Record<string, string>; mcp_servers?: unknown[]; tools?: unknown[];
+  created_at: string; updated_at: string;
+}): Agent {
+  return {
+    id: a.id,
+    name: a.name,
+    version: a.version,
+    model: a.model as Agent['model'],
+    description: a.description,
+    system: a.system,
+    metadata: a.metadata ?? {},
+    mcp_servers: a.mcp_servers as Agent['mcp_servers'],
+    tools: a.tools,
+    created_at: a.created_at,
+    updated_at: a.updated_at,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Namespace builders
 // ---------------------------------------------------------------------------
 
-function vaultsNs(cfg: ClientConfig) {
+function vaultsNs(sdk: Anthropic): BetaClient['vaults'] {
   return {
-    async list(): Promise<Vault[]> {
-      return listAll(cfg, '/v1/vaults', VaultSchema);
+    async list() {
+      const items = await collectPage(sdk.beta.vaults.list());
+      return items.map(toVault);
     },
-    async retrieve(id: string): Promise<Vault> {
-      return rawRequest(cfg, { method: 'GET', path: `/v1/vaults/${id}` }, VaultSchema);
+    async retrieve(id) {
+      return toVault(await sdk.beta.vaults.retrieve(id));
     },
-    async create(input: {
-      name: string;
-      description?: string;
-      metadata?: Record<string, unknown>;
-    }): Promise<Vault> {
-      return rawRequest(cfg, { method: 'POST', path: '/v1/vaults', body: input }, VaultSchema);
+    async create(input) {
+      const v = await sdk.beta.vaults.create({
+        display_name: input.display_name ?? input.name ?? '',
+        metadata: input.metadata as Record<string, string> | undefined,
+      });
+      return toVault(v);
     },
-    async update(
-      id: string,
-      input: { name?: string; description?: string; metadata?: Record<string, unknown> },
-    ): Promise<Vault> {
-      return rawRequest(
-        cfg,
-        { method: 'PATCH', path: `/v1/vaults/${id}`, body: input },
-        VaultSchema,
-      );
+    async update(id, input) {
+      const v = await sdk.beta.vaults.update(id, {
+        display_name: (input.display_name ?? input.name) as string | undefined,
+        metadata: input.metadata as Record<string, string | null> | undefined,
+      });
+      return toVault(v);
     },
-    async delete(id: string): Promise<void> {
-      await rawRequest(cfg, { method: 'DELETE', path: `/v1/vaults/${id}` }, z.unknown());
+    async delete(id) {
+      await sdk.beta.vaults.delete(id);
     },
 
     credentials: {
-      async list(vaultId: string): Promise<VaultCredential[]> {
-        return listAll(cfg, `/v1/vaults/${vaultId}/credentials`, VaultCredentialSchema);
-      },
-      async retrieve(vaultId: string, credId: string): Promise<VaultCredential> {
-        return rawRequest(
-          cfg,
-          { method: 'GET', path: `/v1/vaults/${vaultId}/credentials/${credId}` },
-          VaultCredentialSchema,
+      async list(vaultId) {
+        const items = await collectPage(
+          sdk.beta.vaults.credentials.list(vaultId),
         );
+        return items.map((c) => toCredential(c as unknown as Parameters<typeof toCredential>[0]));
       },
-      /**
-       * Create a credential inside a vault. Shape of `input` depends on the
-       * credential type — see callers in provision-vaults.ts for the two
-       * variants we use (`mcp_oauth`, `static_bearer`).
-       *
-       * TODO(wave-5-verify): confirm exact body schema for each credential
-       * type once SDK ships typed variants.
-       */
-      async create(
-        vaultId: string,
-        input: Record<string, unknown> & { name: string; type: string },
-      ): Promise<VaultCredential> {
-        return rawRequest(
-          cfg,
-          { method: 'POST', path: `/v1/vaults/${vaultId}/credentials`, body: input },
-          VaultCredentialSchema,
-        );
+      async retrieve(vaultId, credId) {
+        const c = await sdk.beta.vaults.credentials.retrieve(credId, {
+          vault_id: vaultId,
+        });
+        return toCredential(c as unknown as Parameters<typeof toCredential>[0]);
       },
-      async update(
-        vaultId: string,
-        credId: string,
-        input: Record<string, unknown>,
-      ): Promise<VaultCredential> {
-        return rawRequest(
-          cfg,
-          {
-            method: 'PATCH',
-            path: `/v1/vaults/${vaultId}/credentials/${credId}`,
-            body: input,
-          },
-          VaultCredentialSchema,
-        );
+      async create(vaultId, input) {
+        const auth = (input.auth ?? input) as Parameters<
+          typeof sdk.beta.vaults.credentials.create
+        >[1]['auth'];
+        const c = await sdk.beta.vaults.credentials.create(vaultId, {
+          auth,
+          display_name: (input.display_name ?? input.name) as string | undefined,
+          metadata: input.metadata as Record<string, string> | undefined,
+        });
+        return toCredential(c as unknown as Parameters<typeof toCredential>[0]);
       },
-      async delete(vaultId: string, credId: string): Promise<void> {
-        await rawRequest(
-          cfg,
-          { method: 'DELETE', path: `/v1/vaults/${vaultId}/credentials/${credId}` },
-          z.unknown(),
-        );
+      async update(vaultId, credId, input) {
+        const c = await sdk.beta.vaults.credentials.update(credId, {
+          vault_id: vaultId,
+          auth: input.auth as Parameters<
+            typeof sdk.beta.vaults.credentials.update
+          >[1]['auth'],
+          display_name: (input.display_name ?? input.name) as string | undefined,
+          metadata: input.metadata as Record<string, string | null> | undefined,
+        });
+        return toCredential(c as unknown as Parameters<typeof toCredential>[0]);
+      },
+      async delete(vaultId, credId) {
+        await sdk.beta.vaults.credentials.delete(credId, {
+          vault_id: vaultId,
+        });
       },
     },
   };
 }
 
-function environmentsNs(cfg: ClientConfig) {
+function environmentsNs(sdk: Anthropic): BetaClient['environments'] {
   return {
-    async list(): Promise<Environment[]> {
-      return listAll(cfg, '/v1/environments', EnvironmentSchema);
+    async list() {
+      const items = await collectPage(sdk.beta.environments.list());
+      return items.map(toEnvironment);
     },
-    async retrieve(id: string): Promise<Environment> {
-      return rawRequest(
-        cfg,
-        { method: 'GET', path: `/v1/environments/${id}` },
-        EnvironmentSchema,
-      );
+    async retrieve(id) {
+      return toEnvironment(await sdk.beta.environments.retrieve(id));
     },
-    async create(input: {
-      name: string;
-      type: string;
-      networking?: string;
-      allow_mcp_servers?: boolean;
-      allowed_hosts?: string[];
-      pip_packages?: string[];
-      apt_packages?: string[];
-      metadata?: Record<string, unknown>;
-    }): Promise<Environment> {
-      return rawRequest(
-        cfg,
-        { method: 'POST', path: '/v1/environments', body: input },
-        EnvironmentSchema,
-      );
+    async create(input: Record<string, unknown> & { name: string }) {
+      const rec = input as Record<string, unknown>;
+      type CreateParams = Parameters<typeof sdk.beta.environments.create>[0];
+      const e = await sdk.beta.environments.create({
+        name: input.name,
+        config: rec.config as CreateParams['config'],
+        description: rec.description as string | undefined,
+        metadata: rec.metadata as Record<string, string> | undefined,
+      });
+      return toEnvironment(e);
     },
-    async update(
-      id: string,
-      input: Partial<{
-        name: string;
-        networking: string;
-        allow_mcp_servers: boolean;
-        allowed_hosts: string[];
-        pip_packages: string[];
-        apt_packages: string[];
-        metadata: Record<string, unknown>;
-      }>,
-    ): Promise<Environment> {
-      return rawRequest(
-        cfg,
-        { method: 'PATCH', path: `/v1/environments/${id}`, body: input },
-        EnvironmentSchema,
-      );
+    async update(id: string, input: Record<string, unknown>) {
+      const rec = input as Record<string, unknown>;
+      type UpdateParams = Parameters<typeof sdk.beta.environments.update>[1];
+      const e = await sdk.beta.environments.update(id, {
+        name: rec.name as string | undefined,
+        config: rec.config as UpdateParams['config'],
+        description: rec.description as string | undefined,
+        metadata: rec.metadata as Record<string, string | null> | undefined,
+      });
+      return toEnvironment(e);
     },
-    async delete(id: string): Promise<void> {
-      await rawRequest(
-        cfg,
-        { method: 'DELETE', path: `/v1/environments/${id}` },
-        z.unknown(),
-      );
+    async delete(id) {
+      await sdk.beta.environments.delete(id);
     },
   };
 }
 
-function agentsNs(cfg: ClientConfig) {
+function agentsNs(sdk: Anthropic): BetaClient['agents'] {
   return {
-    async list(params: { metadata?: Record<string, string> } = {}): Promise<Agent[]> {
-      // TODO(wave-5-verify): metadata filter encoding. Plan assumes
-      //   `metadata[tenant]=snf-ensign-prod&metadata[department]=clinical`
-      //   but SDK may expose a typed filter object instead.
-      const query: Record<string, string> = {};
-      if (params.metadata) {
-        for (const [k, v] of Object.entries(params.metadata)) {
-          query[`metadata[${k}]`] = v;
-        }
+    async list(params) {
+      const all = await collectPage(sdk.beta.agents.list());
+      const agents = all.map(toAgent);
+      // Client-side metadata filter — the SDK list endpoint does not
+      // support server-side metadata query params.
+      if (params?.metadata) {
+        const entries = Object.entries(params.metadata);
+        return agents.filter((a) =>
+          entries.every(([k, v]) => (a.metadata?.[k] ?? '') === v),
+        );
       }
-      return listAll(cfg, '/v1/agents', AgentSchema, query);
+      return agents;
     },
-    async retrieve(id: string, version?: number): Promise<Agent> {
-      return rawRequest(
-        cfg,
-        {
-          method: 'GET',
-          path: `/v1/agents/${id}`,
-          query: version !== undefined ? { version } : undefined,
-        },
-        AgentSchema,
+    async retrieve(id, version?) {
+      return toAgent(
+        await sdk.beta.agents.retrieve(
+          id,
+          version !== undefined ? { version } : undefined,
+        ),
       );
     },
-    async create(input: Record<string, unknown> & { name: string }): Promise<Agent> {
-      return rawRequest(
-        cfg,
-        { method: 'POST', path: '/v1/agents', body: input },
-        AgentSchema,
-      );
+    async create(input: Record<string, unknown> & { name: string }) {
+      const rec = input as Record<string, unknown>;
+      type CreateParams = Parameters<typeof sdk.beta.agents.create>[0];
+      const a = await sdk.beta.agents.create({
+        name: input.name,
+        model: rec.model as CreateParams['model'],
+        system: rec.system as string | undefined,
+        description: rec.description as string | undefined,
+        tools: rec.tools as CreateParams['tools'],
+        mcp_servers: rec.mcp_servers as CreateParams['mcp_servers'],
+        metadata: rec.metadata as Record<string, string> | undefined,
+      });
+      return toAgent(a);
     },
-    async update(id: string, input: Record<string, unknown>): Promise<Agent> {
-      return rawRequest(
-        cfg,
-        { method: 'PATCH', path: `/v1/agents/${id}`, body: input },
-        AgentSchema,
-      );
+    async update(id: string, input: Record<string, unknown>) {
+      const rec = input as Record<string, unknown>;
+      type UpdateParams = Parameters<typeof sdk.beta.agents.update>[1];
+      const a = await sdk.beta.agents.update(id, {
+        version: rec.version as number,
+        name: rec.name as string | undefined,
+        model: rec.model as UpdateParams['model'],
+        system: rec.system as string | undefined,
+        description: rec.description as string | undefined,
+        tools: rec.tools as UpdateParams['tools'],
+        mcp_servers: rec.mcp_servers as UpdateParams['mcp_servers'],
+        metadata: rec.metadata as Record<string, string | null> | undefined,
+      });
+      return toAgent(a);
     },
-    async delete(id: string): Promise<void> {
-      await rawRequest(cfg, { method: 'DELETE', path: `/v1/agents/${id}` }, z.unknown());
+    async delete(id) {
+      await sdk.beta.agents.archive(id);
     },
   };
 }
 
-function sessionsNs(cfg: ClientConfig) {
+function sessionsNs(sdk: Anthropic): BetaClient['sessions'] {
   return {
-    async list(): Promise<Session[]> {
-      return listAll(cfg, '/v1/sessions', SessionSchema);
+    async list() {
+      const items = await collectPage(sdk.beta.sessions.list());
+      return items as unknown as Session[];
     },
-    async retrieve(id: string): Promise<Session> {
-      return rawRequest(cfg, { method: 'GET', path: `/v1/sessions/${id}` }, SessionSchema);
+    async retrieve(id) {
+      return (await sdk.beta.sessions.retrieve(id)) as unknown as Session;
     },
-    async create(input: Record<string, unknown>): Promise<Session> {
-      return rawRequest(
-        cfg,
-        { method: 'POST', path: '/v1/sessions', body: input },
-        SessionSchema,
-      );
+    async create(input) {
+      // Map legacy `agent_id` field to SDK's `agent` field.
+      const agent = (input.agent ?? input.agent_id) as string;
+      const s = await sdk.beta.sessions.create({
+        agent,
+        environment_id: input.environment_id as string,
+        title: input.title as string | undefined,
+        metadata: input.metadata as Record<string, string> | undefined,
+        vault_ids: input.vault_ids as string[] | undefined,
+        resources: input.resources as Parameters<
+          typeof sdk.beta.sessions.create
+        >[0]['resources'],
+      });
+      return s as unknown as Session;
     },
-    async update(id: string, input: Record<string, unknown>): Promise<Session> {
-      return rawRequest(
-        cfg,
-        { method: 'PATCH', path: `/v1/sessions/${id}`, body: input },
-        SessionSchema,
-      );
+    async update(id, input) {
+      const s = await sdk.beta.sessions.update(id, {
+        title: input.title as string | undefined,
+        metadata: input.metadata as Record<string, string | null> | undefined,
+      });
+      return s as unknown as Session;
     },
-    async delete(id: string): Promise<void> {
-      await rawRequest(cfg, { method: 'DELETE', path: `/v1/sessions/${id}` }, z.unknown());
+    async delete(id) {
+      await sdk.beta.sessions.delete(id);
     },
 
     events: {
-      async list(
-        sessionId: string,
-        opts: { order?: 'asc' | 'desc'; afterId?: string; limit?: number } = {},
-      ): Promise<SessionEvent[]> {
-        // Used by Wave 6 EventRelay — cursor-based replay.
-        return listAll(cfg, `/v1/sessions/${sessionId}/events`, SessionEventSchema, {
-          order: opts.order,
-          limit: opts.limit,
-          after_id: opts.afterId,
-        });
-      },
-      async create(
-        sessionId: string,
-        event: Record<string, unknown>,
-      ): Promise<SessionEvent> {
-        // Used by Wave 6 HITLBridge — `user.tool_confirmation`, `user.custom_tool_result`.
-        return rawRequest(
-          cfg,
-          {
-            method: 'POST',
-            path: `/v1/sessions/${sessionId}/events`,
-            body: event,
-          },
-          SessionEventSchema,
+      async list(sessionId, opts) {
+        const params: { order?: 'asc' | 'desc'; limit?: number; page?: string } = {};
+        if (opts?.order) params.order = opts.order;
+        if (opts?.limit) params.limit = opts.limit;
+        // The SDK uses opaque `page` cursor, not `after_id`. When the
+        // caller passes `afterId` we pass it as the `page` param which
+        // is the correct cursor token for continuation.
+        if (opts?.afterId) params.page = opts.afterId;
+
+        const items = await collectPage(
+          sdk.beta.sessions.events.list(sessionId, params),
+          opts?.limit ?? 100,
         );
+        return items as unknown as SessionEvent[];
+      },
+      async create(sessionId, event) {
+        // The SDK uses `send()` to post events.
+        const result = await sdk.beta.sessions.events.send(sessionId, {
+          events: [event as unknown as Parameters<
+            typeof sdk.beta.sessions.events.send
+          >[1]['events'][number]],
+        });
+        return {
+          id: (result as unknown as Record<string, string>).id ?? '',
+          session_id: sessionId,
+          type: (event.type as string) ?? 'unknown',
+        };
       },
     },
   };
@@ -498,16 +509,10 @@ export interface CreateBetaClientOptions {
   fetchImpl?: typeof fetch;
 }
 
-export interface BetaClient {
-  vaults: ReturnType<typeof vaultsNs>;
-  environments: ReturnType<typeof environmentsNs>;
-  agents: ReturnType<typeof agentsNs>;
-  sessions: ReturnType<typeof sessionsNs>;
-}
-
 /**
- * Build a namespaced client that talks directly to api.anthropic.com with the
- * `managed-agents-2026-04-01` beta header.
+ * Build a namespaced client that talks to api.anthropic.com via the
+ * official `@anthropic-ai/sdk`. The returned `BetaClient` preserves the
+ * same interface the orchestrator has always used.
  *
  * ```ts
  * const beta = createBetaClient({ apiKey: process.env.ANTHROPIC_API_KEY! });
@@ -518,18 +523,15 @@ export function createBetaClient(options: CreateBetaClientOptions): BetaClient {
   if (!options.apiKey) {
     throw new Error('createBetaClient: apiKey is required');
   }
-  const cfg: ClientConfig = {
+  const sdk = new Anthropic({
     apiKey: options.apiKey,
-    baseUrl: options.baseUrl ?? DEFAULT_BASE_URL,
-    fetchImpl: options.fetchImpl ?? globalThis.fetch,
-  };
-  if (typeof cfg.fetchImpl !== 'function') {
-    throw new Error('createBetaClient: no fetch implementation available');
-  }
+    baseURL: options.baseUrl ?? DEFAULT_BASE_URL,
+    fetch: options.fetchImpl,
+  });
   return {
-    vaults: vaultsNs(cfg),
-    environments: environmentsNs(cfg),
-    agents: agentsNs(cfg),
-    sessions: sessionsNs(cfg),
+    vaults: vaultsNs(sdk),
+    environments: environmentsNs(sdk),
+    agents: agentsNs(sdk),
+    sessions: sessionsNs(sdk),
   };
 }

@@ -23,31 +23,11 @@ import type {
   PipelineStage,
   PipelineRunSummary,
   SessionManagerLike,
-  RunAgentBuilderPipelineResult,
 } from '@snf/orchestrator';
 import { runAgentBuilderPipeline } from '@snf/orchestrator';
 import { getUser } from '../middleware/auth.js';
-
-// ---------------------------------------------------------------------------
-// In-memory run store (production replaces this with a pg adapter reading
-// the `agent_builder_runs` table — see migration 004).
-// ---------------------------------------------------------------------------
-
-interface RunRow extends PipelineRunSummary {
-  result?: RunAgentBuilderPipelineResult;
-}
-
-const runs = new Map<string, RunRow>();
-
-function recordRun(row: RunRow): void {
-  runs.set(row.runId, row);
-}
-
-function updateRun(runId: string, patch: Partial<RunRow>): void {
-  const existing = runs.get(runId);
-  if (!existing) return;
-  runs.set(runId, { ...existing, ...patch });
-}
+import type { AgentBuilderStore, RunRow } from '../stores/agent-builder-store.js';
+import { InMemoryAgentBuilderStore } from '../stores/agent-builder-store.js';
 
 // ---------------------------------------------------------------------------
 // Stub session manager — Wave 5+6 may still be finalizing. This adapter
@@ -81,7 +61,10 @@ function getSessionManagerStub(): SessionManagerLike {
 // Route registration
 // ---------------------------------------------------------------------------
 
-export async function agentBuilderRoutes(server: FastifyInstance): Promise<void> {
+export async function agentBuilderRoutes(
+  server: FastifyInstance,
+  store: AgentBuilderStore = new InMemoryAgentBuilderStore(),
+): Promise<void> {
   // Register multipart parser lazily — if the dep isn't installed, upload will
   // return 501 but the other routes still work.
   let multipartRegistered = false;
@@ -152,7 +135,7 @@ export async function agentBuilderRoutes(server: FastifyInstance): Promise<void>
       sourceFiles: uploads.map((u) => u.filename),
       status: 'ingesting',
     };
-    recordRun(summary);
+    await store.insertRun(summary);
 
     // Kick off the pipeline in the background.
     void (async () => {
@@ -161,7 +144,7 @@ export async function agentBuilderRoutes(server: FastifyInstance): Promise<void>
           process.env.SNF_RUNBOOKS_REPO_PATH ??
           path.resolve(process.env.HOME ?? '', 'Projects/snf-runbooks');
 
-        updateRun(runId, { status: 'compiling' });
+        await store.updateRun(runId, { status: 'compiling' });
         const result = await runAgentBuilderPipeline({
           uploads,
           targetDepartment,
@@ -176,14 +159,14 @@ export async function agentBuilderRoutes(server: FastifyInstance): Promise<void>
           },
         });
 
-        updateRun(runId, {
+        await store.updateRun(runId, {
           status: 'completed',
           sessionId: result.compile.sessionId,
           prUrl: result.pr.prUrl ?? undefined,
           result,
         });
       } catch (err) {
-        updateRun(runId, {
+        await store.updateRun(runId, {
           status: 'failed',
           error: err instanceof Error ? err.message : String(err),
         });
@@ -213,7 +196,7 @@ export async function agentBuilderRoutes(server: FastifyInstance): Promise<void>
       },
     },
     async (request, reply) => {
-      const row = runs.get(request.params.runId);
+      const row = await store.getRun(request.params.runId);
       if (!row) return reply.code(404).send({ error: 'run not found' });
       return reply.send(serialize(row));
     },
@@ -223,11 +206,8 @@ export async function agentBuilderRoutes(server: FastifyInstance): Promise<void>
    * GET /api/agent-builder/history — list recent runs.
    */
   server.get('/history', async (_request, reply) => {
-    const list = Array.from(runs.values())
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .slice(0, 50)
-      .map(serialize);
-    return reply.send({ runs: list });
+    const rows = await store.listRecent('snf-ensign-prod', 50);
+    return reply.send({ runs: rows.map(serialize) });
   });
 }
 

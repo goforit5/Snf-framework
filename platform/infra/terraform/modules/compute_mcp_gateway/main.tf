@@ -1,18 +1,26 @@
-# DEPRECATED: This module has been split into compute_orchestrator/ and
-# compute_mcp_gateway/ as of SNF-106. Kept for reference only.
-#
 # =============================================================================
-# Compute Module — Container Orchestration (DEPRECATED)
+# Compute MCP Gateway Module — In-VPC PHI Gateway
 # =============================================================================
 # AWS:   ECS Fargate (serverless containers, no cluster management)
 # Azure: AKS (managed Kubernetes)
 #
+# Runs packages/connectors/src/gateway/:
+# - PCC, Workday, M365, Regulatory MCP connectors
+# - PHI tokenization layer
+# - snf-hitl and snf-action custom MCP servers
+#
 # HIPAA Compliance:
-# - Containers run in private subnets only
+# - ZERO public ingress — internal NLB only, no public ALB
+# - PHI never leaves this subnet
+# - mTLS between orchestrator and gateway (port 8443)
+# - Security group: inbound 8443 from orchestrator SG only
+# - Containers run in private subnets only (assign_public_ip = false)
 # - Secrets injected via Secrets Manager / Key Vault (never env vars)
+# - mTLS cert/key/CA paths point to mounted certificate files
 # - CloudWatch / Azure Monitor for audit logging
-# - TLS termination at load balancer
 # - No SSH/RDP access to container hosts
+#
+# Created by SNF-106: split from monolithic compute module
 # =============================================================================
 
 variable "cloud_provider" {
@@ -50,7 +58,7 @@ variable "desired_count" {
 }
 
 variable "container_image" {
-  description = "Docker image URI"
+  description = "Docker image URI for the MCP gateway"
   type        = string
 }
 
@@ -62,12 +70,9 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
-variable "public_subnet_ids" {
-  type = list(string)
-}
-
-variable "compute_security_group_id" {
-  type = string
+variable "orchestrator_security_group_id" {
+  description = "Security group ID of the orchestrator service — only source allowed inbound on 8443"
+  type        = string
 }
 
 variable "db_connection_string" {
@@ -81,6 +86,22 @@ variable "secret_arns" {
   default     = {}
 }
 
+# mTLS configuration — paths to mounted certificate files
+variable "mtls_cert_path" {
+  description = "Path to mTLS client/server certificate file (mounted in container)"
+  type        = string
+}
+
+variable "mtls_key_path" {
+  description = "Path to mTLS private key file (mounted in container)"
+  type        = string
+}
+
+variable "mtls_ca_path" {
+  description = "Path to mTLS CA certificate file (mounted in container)"
+  type        = string
+}
+
 locals {
   is_aws      = var.cloud_provider == "aws"
   is_azure    = var.cloud_provider == "azure"
@@ -88,12 +109,47 @@ locals {
 }
 
 # =============================================================================
+# AWS: Security Group — HIPAA: Zero public ingress
+# =============================================================================
+
+resource "aws_security_group" "mcp_gateway" {
+  count = local.is_aws ? 1 : 0
+
+  name        = "${local.name_prefix}-mcp-gateway-sg"
+  description = "HIPAA: MCP gateway — inbound 8443 from orchestrator only, no public access"
+  vpc_id      = var.vpc_id
+
+  # HIPAA: Only the orchestrator can reach the gateway on port 8443
+  ingress {
+    description     = "mTLS from orchestrator"
+    from_port       = 8443
+    to_port         = 8443
+    protocol        = "tcp"
+    security_groups = [var.orchestrator_security_group_id]
+  }
+
+  # Outbound: allow all (connectors need to reach PCC, Workday, M365 APIs)
+  egress {
+    description = "Outbound to external APIs (PCC, Workday, M365, CMS/OIG/SAM)"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name       = "${local.name_prefix}-mcp-gateway-sg"
+    Compliance = "HIPAA"
+  }
+}
+
+# =============================================================================
 # AWS: ECS Fargate
 # =============================================================================
 
-resource "aws_ecs_cluster" "main" {
+resource "aws_ecs_cluster" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-cluster"
+  name  = "${local.name_prefix}-mcp-gateway-cluster"
 
   # HIPAA: Container Insights for monitoring and audit
   setting {
@@ -102,20 +158,20 @@ resource "aws_ecs_cluster" "main" {
   }
 
   tags = {
-    Name = "${local.name_prefix}-cluster"
+    Name = "${local.name_prefix}-mcp-gateway-cluster"
   }
 }
 
-resource "aws_cloudwatch_log_group" "ecs" {
+resource "aws_cloudwatch_log_group" "mcp_gateway" {
   count             = local.is_aws ? 1 : 0
-  name              = "/ecs/${local.name_prefix}"
+  name              = "/ecs/${local.name_prefix}-mcp-gateway"
   retention_in_days = var.environment == "production" ? 365 : 30
 }
 
 # IAM role for ECS task execution (pulling images, writing logs)
 resource "aws_iam_role" "ecs_execution" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-ecs-execution"
+  name  = "${local.name_prefix}-mcp-gw-ecs-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -138,7 +194,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 # HIPAA: Task role can read secrets but not modify them
 resource "aws_iam_role" "ecs_task" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-ecs-task"
+  name  = "${local.name_prefix}-mcp-gw-ecs-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -154,7 +210,7 @@ resource "aws_iam_role" "ecs_task" {
 
 resource "aws_iam_role_policy" "ecs_task_secrets" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-secrets-read"
+  name  = "${local.name_prefix}-mcp-gw-secrets-read"
   role  = aws_iam_role.ecs_task[0].id
 
   policy = jsonencode({
@@ -167,10 +223,10 @@ resource "aws_iam_role_policy" "ecs_task_secrets" {
   })
 }
 
-resource "aws_ecs_task_definition" "main" {
+resource "aws_ecs_task_definition" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
 
-  family                   = "${local.name_prefix}-api"
+  family                   = "${local.name_prefix}-mcp-gateway"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
@@ -179,12 +235,12 @@ resource "aws_ecs_task_definition" "main" {
   task_role_arn            = aws_iam_role.ecs_task[0].arn
 
   container_definitions = jsonencode([{
-    name      = "snf-api"
+    name      = "snf-mcp-gateway"
     image     = var.container_image
     essential = true
 
     portMappings = [{
-      containerPort = 3000
+      containerPort = 8443
       protocol      = "tcp"
     }]
 
@@ -196,22 +252,26 @@ resource "aws_ecs_task_definition" "main" {
       }
     ]
 
+    # mTLS cert paths point to mounted certificate files (not secrets)
     environment = [
       { name = "NODE_ENV", value = var.environment },
-      { name = "PORT", value = "3000" },
+      { name = "PORT", value = "8443" },
+      { name = "MTLS_CERT_PATH", value = var.mtls_cert_path },
+      { name = "MTLS_KEY_PATH", value = var.mtls_key_path },
+      { name = "MTLS_CA_PATH", value = var.mtls_ca_path },
     ]
 
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.ecs[0].name
+        "awslogs-group"         = aws_cloudwatch_log_group.mcp_gateway[0].name
         "awslogs-region"        = var.region
-        "awslogs-stream-prefix" = "api"
+        "awslogs-stream-prefix" = "mcp-gateway"
       }
     }
 
     healthCheck = {
-      command     = ["CMD-SHELL", "curl -f http://localhost:3000/health || exit 1"]
+      command     = ["CMD-SHELL", "curl -fk https://localhost:8443/health || exit 1"]
       interval    = 30
       timeout     = 5
       retries     = 3
@@ -220,80 +280,73 @@ resource "aws_ecs_task_definition" "main" {
   }])
 }
 
-resource "aws_ecs_service" "main" {
+resource "aws_ecs_service" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
 
-  name            = "${local.name_prefix}-api"
-  cluster         = aws_ecs_cluster.main[0].id
-  task_definition = aws_ecs_task_definition.main[0].arn
+  name            = "${local.name_prefix}-mcp-gateway"
+  cluster         = aws_ecs_cluster.mcp_gateway[0].id
+  task_definition = aws_ecs_task_definition.mcp_gateway[0].arn
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
-  # HIPAA: Run in private subnets only
+  # HIPAA: Run in private subnets only — PHI never leaves this subnet
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [var.compute_security_group_id]
+    security_groups  = [aws_security_group.mcp_gateway[0].id]
     assign_public_ip = false
   }
 
+  # Internal NLB for service discovery (no public ALB)
   load_balancer {
-    target_group_arn = aws_lb_target_group.main[0].arn
-    container_name   = "snf-api"
-    container_port   = 3000
+    target_group_arn = aws_lb_target_group.mcp_gateway[0].arn
+    container_name   = "snf-mcp-gateway"
+    container_port   = 8443
   }
 }
 
-# Application Load Balancer (public subnet, TLS termination)
-resource "aws_lb" "main" {
+# HIPAA: Internal Network Load Balancer — NO public access
+resource "aws_lb" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
 
-  name               = "${local.name_prefix}-alb"
-  internal           = false
-  load_balancer_type = "application"
-  security_groups    = [var.compute_security_group_id]
-  subnets            = var.public_subnet_ids
-
-  # HIPAA: Access logs for audit trail
-  access_logs {
-    bucket  = "${local.name_prefix}-alb-logs"
-    enabled = var.environment == "production"
-  }
+  name               = "${local.name_prefix}-mcp-gw-nlb"
+  internal           = true # HIPAA: Internal only — zero public ingress
+  load_balancer_type = "network"
+  subnets            = var.private_subnet_ids
 
   tags = {
-    Name = "${local.name_prefix}-alb"
+    Name       = "${local.name_prefix}-mcp-gateway-nlb"
+    Compliance = "HIPAA"
   }
 }
 
-resource "aws_lb_target_group" "main" {
+resource "aws_lb_target_group" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
 
-  name        = "${local.name_prefix}-tg"
-  port        = 3000
-  protocol    = "HTTP"
+  name        = "${local.name_prefix}-mcp-gw-tg"
+  port        = 8443
+  protocol    = "TCP"
   vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {
-    path                = "/health"
+    protocol            = "TCP"
+    port                = 8443
     healthy_threshold   = 2
     unhealthy_threshold = 3
-    timeout             = 5
     interval            = 30
   }
 }
 
-resource "aws_lb_listener" "https" {
+resource "aws_lb_listener" "mcp_gateway" {
   count = local.is_aws ? 1 : 0
 
-  load_balancer_arn = aws_lb.main[0].arn
-  port              = "443"
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06" # HIPAA: TLS 1.2+ only
-  certificate_arn   = "arn:aws:acm:${var.region}:ACCOUNT_ID:certificate/PLACEHOLDER"
+  load_balancer_arn = aws_lb.mcp_gateway[0].arn
+  port              = 8443
+  protocol          = "TCP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.main[0].arn
+    target_group_arn = aws_lb_target_group.mcp_gateway[0].arn
   }
 }
 
@@ -306,16 +359,16 @@ data "azurerm_resource_group" "main" {
   name  = "${local.name_prefix}-rg"
 }
 
-resource "azurerm_kubernetes_cluster" "main" {
+resource "azurerm_kubernetes_cluster" "mcp_gateway" {
   count = local.is_azure ? 1 : 0
 
-  name                = "${local.name_prefix}-aks"
+  name                = "${local.name_prefix}-mcp-gateway-aks"
   resource_group_name = data.azurerm_resource_group.main[0].name
   location            = data.azurerm_resource_group.main[0].location
-  dns_prefix          = local.name_prefix
+  dns_prefix          = "${local.name_prefix}-mcp-gateway"
 
   # HIPAA: Private cluster — API server not exposed to internet
-  private_cluster_enabled = var.environment == "production"
+  private_cluster_enabled = true # Always private — PHI gateway
 
   default_node_pool {
     name           = "system"
@@ -333,7 +386,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   # HIPAA: Azure Monitor for container logs
   oms_agent {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.main[0].id
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.mcp_gateway[0].id
   }
 
   network_profile {
@@ -347,9 +400,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "main" {
+resource "azurerm_log_analytics_workspace" "mcp_gateway" {
   count               = local.is_azure ? 1 : 0
-  name                = "${local.name_prefix}-logs"
+  name                = "${local.name_prefix}-mcp-gw-logs"
   resource_group_name = data.azurerm_resource_group.main[0].name
   location            = data.azurerm_resource_group.main[0].location
   sku                 = "PerGB2018"
@@ -360,18 +413,23 @@ resource "azurerm_log_analytics_workspace" "main" {
 # Outputs
 # =============================================================================
 
-output "service_url" {
-  description = "URL of the deployed platform API"
+output "internal_endpoint" {
+  description = "Internal NLB endpoint for the MCP gateway (no public access)"
   value = local.is_aws ? (
-    "https://${aws_lb.main[0].dns_name}"
+    "https://${aws_lb.mcp_gateway[0].dns_name}:8443"
   ) : (
-    local.is_azure ? "https://${azurerm_kubernetes_cluster.main[0].fqdn}" : ""
+    local.is_azure ? "https://${azurerm_kubernetes_cluster.mcp_gateway[0].fqdn}:8443" : ""
   )
 }
 
 output "cluster_arn" {
   description = "ECS Cluster ARN (AWS) or AKS Cluster ID (Azure)"
-  value = local.is_aws ? aws_ecs_cluster.main[0].arn : (
-    local.is_azure ? azurerm_kubernetes_cluster.main[0].id : ""
+  value = local.is_aws ? aws_ecs_cluster.mcp_gateway[0].arn : (
+    local.is_azure ? azurerm_kubernetes_cluster.mcp_gateway[0].id : ""
   )
+}
+
+output "security_group_id" {
+  description = "Security group ID of the MCP gateway"
+  value       = local.is_aws ? aws_security_group.mcp_gateway[0].id : ""
 }

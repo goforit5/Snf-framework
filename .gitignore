@@ -18,3 +18,5 @@ xcuserdata/
 ~$*.xlsx
 ~$*.docx
 ~$*.pptx
+.terraform/
+*.terraform.lock.hcl

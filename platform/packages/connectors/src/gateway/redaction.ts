@@ -105,17 +105,31 @@ export interface PgLike {
 }
 
 export class PostgresTokenStore implements TokenStore {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  constructor(private readonly _pg: PgLike) {}
+  constructor(private readonly pg: PgLike) {}
 
-  async get(_token: string): Promise<string | null> {
-    throw new Error('TODO(wave-1-deploy): PostgresTokenStore.get not implemented');
+  async get(token: string): Promise<string | null> {
+    const { rows } = await this.pg.query<{ original: string }>(
+      'SELECT original FROM phi_tokens WHERE token = $1',
+      [token],
+    );
+    return rows[0]?.original ?? null;
   }
-  async put(_token: string, _record: PhiToken): Promise<void> {
-    throw new Error('TODO(wave-1-deploy): PostgresTokenStore.put not implemented');
+
+  async put(token: string, record: PhiToken): Promise<void> {
+    await this.pg.query(
+      `INSERT INTO phi_tokens (token, kind, original)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (token) DO UPDATE SET kind = EXCLUDED.kind, original = EXCLUDED.original`,
+      [token, record.kind, record.original],
+    );
   }
-  async findByOriginal(_original: string, _kind: PhiKind): Promise<string | null> {
-    throw new Error('TODO(wave-1-deploy): PostgresTokenStore.findByOriginal not implemented');
+
+  async findByOriginal(original: string, kind: PhiKind): Promise<string | null> {
+    const { rows } = await this.pg.query<{ token: string }>(
+      'SELECT token FROM phi_tokens WHERE kind = $1 AND original = $2',
+      [kind, original],
+    );
+    return rows[0]?.token ?? null;
   }
 }
 

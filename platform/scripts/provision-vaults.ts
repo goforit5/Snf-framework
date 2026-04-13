@@ -6,6 +6,7 @@
  *
  * Usage:
  *   tsx platform/scripts/provision-vaults.ts [--tenant=snf-ensign-prod] [--dry-run]
+ *   tsx platform/scripts/provision-vaults.ts --force-rotate   # re-push all secrets
  *
  * Environment:
  *   ANTHROPIC_API_KEY   required unless --dry-run
@@ -16,6 +17,10 @@
  *
  * Dry-run never touches the network: it prints the plan using only the YAML
  * config and any env vars that happen to be set.
+ *
+ * --force-rotate forces all credentials to be updated even if the non-secret
+ * fields haven't changed. Use this when rotating OAuth client secrets or
+ * bearer tokens.
  */
 
 import { resolve } from 'node:path';
@@ -138,8 +143,10 @@ async function provisionTenant(
   beta: BetaClient | undefined,
   tenant: TenantConfig,
   dryRun: boolean,
-): Promise<{ vaultId: string; summary: ProvisionSummary }> {
+  forceRotate: boolean,
+): Promise<{ vaultId: string; summary: ProvisionSummary; errors: string[] }> {
   const summary = new ProvisionSummary();
+  const errors: string[] = [];
   console.log(`\nTenant: ${tenant.name}`);
 
   // 1. Find or create vault
@@ -191,31 +198,48 @@ async function provisionTenant(
 
   const credSummary = new ProvisionSummary();
   for (const cred of tenant.credentials) {
-    const existing = existingCreds.find((c) => c.name === cred.name);
-    const desiredDescriptor = describeCredential(cred);
-    const existingDescriptor = existing
-      ? {
-          name: existing.name,
-          type: existing.type,
-          ...(existing.metadata ?? {}),
-        }
-      : undefined;
-    const credDiff = diffShallow(desiredDescriptor, existingDescriptor);
-    printDiff(`  credential ${cred.name} (${cred.type})`, credDiff);
-    credSummary.record(credDiff.kind);
+    try {
+      const existing = existingCreds.find((c) => c.name === cred.name);
+      const desiredDescriptor = describeCredential(cred);
+      const existingDescriptor = existing
+        ? {
+            name: existing.name,
+            type: existing.type,
+            ...(existing.metadata ?? {}),
+          }
+        : undefined;
+      const credDiff = diffShallow(desiredDescriptor, existingDescriptor);
 
-    if (dryRun || !beta || !vault) continue;
+      // --force-rotate: treat existing unchanged credentials as updates
+      const effectiveKind =
+        forceRotate && existing && credDiff.kind === 'unchanged'
+          ? 'update'
+          : credDiff.kind;
 
-    const payload = buildCredentialPayload(cred, false);
-    if (!existing) {
-      await beta.vaults.credentials.create(vault.id, payload as never);
-    } else if (credDiff.kind === 'update') {
-      await beta.vaults.credentials.update(vault.id, existing.id, payload);
+      if (forceRotate && existing && credDiff.kind === 'unchanged') {
+        console.log(`  [~] credential ${cred.name} (${cred.type})  (force-rotate)`);
+      } else {
+        printDiff(`  credential ${cred.name} (${cred.type})`, credDiff);
+      }
+      credSummary.record(effectiveKind);
+
+      if (dryRun || !beta || !vault) continue;
+
+      const payload = buildCredentialPayload(cred, false);
+      if (!existing) {
+        await beta.vaults.credentials.create(vault.id, payload as never);
+      } else if (effectiveKind === 'update') {
+        await beta.vaults.credentials.update(vault.id, existing.id, payload);
+      }
+    } catch (err) {
+      const msg = `credential ${cred.name}: ${(err as Error).message}`;
+      console.error(`  [!] ${msg}`);
+      errors.push(msg);
     }
   }
 
   console.log(`  ${credSummary.format('credentials')}`);
-  return { vaultId, summary };
+  return { vaultId, summary, errors };
 }
 
 // ---------------------------------------------------------------------------
@@ -243,6 +267,22 @@ function writeBackVaultIds(updates: Record<string, string>): void {
 // Main
 // ---------------------------------------------------------------------------
 
+/**
+ * List all env vars required for a set of credentials so we can report
+ * missing ones upfront rather than failing mid-provision.
+ */
+function requiredEnvVars(credentials: CredentialConfig[]): string[] {
+  const vars: string[] = [];
+  for (const cred of credentials) {
+    if (cred.type === 'mcp_oauth') {
+      vars.push(cred.client_id_env, cred.client_secret_env);
+    } else {
+      vars.push(cred.token_env);
+    }
+  }
+  return vars;
+}
+
 async function main(): Promise<void> {
   const flags = parseCliFlags();
   const config = loadYamlConfig<VaultsConfig>(CONFIG_PATH);
@@ -254,6 +294,7 @@ async function main(): Promise<void> {
   console.log('='.repeat(60));
   console.log(`Config:   ${CONFIG_PATH}`);
   console.log(`Mode:     ${dryRun ? 'DRY-RUN (no mutations)' : 'LIVE'}`);
+  if (flags.forceRotate) console.log('Force:    --force-rotate (all credentials will be re-pushed)');
   if (!apiKey) {
     console.log('ANTHROPIC_API_KEY not set — running in plan-only mode.');
   }
@@ -267,14 +308,30 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Pre-flight: check all required env vars before making any API calls
+  if (!dryRun) {
+    const allCreds = tenants.flatMap((t) => t.credentials);
+    const missing = requiredEnvVars(allCreds).filter((v) => !optionalEnv(v));
+    if (missing.length > 0) {
+      console.error('\nMissing required environment variables:');
+      for (const v of missing) {
+        console.error(`  - ${v}`);
+      }
+      console.error('\nSet these env vars and re-run. See platform/docs/runbooks/vault-provisioning.md for details.');
+      process.exit(1);
+    }
+  }
+
   const beta = apiKey
     ? createBetaClient({ apiKey })
     : undefined;
 
   const idWriteBack: Record<string, string> = {};
+  const allErrors: string[] = [];
   for (const tenant of tenants) {
-    const { vaultId, summary } = await provisionTenant(beta, tenant, dryRun);
+    const { vaultId, summary, errors } = await provisionTenant(beta, tenant, dryRun, flags.forceRotate);
     console.log(`  ${summary.format(`vault ${tenant.name}`)}`);
+    allErrors.push(...errors);
     if (!dryRun && beta && !vaultId.startsWith('<')) {
       idWriteBack[tenant.name] = vaultId;
     }
@@ -283,6 +340,14 @@ async function main(): Promise<void> {
   if (!dryRun && Object.keys(idWriteBack).length > 0) {
     writeBackVaultIds(idWriteBack);
     console.log(`\nWrote vault IDs back to ${CONFIG_PATH}`);
+  }
+
+  if (allErrors.length > 0) {
+    console.error(`\n${allErrors.length} credential(s) failed:`);
+    for (const e of allErrors) {
+      console.error(`  - ${e}`);
+    }
+    process.exit(1);
   }
 
   console.log('\nDone.');

@@ -119,11 +119,11 @@ module "secrets" {
 }
 
 # -----------------------------------------------------------------------------
-# Compute Module (Container Orchestration)
+# Compute: Orchestrator (API + cron + WebSocket fan-out)
 # -----------------------------------------------------------------------------
 
-module "compute" {
-  source = "./modules/compute"
+module "compute_orchestrator" {
+  source = "./modules/compute_orchestrator"
 
   cloud_provider  = var.cloud_provider
   environment     = var.environment
@@ -131,7 +131,7 @@ module "compute" {
   region          = var.region
   cpu             = var.compute_cpu
   memory          = var.compute_memory
-  desired_count   = var.compute_desired_count
+  desired_count   = 1 # Stateful: cron scheduler + WebSocket fan-out
   container_image = var.container_image
 
   # Network dependencies
@@ -148,12 +148,52 @@ module "compute" {
 }
 
 # -----------------------------------------------------------------------------
+# Compute: MCP Gateway (in-VPC PHI connectors, mTLS)
+# -----------------------------------------------------------------------------
+
+module "compute_mcp_gateway" {
+  source = "./modules/compute_mcp_gateway"
+
+  cloud_provider  = var.cloud_provider
+  environment     = var.environment
+  project_name    = var.project_name
+  region          = var.region
+  cpu             = var.compute_cpu
+  memory          = var.compute_memory
+  desired_count   = var.compute_desired_count
+  container_image = var.mcp_gateway_image
+
+  # Network dependencies — private subnets only, no public access
+  vpc_id             = module.networking.vpc_id
+  private_subnet_ids = module.networking.private_subnet_ids
+
+  # HIPAA: Only the orchestrator can reach the gateway
+  orchestrator_security_group_id = module.compute_orchestrator.security_group_id
+
+  # Database connection
+  db_connection_string = module.database.connection_string
+
+  # Secrets
+  secret_arns = module.secrets.secret_arns
+
+  # mTLS configuration — cert files mounted into the container
+  mtls_cert_path = var.mtls_cert_path
+  mtls_key_path  = var.mtls_key_path
+  mtls_ca_path   = var.mtls_ca_path
+}
+
+# -----------------------------------------------------------------------------
 # Outputs
 # -----------------------------------------------------------------------------
 
 output "service_url" {
-  description = "URL of the deployed platform API"
-  value       = module.compute.service_url
+  description = "URL of the orchestrator API"
+  value       = module.compute_orchestrator.service_url
+}
+
+output "mcp_gateway_endpoint" {
+  description = "Internal endpoint for the MCP gateway (no public access)"
+  value       = module.compute_mcp_gateway.internal_endpoint
 }
 
 output "database_host" {

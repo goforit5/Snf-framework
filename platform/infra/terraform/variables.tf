@@ -105,7 +105,35 @@ variable "compute_desired_count" {
 }
 
 variable "container_image" {
-  description = "Docker image URI for the platform API (e.g., ECR/ACR repository URI with tag)"
+  description = "Docker image URI for the orchestrator (e.g., ECR/ACR repository URI with tag)"
   type        = string
   default     = "snf-agentic-platform:latest"
+}
+
+variable "mcp_gateway_image" {
+  description = "Docker image URI for the MCP gateway (e.g., ECR/ACR repository URI with tag)"
+  type        = string
+  default     = "snf-mcp-gateway:latest"
+}
+
+# -----------------------------------------------------------------------------
+# MCP Gateway mTLS Configuration
+# -----------------------------------------------------------------------------
+
+variable "mtls_cert_path" {
+  description = "Path to mTLS certificate file mounted in the MCP gateway container"
+  type        = string
+  default     = "/etc/mtls/tls.crt"
+}
+
+variable "mtls_key_path" {
+  description = "Path to mTLS private key file mounted in the MCP gateway container"
+  type        = string
+  default     = "/etc/mtls/tls.key"
+}
+
+variable "mtls_ca_path" {
+  description = "Path to mTLS CA certificate file mounted in the MCP gateway container"
+  type        = string
+  default     = "/etc/mtls/ca.crt"
 }

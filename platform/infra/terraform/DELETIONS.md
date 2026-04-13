@@ -18,17 +18,20 @@ orchestrator service. No agent-specific compute resources (agent ECS
 tasks, per-agent Lambdas, dedicated agent queues) exist in the current
 terraform tree, so there is nothing to delete.
 
-## TODO(wave-8-deploy)
+## ~~TODO(wave-8-deploy)~~ — RESOLVED (SNF-106)
 
-When Ensign credentials are provided and the orchestrator deploys for
-real, split `compute` into two service definitions:
+Completed in SNF-106. The monolithic `compute` module has been split into:
 
-- `compute_orchestrator` — runs `@snf/api` (which now boots the
-  orchestrator from `main.ts`). Single replica is fine; cron + WebSocket
-  fan-out are stateful.
-- `compute_mcp_gateway` — runs `packages/connectors/src/gateway/`. Place
-  in Ensign's PHI VPC subnet. mTLS materials from
+- `compute_orchestrator/` — runs `@snf/api` (boots orchestrator from
+  `main.ts`). Single replica; cron + WebSocket fan-out are stateful.
+  Public ALB for external access.
+- `compute_mcp_gateway/` — runs `packages/connectors/src/gateway/`.
+  Placed in Ensign's PHI VPC subnet with mTLS (port 8443). Internal NLB
+  only — zero public ingress. Security group restricts inbound to
+  orchestrator SG only. mTLS materials from
   `MTLS_CERT_PATH`/`MTLS_KEY_PATH`/`MTLS_CA_PATH`.
+
+The original `compute/main.tf` is deprecated and kept for reference.
 
 Anthropic Managed Agents themselves run as a remote SaaS — no Ensign
 compute is needed for the agent runtime itself, only for the in-VPC

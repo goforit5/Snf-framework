@@ -275,3 +275,27 @@ Append-only log of architecture decisions for the SNF Agentic Enterprise Platfor
 - First navigation to any page incurs a small chunk download (~5-25kB per page) -- imperceptible on broadband, acceptable on mobile
 - Three oversized pages (MorningStandup, AgentWorkLedger, AuditTrail) were further decomposed into sub-component directories to keep individual chunk sizes reasonable
 - Dynamic imports mean page components cannot be statically analyzed for unused exports -- tree shaking applies within chunks, not across them
+
+---
+
+## ADR-013 -- Official Anthropic Managed Agents SDK Only (No Custom Shims)
+
+**Date**: 2026-04-12
+**Status**: Accepted
+**Supersedes**: N/A (codifies direction that eliminates `beta-client.ts` shim written in Wave 5)
+**Decision**: Use ONLY Anthropic's official Managed Agents SDK (`@anthropic-ai/sdk`) for all agent orchestration. No custom REST shims, no hand-rolled HTTP wrappers, no beta-client workarounds.
+
+**Rationale**:
+- This platform is being presented to Ensign's CEO (Barry Port) and CTO -- it must work reliably against production APIs with zero custom HTTP code that could drift from the real API
+- The official SDK is the only supported integration path -- custom shims carry maintenance burden and silent breakage risk when API shapes change
+- Anthropic's SDK handles authentication, retries, rate limiting, and response parsing -- reimplementing these in a shim duplicates effort and introduces bugs
+- During the Wave 5 build (SNF-91/92), `@anthropic-ai/sdk@0.87.0` lacked typed `beta.agents`, `beta.sessions`, `beta.environments`, and `beta.vaults` namespaces, requiring a temporary REST shim (`beta-client.ts`, 536 lines). That shim is now deleted in favor of the official SDK
+
+**Implementation**: `platform/packages/orchestrator/src/` (SessionManager, EventRelay use SDK directly), `platform/scripts/provision-vaults.ts`, `platform/scripts/provision-environments.ts`, `platform/scripts/provision-agents.ts` (all use `@anthropic-ai/sdk` typed namespaces)
+
+**Consequences**:
+- `beta-client.ts` is permanently deleted -- no fallback shim
+- If the SDK lacks a feature, the team raises it with Anthropic rather than writing a workaround
+- SDK version must be kept current -- `@anthropic-ai/sdk` upgrades are treated as high-priority maintenance
+- All Zod validation of API responses is removed in favor of SDK's built-in TypeScript types
+- Provisioning scripts, session management, event relay, and HITL bridge all use the same SDK instance

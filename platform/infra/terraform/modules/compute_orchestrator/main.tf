@@ -1,11 +1,13 @@
-# DEPRECATED: This module has been split into compute_orchestrator/ and
-# compute_mcp_gateway/ as of SNF-106. Kept for reference only.
-#
 # =============================================================================
-# Compute Module — Container Orchestration (DEPRECATED)
+# Compute Orchestrator Module — SNF Platform API + Orchestrator
 # =============================================================================
 # AWS:   ECS Fargate (serverless containers, no cluster management)
 # Azure: AKS (managed Kubernetes)
+#
+# Runs @snf/api which boots the orchestrator from main.ts:
+# - SessionManager, TriggerRouter, EventRelay
+# - HITLBridge, AuditMirror, Fastify API
+# - Cron scheduler + WebSocket fan-out (stateful — single replica)
 #
 # HIPAA Compliance:
 # - Containers run in private subnets only
@@ -13,6 +15,8 @@
 # - CloudWatch / Azure Monitor for audit logging
 # - TLS termination at load balancer
 # - No SSH/RDP access to container hosts
+#
+# Created by SNF-106: split from monolithic compute module
 # =============================================================================
 
 variable "cloud_provider" {
@@ -44,13 +48,13 @@ variable "memory" {
 }
 
 variable "desired_count" {
-  description = "Number of container instances"
+  description = "Number of container instances (default 1 — stateful: cron scheduler + WebSocket fan-out)"
   type        = number
-  default     = 2
+  default     = 1
 }
 
 variable "container_image" {
-  description = "Docker image URI"
+  description = "Docker image URI for the orchestrator"
   type        = string
 }
 
@@ -91,9 +95,9 @@ locals {
 # AWS: ECS Fargate
 # =============================================================================
 
-resource "aws_ecs_cluster" "main" {
+resource "aws_ecs_cluster" "orchestrator" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-cluster"
+  name  = "${local.name_prefix}-orchestrator-cluster"
 
   # HIPAA: Container Insights for monitoring and audit
   setting {
@@ -102,20 +106,20 @@ resource "aws_ecs_cluster" "main" {
   }
 
   tags = {
-    Name = "${local.name_prefix}-cluster"
+    Name = "${local.name_prefix}-orchestrator-cluster"
   }
 }
 
-resource "aws_cloudwatch_log_group" "ecs" {
+resource "aws_cloudwatch_log_group" "orchestrator" {
   count             = local.is_aws ? 1 : 0
-  name              = "/ecs/${local.name_prefix}"
+  name              = "/ecs/${local.name_prefix}-orchestrator"
   retention_in_days = var.environment == "production" ? 365 : 30
 }
 
 # IAM role for ECS task execution (pulling images, writing logs)
 resource "aws_iam_role" "ecs_execution" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-ecs-execution"
+  name  = "${local.name_prefix}-orchestrator-ecs-execution"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -138,7 +142,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 # HIPAA: Task role can read secrets but not modify them
 resource "aws_iam_role" "ecs_task" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-ecs-task"
+  name  = "${local.name_prefix}-orchestrator-ecs-task"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -154,7 +158,7 @@ resource "aws_iam_role" "ecs_task" {
 
 resource "aws_iam_role_policy" "ecs_task_secrets" {
   count = local.is_aws ? 1 : 0
-  name  = "${local.name_prefix}-secrets-read"
+  name  = "${local.name_prefix}-orchestrator-secrets-read"
   role  = aws_iam_role.ecs_task[0].id
 
   policy = jsonencode({
@@ -167,10 +171,10 @@ resource "aws_iam_role_policy" "ecs_task_secrets" {
   })
 }
 
-resource "aws_ecs_task_definition" "main" {
+resource "aws_ecs_task_definition" "orchestrator" {
   count = local.is_aws ? 1 : 0
 
-  family                   = "${local.name_prefix}-api"
+  family                   = "${local.name_prefix}-orchestrator"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = var.cpu
@@ -179,7 +183,7 @@ resource "aws_ecs_task_definition" "main" {
   task_role_arn            = aws_iam_role.ecs_task[0].arn
 
   container_definitions = jsonencode([{
-    name      = "snf-api"
+    name      = "snf-orchestrator"
     image     = var.container_image
     essential = true
 
@@ -204,9 +208,9 @@ resource "aws_ecs_task_definition" "main" {
     logConfiguration = {
       logDriver = "awslogs"
       options = {
-        "awslogs-group"         = aws_cloudwatch_log_group.ecs[0].name
+        "awslogs-group"         = aws_cloudwatch_log_group.orchestrator[0].name
         "awslogs-region"        = var.region
-        "awslogs-stream-prefix" = "api"
+        "awslogs-stream-prefix" = "orchestrator"
       }
     }
 
@@ -220,12 +224,12 @@ resource "aws_ecs_task_definition" "main" {
   }])
 }
 
-resource "aws_ecs_service" "main" {
+resource "aws_ecs_service" "orchestrator" {
   count = local.is_aws ? 1 : 0
 
-  name            = "${local.name_prefix}-api"
-  cluster         = aws_ecs_cluster.main[0].id
-  task_definition = aws_ecs_task_definition.main[0].arn
+  name            = "${local.name_prefix}-orchestrator"
+  cluster         = aws_ecs_cluster.orchestrator[0].id
+  task_definition = aws_ecs_task_definition.orchestrator[0].arn
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
@@ -237,17 +241,17 @@ resource "aws_ecs_service" "main" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.main[0].arn
-    container_name   = "snf-api"
+    target_group_arn = aws_lb_target_group.orchestrator[0].arn
+    container_name   = "snf-orchestrator"
     container_port   = 3000
   }
 }
 
 # Application Load Balancer (public subnet, TLS termination)
-resource "aws_lb" "main" {
+resource "aws_lb" "orchestrator" {
   count = local.is_aws ? 1 : 0
 
-  name               = "${local.name_prefix}-alb"
+  name               = "${local.name_prefix}-orch-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.compute_security_group_id]
@@ -260,14 +264,14 @@ resource "aws_lb" "main" {
   }
 
   tags = {
-    Name = "${local.name_prefix}-alb"
+    Name = "${local.name_prefix}-orchestrator-alb"
   }
 }
 
-resource "aws_lb_target_group" "main" {
+resource "aws_lb_target_group" "orchestrator" {
   count = local.is_aws ? 1 : 0
 
-  name        = "${local.name_prefix}-tg"
+  name        = "${local.name_prefix}-orch-tg"
   port        = 3000
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
@@ -285,7 +289,7 @@ resource "aws_lb_target_group" "main" {
 resource "aws_lb_listener" "https" {
   count = local.is_aws ? 1 : 0
 
-  load_balancer_arn = aws_lb.main[0].arn
+  load_balancer_arn = aws_lb.orchestrator[0].arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06" # HIPAA: TLS 1.2+ only
@@ -293,7 +297,7 @@ resource "aws_lb_listener" "https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.main[0].arn
+    target_group_arn = aws_lb_target_group.orchestrator[0].arn
   }
 }
 
@@ -306,13 +310,13 @@ data "azurerm_resource_group" "main" {
   name  = "${local.name_prefix}-rg"
 }
 
-resource "azurerm_kubernetes_cluster" "main" {
+resource "azurerm_kubernetes_cluster" "orchestrator" {
   count = local.is_azure ? 1 : 0
 
-  name                = "${local.name_prefix}-aks"
+  name                = "${local.name_prefix}-orchestrator-aks"
   resource_group_name = data.azurerm_resource_group.main[0].name
   location            = data.azurerm_resource_group.main[0].location
-  dns_prefix          = local.name_prefix
+  dns_prefix          = "${local.name_prefix}-orchestrator"
 
   # HIPAA: Private cluster — API server not exposed to internet
   private_cluster_enabled = var.environment == "production"
@@ -333,7 +337,7 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   # HIPAA: Azure Monitor for container logs
   oms_agent {
-    log_analytics_workspace_id = azurerm_log_analytics_workspace.main[0].id
+    log_analytics_workspace_id = azurerm_log_analytics_workspace.orchestrator[0].id
   }
 
   network_profile {
@@ -347,9 +351,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "main" {
+resource "azurerm_log_analytics_workspace" "orchestrator" {
   count               = local.is_azure ? 1 : 0
-  name                = "${local.name_prefix}-logs"
+  name                = "${local.name_prefix}-orchestrator-logs"
   resource_group_name = data.azurerm_resource_group.main[0].name
   location            = data.azurerm_resource_group.main[0].location
   sku                 = "PerGB2018"
@@ -361,17 +365,22 @@ resource "azurerm_log_analytics_workspace" "main" {
 # =============================================================================
 
 output "service_url" {
-  description = "URL of the deployed platform API"
+  description = "URL of the orchestrator API"
   value = local.is_aws ? (
-    "https://${aws_lb.main[0].dns_name}"
+    "https://${aws_lb.orchestrator[0].dns_name}"
   ) : (
-    local.is_azure ? "https://${azurerm_kubernetes_cluster.main[0].fqdn}" : ""
+    local.is_azure ? "https://${azurerm_kubernetes_cluster.orchestrator[0].fqdn}" : ""
   )
 }
 
 output "cluster_arn" {
   description = "ECS Cluster ARN (AWS) or AKS Cluster ID (Azure)"
-  value = local.is_aws ? aws_ecs_cluster.main[0].arn : (
-    local.is_azure ? azurerm_kubernetes_cluster.main[0].id : ""
+  value = local.is_aws ? aws_ecs_cluster.orchestrator[0].arn : (
+    local.is_azure ? azurerm_kubernetes_cluster.orchestrator[0].id : ""
   )
+}
+
+output "security_group_id" {
+  description = "Security group ID for the orchestrator (used by MCP gateway to allow inbound)"
+  value       = var.compute_security_group_id
 }

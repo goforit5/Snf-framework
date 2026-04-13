@@ -78,16 +78,21 @@ export function optionalEnv(name: string): string | undefined {
 
 export interface ParsedFlags {
   dryRun: boolean;
+  forceRotate: boolean;
   tenant?: string;
   extras: Record<string, string>;
 }
 
 /** Minimal --flag=value parser. Avoids adding a CLI dep. */
 export function parseCliFlags(argv: string[] = process.argv.slice(2)): ParsedFlags {
-  const out: ParsedFlags = { dryRun: false, extras: {} };
+  const out: ParsedFlags = { dryRun: false, forceRotate: false, extras: {} };
   for (const arg of argv) {
     if (arg === '--dry-run' || arg === '--dryRun') {
       out.dryRun = true;
+      continue;
+    }
+    if (arg === '--force-rotate' || arg === '--forceRotate') {
+      out.forceRotate = true;
       continue;
     }
     if (arg.startsWith('--tenant=')) {

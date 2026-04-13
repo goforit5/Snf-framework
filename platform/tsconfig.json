@@ -35,5 +35,5 @@
     { "path": "./packages/api" },
     { "path": "./packages/orchestrator" }
   ],
-  "exclude": ["node_modules", "dist", ".deprecated"]
+  "exclude": ["node_modules", "dist"]
 }
