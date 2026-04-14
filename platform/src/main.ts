@@ -96,12 +96,24 @@ async function main(): Promise<void> {
 
   const databaseUrl = requireEnv('DATABASE_URL', config.databaseUrl);
 
+  const databaseSsl = process.env.DATABASE_SSL === 'true';
+  const isProduction = process.env.NODE_ENV === 'production';
+
   const pool = new Pool({
     connectionString: databaseUrl,
     max: 20,
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
+    ...(databaseSsl
+      ? {
+          ssl: {
+            rejectUnauthorized: isProduction, // true in production, false for staging self-signed certs
+          },
+        }
+      : {}),
   });
+
+  console.log(`[db] SSL: ${databaseSsl ? (isProduction ? 'enabled (strict)' : 'enabled (permissive)') : 'disabled'}`);
 
   try {
     const client = await pool.connect();

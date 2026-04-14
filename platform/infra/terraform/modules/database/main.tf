@@ -59,6 +59,12 @@ variable "db_security_group_id" {
   type = string
 }
 
+variable "auto_pause" {
+  description = "Enable auto-pause for Aurora Serverless (min_capacity=0). Default true for staging, false for production."
+  type        = bool
+  default     = null
+}
+
 locals {
   is_aws      = var.cloud_provider == "aws"
   is_azure    = var.cloud_provider == "azure"
@@ -111,8 +117,12 @@ resource "aws_rds_cluster" "main" {
   enabled_cloudwatch_logs_exports = ["postgresql"]
 
   # Aurora Serverless v2 scaling
+  # auto_pause: when enabled, min_capacity=0 allows Aurora to pause after idle (staging cost savings)
   serverlessv2_scaling_configuration {
-    min_capacity = var.environment == "production" ? 2 : 0.5
+    min_capacity = (
+      var.auto_pause != null ? (var.auto_pause ? 0 : (var.environment == "production" ? 2 : 0.5)) :
+      (var.environment == "production" ? 2 : 0)
+    )
     max_capacity = var.environment == "production" ? 16 : 4
   }
 

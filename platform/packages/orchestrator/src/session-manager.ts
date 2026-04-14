@@ -25,6 +25,7 @@ import type { Pool } from 'pg';
 import type { Logger } from 'pino';
 
 import type { BetaClient, Agent } from './beta-client.js';
+import type { KillSwitch } from './kill-switch.js';
 import type {
   AgentDepartment,
   ActiveSessionRef,
@@ -93,6 +94,11 @@ export interface SessionManagerOptions {
   defaultTenant?: string;
   logger: Logger;
   /**
+   * Optional kill switch — checked before every session launch.
+   * When disabled, launch() throws instead of creating a session.
+   */
+  killSwitch?: KillSwitch;
+  /**
    * Optional clock hook for deterministic tests. Must return an ISO string.
    */
   now?: () => string;
@@ -119,6 +125,7 @@ export class SessionManager {
   private readonly runbookBranch: string;
   private readonly defaultTenant: string;
   private readonly logger: Logger;
+  private readonly killSwitch?: KillSwitch;
   private readonly now: () => string;
 
   // Cached config. Cleared on fs.watch fire.
@@ -144,6 +151,7 @@ export class SessionManager {
     this.runbookBranch = opts.runbookBranch ?? 'main';
     this.defaultTenant = opts.defaultTenant ?? 'snf-ensign-prod';
     this.logger = opts.logger;
+    this.killSwitch = opts.killSwitch;
     this.now = opts.now ?? (() => new Date().toISOString());
   }
 
@@ -156,6 +164,18 @@ export class SessionManager {
   }
 
   async launch(request: SessionLaunchRequest): Promise<SessionLaunchResult> {
+    // Kill switch check — block all new sessions when disabled
+    if (this.killSwitch && !this.killSwitch.isEnabled()) {
+      const state = this.killSwitch.getState();
+      this.logger.warn(
+        { reason: state.reason, department: request.department },
+        'session.launch.blocked — kill switch is active',
+      );
+      throw new Error(
+        `SessionManager.launch: kill switch is active — ${state.reason ?? 'no reason provided'}`,
+      );
+    }
+
     const tenant = request.tenant || this.defaultTenant;
     const department = request.department;
 

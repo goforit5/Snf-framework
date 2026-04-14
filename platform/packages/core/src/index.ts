@@ -12,3 +12,4 @@ export * from './types/task.js';
 export * from './types/facility.js';
 export * from './types/credentials.js';
 export * from './types/events.js';
+export { scrubPhi, scrubPhiDeep, scrubLogMethod, getPhiPatterns } from './log-scrubber.js';

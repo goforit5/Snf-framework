@@ -13,6 +13,7 @@
     "typecheck": "tsc --build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "db:migrate": "npm run migrate --workspace=@snf/hitl",
     "db:seed": "npm run seed --workspace=@snf/hitl"
   },

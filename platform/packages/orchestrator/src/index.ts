@@ -10,6 +10,8 @@
 
 export { SessionManager } from './session-manager.js';
 export type { SessionManagerOptions, SessionManagerEvent } from './session-manager.js';
+export { KillSwitch } from './kill-switch.js';
+export type { KillSwitchState } from './kill-switch.js';
 export { bootOrchestrator } from './boot.js';
 export type { BootOrchestratorDeps, OrchestratorHandle } from './boot.js';
 export {
