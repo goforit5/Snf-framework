@@ -7,7 +7,7 @@ Project slug: `snf-framework`
 - Query: `/brain:ask <question> --project snf-framework` — search project knowledge
 - Lint: `/brain:review --project snf-framework` — health check for contradictions, gaps
 - Sync: `/brain:sync --project snf-framework` — capture session learnings
-- Browse: https://mxeeqcsnbcwnyresenne.supabase.co/functions/v1/brain-explorer
+- Browse: https://goforit5.github.io/brain-explorer/
 
 ## What This Is
 
