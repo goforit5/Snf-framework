@@ -4,7 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/Snf-framework/',
+  base: process.env.VITE_API_URL ? '/' : '/Snf-framework/',
   build: {
     rollupOptions: {
       output: {
@@ -14,6 +14,12 @@ export default defineConfig({
           'vendor-icons': ['lucide-react'],
         },
       },
+    },
+  },
+  server: {
+    proxy: {
+      '/api': { target: 'http://localhost:3100', changeOrigin: true },
+      '/ws': { target: 'ws://localhost:3100', ws: true },
     },
   },
 })

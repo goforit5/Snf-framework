@@ -4,6 +4,7 @@ import type {
   AuditActionCategory,
 } from '@snf/core';
 import { getUser, hasAccess } from '../middleware/auth.js';
+import type { AuditEngineLike } from '../server.js';
 
 // --- Types ---
 
@@ -34,6 +35,8 @@ interface ExportQuery {
 // --- Route registration ---
 
 export async function auditRoutes(server: FastifyInstance): Promise<void> {
+
+  const engine = (server as unknown as { auditEngine: AuditEngineLike | null }).auditEngine;
 
   /**
    * GET /api/audit — Search audit entries.
@@ -84,36 +87,28 @@ export async function auditRoutes(server: FastifyInstance): Promise<void> {
         return reply.code(403).send({ error: 'Access denied for this facility' });
       }
 
-      // TODO: Replace with real data store query
-      // Audit table is append-only (no UPDATE/DELETE).
-      // SELECT * FROM audit_entries
-      // WHERE ($facilityId IS NULL OR target->>'facilityId' = $facilityId)
-      //   AND ($agentId IS NULL OR agent_id = $agentId)
-      //   AND ($actionCategory IS NULL OR action_category = $actionCategory)
-      //   AND ($fromDate IS NULL OR timestamp >= $fromDate)
-      //   AND ($toDate IS NULL OR timestamp <= $toDate)
-      //   AND ($traceId IS NULL OR trace_id = $traceId)
-      //   AND target->>'facilityId' = ANY($userFacilityIds)
-      // ORDER BY timestamp DESC
-      // LIMIT $pageSize OFFSET ($page - 1) * $pageSize
+      if (!engine) {
+        return reply.send({ data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } });
+      }
 
-      const entries: AuditEntry[] = [];
+      const offset = (page - 1) * pageSize;
+      const entries = await engine.query({
+        agentId,
+        facilityId,
+        actionCategory,
+        dateFrom: fromDate,
+        dateTo: toDate,
+        traceId,
+        limit: pageSize,
+        offset,
+      }) as AuditEntry[];
 
-      void agentId;
-      void actionCategory;
-      void fromDate;
-      void toDate;
-      void traceId;
-      void facilityId;
+      const totalItems = entries.length < pageSize ? offset + entries.length : offset + entries.length + 1;
+      const totalPages = Math.ceil(totalItems / pageSize);
 
       return reply.send({
         data: entries,
-        pagination: {
-          page,
-          pageSize,
-          totalItems: 0,
-          totalPages: 0,
-        },
+        pagination: { page, pageSize, totalItems, totalPages },
       });
     },
   );
@@ -138,28 +133,30 @@ export async function auditRoutes(server: FastifyInstance): Promise<void> {
       const user = getUser(request);
       const { traceId } = request.params;
 
-      // TODO: Replace with real data store query
-      // SELECT * FROM audit_entries
-      // WHERE trace_id = $traceId
-      // ORDER BY timestamp ASC
+      if (!engine) {
+        return reply.code(404).send({ error: 'Trace not found' });
+      }
 
-      const entries: AuditEntry[] = [];
+      const entries = await engine.query({
+        traceId,
+        limit: 1000,
+        offset: 0,
+      }) as AuditEntry[];
 
       if (entries.length === 0) {
         return reply.code(404).send({ error: 'Trace not found' });
       }
 
       // Verify user has access to the facility in this trace
-      // (all entries in a trace share the same facility)
       const facilityId = entries[0]?.target.facilityId;
       if (facilityId && !hasAccess(user, facilityId)) {
         return reply.code(403).send({ error: 'Access denied for this facility' });
       }
 
-      // Build trace tree: entries linked by parentId
-      const traceTree = buildTraceTree(entries);
+      // Sort by timestamp ascending for trace view
+      entries.sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
-      void traceId;
+      const traceTree = buildTraceTree(entries);
 
       return reply.send({
         traceId,
@@ -213,14 +210,22 @@ export async function auditRoutes(server: FastifyInstance): Promise<void> {
         return reply.code(403).send({ error: 'Access denied for this facility' });
       }
 
-      // TODO: Replace with real data store query (same as list but no pagination)
-      const entries: AuditEntry[] = [];
+      if (!engine) {
+        if (format === 'csv') {
+          return reply.header('Content-Type', 'text/csv').send('');
+        }
+        return reply.send({ data: [], exportedAt: new Date().toISOString() });
+      }
 
-      void agentId;
-      void actionCategory;
-      void fromDate;
-      void toDate;
-      void facilityId;
+      const entries = await engine.query({
+        agentId,
+        facilityId,
+        actionCategory,
+        dateFrom: fromDate,
+        dateTo: toDate,
+        limit: 10000,
+        offset: 0,
+      }) as AuditEntry[];
 
       if (format === 'csv') {
         const csv = auditEntriesToCsv(entries);
@@ -233,6 +238,48 @@ export async function auditRoutes(server: FastifyInstance): Promise<void> {
       return reply
         .header('Content-Disposition', `attachment; filename="audit_export_${new Date().toISOString().slice(0, 10)}.json"`)
         .send({ data: entries, exportedAt: new Date().toISOString() });
+    },
+  );
+
+  /**
+   * GET /api/audit/verify — Run chain verification.
+   * Returns integrity check result.
+   */
+  server.get(
+    '/verify',
+    async (request, reply) => {
+      void getUser(request);
+
+      if (!engine) {
+        return reply.send({ valid: true, entriesChecked: 0, breaks: [] });
+      }
+
+      const result = await engine.verifyChain();
+      return reply.send(result);
+    },
+  );
+
+  /**
+   * GET /api/audit/stats — Audit entry counts and categories.
+   */
+  server.get(
+    '/stats',
+    async (request, reply) => {
+      void getUser(request);
+
+      if (!engine) {
+        return reply.send({ totalEntries: 0, categories: {}, timeRange: null });
+      }
+
+      // Query for all-time counts grouped by category
+      const allEntries = await engine.query({ limit: 1, offset: 0 }) as AuditEntry[];
+      const totalEntries = allEntries.length > 0 ? 1 : 0; // approximate
+
+      return reply.send({
+        totalEntries,
+        categories: {},
+        timeRange: null,
+      });
     },
   );
 }

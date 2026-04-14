@@ -6,9 +6,11 @@
  */
 
 export { buildServer } from './server.js';
+export type { BuildServerOptions, DecisionServiceLike, AuditEngineLike, TriggerRouterLike } from './server.js';
 export { decisionsRoutes } from './routes/decisions.js';
 export { agentsRoutes } from './routes/agents.js';
 export { auditRoutes } from './routes/audit.js';
+export { demoRoutes } from './routes/demo.js';
 export { websocketHandler, connectionManager } from './websocket/handler.js';
 export type {
   WsEvent,

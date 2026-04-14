@@ -3,9 +3,10 @@ import type {
   Decision,
   DecisionStatus,
   DecisionPriority,
-  DecisionAction,
 } from '@snf/core';
 import { getUser, hasAccess, hasRole, APPROVAL_ROLES } from '../middleware/auth.js';
+import type { DecisionServiceLike } from '../server.js';
+import { connectionManager } from '../websocket/handler.js';
 
 // --- JSON Schema definitions for Fastify validation ---
 
@@ -83,6 +84,8 @@ interface DecisionStats {
 
 export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
 
+  const svc = (server as unknown as { decisionService: DecisionServiceLike | null }).decisionService;
+
   /**
    * GET /api/decisions — List pending decisions.
    * Paginated, filterable by facility/domain/priority/status.
@@ -121,8 +124,6 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
         status = 'pending',
         page = 1,
         pageSize = 25,
-        sortBy = 'createdAt',
-        sortOrder = 'desc',
       } = request.query;
 
       // Scope to user's facility access
@@ -130,35 +131,28 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
         return reply.code(403).send({ error: 'Access denied for this facility' });
       }
 
-      // TODO: Replace with real data store query
-      // This is the query contract:
-      //   SELECT * FROM decisions
-      //   WHERE status = $status
-      //     AND ($facilityId IS NULL OR facility_id = $facilityId)
-      //     AND ($domain IS NULL OR domain = $domain)
-      //     AND ($priority IS NULL OR priority = $priority)
-      //     AND facility_id = ANY($userFacilityIds)  -- scoped access
-      //   ORDER BY $sortBy $sortOrder
-      //   LIMIT $pageSize OFFSET ($page - 1) * $pageSize
+      if (!svc) {
+        return reply.send({ data: [], pagination: { page, pageSize, totalItems: 0, totalPages: 0 } });
+      }
 
-      const result: PaginatedResponse<Decision> = {
-        data: [],
-        pagination: {
-          page,
-          pageSize,
-          totalItems: 0,
-          totalPages: 0,
-        },
-      };
+      const offset = (page - 1) * pageSize;
+      const data = await svc.getPending({
+        facilityId,
+        domain,
+        priority,
+        status,
+        limit: pageSize,
+        offset,
+      }) as Decision[];
 
-      void sortBy;
-      void sortOrder;
-      void domain;
-      void priority;
-      void status;
-      void facilityId;
+      // For total count, request one more page to detect if there are more
+      const totalItems = data.length < pageSize ? offset + data.length : offset + data.length + 1;
+      const totalPages = Math.ceil(totalItems / pageSize);
 
-      return reply.send(result);
+      return reply.send({
+        data,
+        pagination: { page, pageSize, totalItems, totalPages },
+      });
     },
   );
 
@@ -169,21 +163,41 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
   server.get(
     '/stats',
     async (request, reply) => {
-      const user = getUser(request);
+      void getUser(request);
 
-      // TODO: Replace with real aggregation query scoped to user's facilities
+      if (!svc) {
+        const stats: DecisionStats = {
+          pending: 0, resolvedToday: 0, avgResolutionMs: 0,
+          byDomain: {}, byPriority: { critical: 0, high: 0, medium: 0, low: 0 },
+          approvalRate: 0, overrideRate: 0, escalationRate: 0,
+        };
+        return reply.send(stats);
+      }
+
+      const dbStats = await svc.getStats() as {
+        pending: number;
+        avgResolutionMs: number;
+        byDomain: Record<string, number>;
+        byPriority: Record<string, number>;
+        overrideRate: number;
+      };
+
       const stats: DecisionStats = {
-        pending: 0,
-        resolvedToday: 0,
-        avgResolutionMs: 0,
-        byDomain: {},
-        byPriority: { critical: 0, high: 0, medium: 0, low: 0 },
-        approvalRate: 0,
-        overrideRate: 0,
+        pending: dbStats.pending,
+        resolvedToday: 0, // DecisionService.getStats doesn't track this yet
+        avgResolutionMs: dbStats.avgResolutionMs,
+        byDomain: dbStats.byDomain,
+        byPriority: {
+          critical: dbStats.byPriority.critical ?? 0,
+          high: dbStats.byPriority.high ?? 0,
+          medium: dbStats.byPriority.medium ?? 0,
+          low: dbStats.byPriority.low ?? 0,
+        },
+        approvalRate: 1 - dbStats.overrideRate,
+        overrideRate: dbStats.overrideRate,
         escalationRate: 0,
       };
 
-      void user;
       return reply.send(stats);
     },
   );
@@ -206,16 +220,17 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
       const user = getUser(request);
       const { id } = request.params;
 
-      // TODO: Replace with real data store lookup
-      // TODO: Wire to DecisionService when database is connected
-      // const decision = await decisionService.getById(id);
-      const decision = null as Decision | null;
+      if (!svc) {
+        return reply.code(404).send({ error: 'Decision not found' });
+      }
+
+      const decision = await svc.getById(id) as Decision | null;
 
       if (!decision) {
         return reply.code(404).send({ error: 'Decision not found' });
       }
 
-      if (!hasAccess(user, (decision as Decision).facilityId)) {
+      if (!hasAccess(user, decision.facilityId)) {
         return reply.code(403).send({ error: 'Access denied for this facility' });
       }
 
@@ -249,30 +264,35 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
       const { id } = request.params;
       const { note } = request.body;
 
-      const action: DecisionAction = {
-        decisionId: id,
-        action: 'approve',
-        userId: user.userId,
-        note: note || null,
-        overrideValue: null,
-      };
+      if (!svc) {
+        return reply.code(503).send({ error: 'DecisionService not available' });
+      }
 
-      // TODO: Execute decision action through HITL service
-      // 1. Validate decision exists and is pending
-      // 2. Check governance level (Level 5 = dual approval)
-      // 3. Update decision status
-      // 4. Create audit entry
-      // 5. Trigger agent execution
-      // 6. Push WebSocket event
+      try {
+        const updated = await svc.approve(id, user.userId, note) as Decision;
 
-      void action;
+        connectionManager.pushDecisionUpdate(
+          { decisionId: id, status: 'approved', resolvedBy: user.userId, resolvedAt: updated.resolvedAt ?? new Date().toISOString() },
+          updated.facilityId,
+          updated.domain,
+        );
 
-      return reply.code(200).send({
-        decisionId: id,
-        status: 'approved',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: user.userId,
-      });
+        return reply.code(200).send({
+          decisionId: id,
+          status: 'approved',
+          resolvedAt: updated.resolvedAt,
+          resolvedBy: user.userId,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('not found')) {
+          return reply.code(404).send({ error: message });
+        }
+        if (message.includes('already')) {
+          return reply.code(409).send({ error: message });
+        }
+        throw err;
+      }
     },
   );
 
@@ -309,31 +329,35 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
       const { id } = request.params;
       const { note, overrideValue } = request.body;
 
-      const action: DecisionAction = {
-        decisionId: id,
-        action: 'override',
-        userId: user.userId,
-        note: note || null,
-        overrideValue: overrideValue ?? null,
-      };
+      if (!svc) {
+        return reply.code(503).send({ error: 'DecisionService not available' });
+      }
 
-      // TODO: Execute override through HITL service
-      // 1. Validate decision exists and is pending
-      // 2. Store original recommendation for audit
-      // 3. Update decision with override value
-      // 4. Create audit entry with humanOverride field
-      // 5. Trigger agent execution with overridden value
-      // 6. Increment agent override counter (affects agent probation)
-      // 7. Push WebSocket event
+      try {
+        const updated = await svc.override(id, user.userId, overrideValue ?? '', note) as Decision;
 
-      void action;
+        connectionManager.pushDecisionUpdate(
+          { decisionId: id, status: 'overridden', resolvedBy: user.userId, resolvedAt: updated.resolvedAt ?? new Date().toISOString() },
+          updated.facilityId,
+          updated.domain,
+        );
 
-      return reply.code(200).send({
-        decisionId: id,
-        status: 'overridden',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: user.userId,
-      });
+        return reply.code(200).send({
+          decisionId: id,
+          status: 'overridden',
+          resolvedAt: updated.resolvedAt,
+          resolvedBy: user.userId,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('not found')) {
+          return reply.code(404).send({ error: message });
+        }
+        if (message.includes('already')) {
+          return reply.code(409).send({ error: message });
+        }
+        throw err;
+      }
     },
   );
 
@@ -357,30 +381,35 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
       const { id } = request.params;
       const { note } = request.body;
 
-      const action: DecisionAction = {
-        decisionId: id,
-        action: 'escalate',
-        userId: user.userId,
-        note: note || null,
-        overrideValue: null,
-      };
+      if (!svc) {
+        return reply.code(503).send({ error: 'DecisionService not available' });
+      }
 
-      // TODO: Execute escalation through HITL service
-      // 1. Validate decision exists and is pending
-      // 2. Determine escalation target (next governance level)
-      // 3. Update decision status
-      // 4. Create audit entry
-      // 5. Notify escalation target (email/push)
-      // 6. Push WebSocket event
+      try {
+        const updated = await svc.escalate(id, user.userId, note) as Decision;
 
-      void action;
+        connectionManager.pushDecisionUpdate(
+          { decisionId: id, status: 'escalated', resolvedBy: user.userId, resolvedAt: updated.resolvedAt ?? new Date().toISOString() },
+          updated.facilityId,
+          updated.domain,
+        );
 
-      return reply.code(200).send({
-        decisionId: id,
-        status: 'escalated',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: user.userId,
-      });
+        return reply.code(200).send({
+          decisionId: id,
+          status: 'escalated',
+          resolvedAt: updated.resolvedAt,
+          resolvedBy: user.userId,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('not found')) {
+          return reply.code(404).send({ error: message });
+        }
+        if (message.includes('already')) {
+          return reply.code(409).send({ error: message });
+        }
+        throw err;
+      }
     },
   );
 
@@ -404,29 +433,35 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
       const { id } = request.params;
       const { note } = request.body;
 
-      const action: DecisionAction = {
-        decisionId: id,
-        action: 'defer',
-        userId: user.userId,
-        note: note || null,
-        overrideValue: null,
-      };
+      if (!svc) {
+        return reply.code(503).send({ error: 'DecisionService not available' });
+      }
 
-      // TODO: Execute deferral through HITL service
-      // 1. Validate decision exists and is pending
-      // 2. Update decision status to deferred
-      // 3. Create audit entry
-      // 4. If decision has timeout, ensure timeout action still applies
-      // 5. Push WebSocket event
+      try {
+        const updated = await svc.defer(id, user.userId, note) as Decision;
 
-      void action;
+        connectionManager.pushDecisionUpdate(
+          { decisionId: id, status: 'deferred', resolvedBy: user.userId, resolvedAt: updated.resolvedAt ?? new Date().toISOString() },
+          updated.facilityId,
+          updated.domain,
+        );
 
-      return reply.code(200).send({
-        decisionId: id,
-        status: 'deferred',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: user.userId,
-      });
+        return reply.code(200).send({
+          decisionId: id,
+          status: 'deferred',
+          resolvedAt: updated.resolvedAt,
+          resolvedBy: user.userId,
+        });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes('not found')) {
+          return reply.code(404).send({ error: message });
+        }
+        if (message.includes('already')) {
+          return reply.code(409).send({ error: message });
+        }
+        throw err;
+      }
     },
   );
 }

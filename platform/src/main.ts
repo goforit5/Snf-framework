@@ -220,6 +220,9 @@ async function main(): Promise<void> {
   const server = await buildServer({
     logger: true,
     triggerRouter: orchestrator.triggerRouter,
+    pool,
+    decisionService,
+    auditEngine,
   });
 
   try {
