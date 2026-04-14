@@ -1,5 +1,14 @@
 # SNF Agentic Framework
 
+## Brain Wiki Integration
+Project slug: `snf-framework`
+- Session start: `/brain:pack snf-framework` for project context
+- Ingest: `/brain:ingest <url> --project snf-framework` — add docs, articles, specs
+- Query: `/brain:ask <question> --project snf-framework` — search project knowledge
+- Lint: `/brain:review --project snf-framework` — health check for contradictions, gaps
+- Sync: `/brain:sync --project snf-framework` — capture session learnings
+- Browse: https://mxeeqcsnbcwnyresenne.supabase.co/functions/v1/brain-explorer
+
 ## What This Is
 
 A production-ready agentic enterprise platform for skilled nursing facility (SNF) operations. Built as a React + Vite app with Tailwind CSS, deployed to GitHub Pages. This is the working platform that Andrew presents to healthcare executives and then connects to their live systems — PCC, Workday, Microsoft 365, SharePoint, and internal databases.
@@ -23,9 +32,9 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 - **Security architecture**: AWS Bedrock for in-VPC processing (BAA-covered, SOC 2, HITRUST). PHI never leaves Ensign's cloud. No new attack surface.
 - **Technical audience**: The CTO/tech team presentation focuses on architecture, API integration patterns, agent framework design, and security posture rather than business strategy.
 
-## Current State (as of 2026-03-31) — Production Ready
+## Current State (as of 2026-04-14) — Production Ready, Security Hardened
 
-**Platform status: COMPLETE.** All development work is finished. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
+**Platform status: COMPLETE.** All development work is finished. Security hardening complete. SDK adapter layer aligned to Anthropic Managed Agents API. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
 
 ### What is done
 
@@ -35,13 +44,33 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 - **Decision actions dispatch to NotificationCenter** — approve/override/escalate/defer all persist to the notification panel (bell icon) with appropriate severity levels, plus immediate toast feedback
 - **Agent action detail modals** — clicking any action row in Agent Operations opens a rich modal with agent name, domain badges, trigger, action taken, outcome, analysis, confidence %, time saved, cost impact, and policies verified
 - **330 facilities** with full detail (administrator, DON, phone, star ratings, survey dates) across Ensign's 15 operating states. Shared data layer powers both the portfolio heatmap and the facility operations page. Apple-level search/filter/sort with Spotlight-style search bar, region and status filter chips, and sort controls. Heatmap click-through deep-links to individual facility detail views via `?id=` query param
-- **Dark mode** with system preference detection and manual toggle (top bar). All 69 pages support light/dark
+- **Dark mode** with system preference detection and manual toggle (top bar). All 69 pages and all modals support light/dark
 - **Tablet responsive** — sidebar overlay on iPad portrait (768-1024px), 44px min touch targets on all DecisionCard buttons, responsive StatGrid columns, flex-wrap button containers
-- **Code splitting** — React.lazy on all pages, vendor chunks split (react 48 kB, recharts 429 kB, lucide 35 kB). Main bundle 454 kB (under Vite's 500 kB warning threshold)
-- **Zero lint errors, zero build warnings** across all 18 modified source files
+- **Code splitting** — React.lazy on all pages, vendor chunks split (react 48 kB, recharts 429 kB, lucide 35 kB). Main bundle 455 kB (under Vite's 500 kB warning threshold)
+- **Zero lint errors, zero build warnings, zero dead imports**
 - **3 oversized pages decomposed** into sub-components: MorningStandup (5 sub-components), AgentWorkLedger (5 sub-components), AuditTrail (3 sub-components)
 - **Native companion apps**: macOS and iOS apps in `SNF_macOS/` and `SNF_iOS/` with shared `SNFKit` package
-- **Production backend** (separate `platform/` directory): Claude Agent SDK agents, YAML task definitions, MCP connectors (PCC, Workday, M365, CMS/OIG/SAM), PostgreSQL + graph DB, immutable audit engine, event cascade system, decision replay, agent health monitoring
+- **Production backend** (separate `platform/` directory): Anthropic Managed Agents, YAML task definitions, MCP connectors (PCC, Workday, M365, CMS/OIG/SAM), PostgreSQL + graph DB, immutable audit engine, event cascade system, decision replay, agent health monitoring
+
+### Security hardening (completed 2026-04-14)
+
+- **JWT authentication** — real token verification with signature validation, exp claim checking, role/facility extraction (replaced hardcoded stub)
+- **WebSocket authentication** — JWT required via `?token=` query param on upgrade; unauthenticated connections rejected with 401
+- **RBAC enforcement** — escalate, defer, and trigger endpoints require appropriate roles; read_only/auditor users blocked from state-changing operations
+- **PHI token isolation** — session-scoped UUID prefix on all de-identification tokens prevents cross-session collision and silent overwrites
+- **Audit chain integrity** — monotonic sequence numbers for deterministic hash chain ordering under concurrent writes
+- **No hardcoded secrets** — Azure DB password removed from Terraform source, uses sensitive variable
+- **SSE streaming** — EventRelay upgraded from 500ms polling to `sdk.beta.sessions.events.stream()` with polling fallback
+
+### Managed Agents SDK alignment (completed 2026-04-14)
+
+- **Initial message** — sent as `user.message` event after session create (not dropped `initial_message` field)
+- **Agent version pinning** — `{ id, type: 'agent', version: N }` object instead of bare string
+- **Session status mapping** — checks `terminated`/`idle` (actual API values), not `completed`/`failed`/`cancelled`
+- **Terminal event type** — checks `session.status_terminated`/`session.status_idle`, not non-existent `session.completed`
+- **Event cursor** — uses `after_id` (correct SDK field), not `page` (ignored field that caused full refetch storms)
+- **HITL override** — uses `user.tool_confirmation` for MCP tools, not `user.custom_tool_result`
+- **Environment config** — nested `config:` YAML structure matching Anthropic API schema
 
 ### What needs Ensign credentials to activate
 
@@ -135,7 +164,7 @@ All presentations: Apple HIG design, dark mode, scroll-snap navigation, keyboard
 - **URL**: https://jirasite5.atlassian.net/browse/SNF
 - **Style**: Team-managed Kanban
 - **Assignee**: andrew@taskvisory.com
-- **Status**: All tickets Done. Platform complete, awaiting Ensign credentials for live integration.
+- **Status**: 16 tickets completed 2026-04-14 (SDK alignment, security hardening, frontend polish). 9 tickets remain — all require manual action (API key registration, AWS deployment). Platform code complete.
 
 ## Planning & Technical Documentation
 
@@ -182,3 +211,32 @@ When Barry provides credentials, the integration path is:
 5. **CMS/OIG/SAM** — Public API keys for regulatory compliance checks (already integrated, just needs activation).
 
 No code changes required — credential files are the only missing pieces.
+
+## Development Philosophy — FAANG / Apple / Anthropic Pro Standards
+
+**Every line of code in this project must meet the bar set by FAANG, Apple, and Anthropic's own engineering teams.** This is not aspirational — it is the minimum standard. Think like a senior engineer at Apple shipping to 1 billion users, or an Anthropic engineer shipping agent infrastructure that handles PHI.
+
+### Managed Agents — NOT "Agents SDK"
+
+**CRITICAL**: This project uses **Anthropic Managed Agents** (the production API at `platform.claude.com`). NEVER use the term "Agents SDK" or "Claude Agent SDK" — that is the open-source `claude_agent_sdk` package for building custom agents locally. This project uses the **Managed Agents API** via `@anthropic-ai/sdk` with `sdk.beta.sessions.*` and `sdk.beta.agents.*` endpoints.
+
+- **Correct**: "Managed Agents", "Managed Agents API", `sdk.beta.sessions.create()`, `sdk.beta.agents.create()`
+- **Wrong**: "Agents SDK", "Agent SDK", `claude_agent_sdk`, custom REST shims, hand-rolled HTTP calls
+- **Reference**: https://platform.claude.com/docs/en/managed-agents/overview
+- Always use the official `@anthropic-ai/sdk` TypeScript package — never wrap raw HTTP calls
+- Always pin agent versions in session creation via `{ id, type: 'agent', version: N }`
+- Always send initial instructions as `user.message` events, not constructor params
+- Always use SSE streaming (`sdk.beta.sessions.events.stream()`) over polling
+- Always use `after_id` for event cursor pagination
+- Always use `user.tool_confirmation` for MCP tool HITL responses
+
+### Engineering Quality Bar
+
+- **Zero warnings, zero lint errors** — every build must be clean. No suppressing warnings.
+- **Security by default** — JWT auth on every endpoint, RBAC on every state-changing operation, PHI tokenization with session isolation, audit chain integrity with monotonic ordering. No stubs, no "TODO: add auth later".
+- **Apple HIG design** — every UI element follows Apple Human Interface Guidelines. Clean typography, semantic colors, 44px touch targets, system dark mode support, <10s decision completion.
+- **Self-contained decisions** — every DecisionCard is a complete analyst briefing. The human never opens another application to make a decision.
+- **DRY architecture** — shared component library, hooks, and data layers. Pages are 150-250 lines of composition, not duplication.
+- **Production-grade error handling** — no silent failures, no swallowed exceptions, no `catch {}` blocks. Every error is logged, surfaced, or escalated.
+- **Type safety** — TypeScript strict mode in platform code. Interfaces for all API contracts. No `any` types.
+- **Test at system boundaries** — validate external API responses, JWT tokens, WebSocket handshakes. Trust internal code and framework guarantees.
