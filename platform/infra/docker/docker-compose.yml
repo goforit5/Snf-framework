@@ -115,6 +115,31 @@ services:
       start_period: 30s
 
   # ---------------------------------------------------------------------------
+  # MCP Gateway — Connector bridge (PCC, Workday, M365, CMS)
+  # ---------------------------------------------------------------------------
+  gateway:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.gateway
+    container_name: snf-gateway
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: "3001"
+      CONNECTOR_MODE: synthetic
+      DATABASE_URL: postgresql://snf_admin:snf_local_dev_only@postgres:5432/snf_platform
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ---------------------------------------------------------------------------
   # Adminer — Database Admin UI
   # ---------------------------------------------------------------------------
   # Lightweight database management at http://localhost:8080

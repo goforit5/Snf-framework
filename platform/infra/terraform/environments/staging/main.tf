@@ -8,24 +8,15 @@
 terraform {
   required_version = ">= 1.5.0"
 
-  # Uncomment and configure for your cloud provider:
-
-  # AWS S3 backend
-  # backend "s3" {
-  #   bucket         = "snf-terraform-state"
-  #   key            = "staging/terraform.tfstate"
-  #   region         = "us-east-1"
-  #   encrypt        = true  # HIPAA: state file encryption
-  #   dynamodb_table = "snf-terraform-locks"
-  # }
-
-  # Azure Blob backend
-  # backend "azurerm" {
-  #   resource_group_name  = "snf-terraform-state-rg"
-  #   storage_account_name = "snftfstate"
-  #   container_name       = "tfstate"
-  #   key                  = "staging/terraform.tfstate"
-  # }
+  # S3 backend — bucket name suffixed with account ID at init time:
+  #   terraform init -backend-config="bucket=snf-terraform-state-<ACCOUNT_ID>"
+  backend "s3" {
+    bucket         = "snf-terraform-state" # overridden at init via -backend-config
+    key            = "staging/terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true # HIPAA: state file encryption
+    dynamodb_table = "snf-terraform-locks"
+  }
 }
 
 module "snf_platform" {

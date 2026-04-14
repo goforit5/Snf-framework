@@ -1,0 +1,73 @@
+# =============================================================================
+# SNF MCP Gateway — Multi-Stage Docker Build
+# =============================================================================
+# Stage 1: Build (Node 20, install deps, compile TypeScript)
+# Stage 2: Runtime (Node 20 slim, copy dist, run gateway)
+#
+# Build: docker build -f infra/docker/Dockerfile.gateway -t snf-mcp-gateway .
+# Run:   docker run -p 3001:3001 snf-mcp-gateway
+# =============================================================================
+
+# ---------------------------------------------------------------------------
+# Stage 1: Build
+# ---------------------------------------------------------------------------
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies first (layer caching optimization)
+COPY package.json package-lock.json* ./
+COPY packages/core/package.json ./packages/core/
+COPY packages/connectors/package.json ./packages/connectors/
+
+RUN npm ci --ignore-scripts
+
+# Copy source and compile
+COPY tsconfig.json ./
+COPY packages/core/ ./packages/core/
+COPY packages/connectors/ ./packages/connectors/
+
+RUN npm run build --workspace=@snf/core && \
+    npm run build --workspace=@snf/connectors
+
+# ---------------------------------------------------------------------------
+# Stage 2: Runtime
+# ---------------------------------------------------------------------------
+FROM node:20-slim AS runtime
+
+# Install curl for health checks
+RUN apt-get update && apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
+# Security: run as non-root user
+RUN groupadd --gid 1001 snf && \
+    useradd --uid 1001 --gid snf --shell /bin/sh --create-home snf
+
+WORKDIR /app
+
+# Install production dependencies only
+COPY package.json package-lock.json* ./
+COPY packages/core/package.json ./packages/core/
+COPY packages/connectors/package.json ./packages/connectors/
+
+RUN npm ci --omit=dev --ignore-scripts && \
+    npm cache clean --force
+
+# Copy compiled output from builder
+COPY --from=builder /app/packages/core/dist ./packages/core/dist
+COPY --from=builder /app/packages/connectors/dist ./packages/connectors/dist
+
+# Health check endpoint
+HEALTHCHECK --interval=10s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Non-root user
+USER snf
+
+EXPOSE 3001
+
+ENV NODE_ENV=production
+ENV PORT=3001
+ENV CONNECTOR_MODE=synthetic
+
+CMD ["node", "packages/connectors/dist/server.js"]

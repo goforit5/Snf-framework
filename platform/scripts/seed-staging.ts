@@ -1,21 +1,36 @@
 /**
- * Staging Data Seeder
+ * Staging Data Seeder — Comprehensive synthetic data for SNF demo environment.
  *
- * Seeds a staging database with representative test data:
- * - 10 facilities (subset of 330)
- * - 50 sample residents
- * - 100 sample decisions (mix of statuses)
- * - 500 audit trail entries with valid hash chains
- * - Agent run history
+ * Seeds Aurora Postgres with realistic healthcare data:
+ * - 12 agents (from agents.config.yaml)
+ * - 1000 decisions with analyst-quality narratives (incl. 5 hero decisions)
+ * - 2000 audit trail entries with valid SHA-256 hash chain
+ * - 200 agent runs with 3-8 steps each
+ * - 50 orchestrator sessions
  *
  * Usage:
  *   DATABASE_URL=postgres://... npx tsx scripts/seed-staging.ts
  *
- * Idempotent: clears existing seed data before inserting.
+ * Idempotent: truncates all seeded tables before inserting.
  */
 
 import { Client } from 'pg';
-import { createHash, randomUUID } from 'node:crypto';
+import { randomUUID } from 'node:crypto';
+import {
+  SeededRandom,
+  SEED_FACILITIES,
+  SEED_AGENTS,
+  DECISION_AGENT_IDS,
+  HERO_DECISIONS,
+  DOMAIN_TEMPLATES,
+  GENESIS_HASH,
+  computeAuditHash,
+  generateResidents,
+  type SeedFacility,
+  type SeedResident,
+  type SeedAgent,
+  type AuditEntryFields,
+} from './seed-data.js';
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -27,178 +42,232 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-// ---------------------------------------------------------------------------
-// Seed data
-// ---------------------------------------------------------------------------
+const RNG = new SeededRandom(42);
 
-const FACILITIES = [
-  { id: 'fac-001', name: 'Ensign Highlands Care Center', ccn: '055001', npi: '1234567890', regionId: 'region-west', state: 'CA', city: 'Riverside', address: '1200 Palm Drive', phone: '951-555-0101', administrator: 'Karen Mitchell', don: 'Sarah Chen', licensedBeds: 120, certifiedBeds: 110, currentCensus: 98, occupancyRate: 0.89, starRating: 4, lastSurveyDate: '2025-11-15', status: 'active' },
-  { id: 'fac-002', name: 'Cornerstone Health & Rehab', ccn: '055002', npi: '1234567891', regionId: 'region-west', state: 'CA', city: 'San Diego', address: '800 Coast Blvd', phone: '619-555-0102', administrator: 'James Porter', don: 'Maria Garcia', licensedBeds: 90, certifiedBeds: 85, currentCensus: 72, occupancyRate: 0.85, starRating: 3, lastSurveyDate: '2025-09-20', status: 'active' },
-  { id: 'fac-003', name: 'Desert View Skilled Nursing', ccn: '035001', npi: '1234567892', regionId: 'region-southwest', state: 'AZ', city: 'Phoenix', address: '4500 E Camelback Rd', phone: '602-555-0103', administrator: 'Lisa Thompson', don: 'Robert Kim', licensedBeds: 150, certifiedBeds: 140, currentCensus: 118, occupancyRate: 0.84, starRating: 5, lastSurveyDate: '2025-12-01', status: 'active' },
-  { id: 'fac-004', name: 'Mountain West Care Center', ccn: '495001', npi: '1234567893', regionId: 'region-mountain', state: 'UT', city: 'Salt Lake City', address: '200 S Temple St', phone: '801-555-0104', administrator: 'David Anderson', don: 'Jennifer Lee', licensedBeds: 80, certifiedBeds: 75, currentCensus: 68, occupancyRate: 0.91, starRating: 4, lastSurveyDate: '2025-10-10', status: 'active' },
-  { id: 'fac-005', name: 'Pacific Gardens SNF', ccn: '055003', npi: '1234567894', regionId: 'region-west', state: 'CA', city: 'Los Angeles', address: '1500 Wilshire Blvd', phone: '213-555-0105', administrator: 'Amanda White', don: 'Thomas Brown', licensedBeds: 200, certifiedBeds: 190, currentCensus: 165, occupancyRate: 0.87, starRating: 3, lastSurveyDate: '2025-08-25', status: 'active' },
-  { id: 'fac-006', name: 'Lone Star Rehab Center', ccn: '455001', npi: '1234567895', regionId: 'region-south', state: 'TX', city: 'Dallas', address: '3000 Main St', phone: '214-555-0106', administrator: 'Michael Davis', don: 'Patricia Martinez', licensedBeds: 160, certifiedBeds: 150, currentCensus: 132, occupancyRate: 0.88, starRating: 4, lastSurveyDate: '2025-11-30', status: 'active' },
-  { id: 'fac-007', name: 'Cascade Valley Health', ccn: '505001', npi: '1234567896', regionId: 'region-northwest', state: 'WA', city: 'Seattle', address: '700 Pine St', phone: '206-555-0107', administrator: 'Susan Clark', don: 'Daniel Wilson', licensedBeds: 100, certifiedBeds: 95, currentCensus: 82, occupancyRate: 0.86, starRating: 5, lastSurveyDate: '2026-01-05', status: 'active' },
-  { id: 'fac-008', name: 'Heartland Care Campus', ccn: '155001', npi: '1234567897', regionId: 'region-midwest', state: 'CO', city: 'Denver', address: '450 Broadway', phone: '303-555-0108', administrator: 'Richard Harris', don: 'Nancy Taylor', licensedBeds: 130, certifiedBeds: 125, currentCensus: 108, occupancyRate: 0.86, starRating: 3, lastSurveyDate: '2025-10-20', status: 'active' },
-  { id: 'fac-009', name: 'Silver Creek Nursing Home', ccn: '295001', npi: '1234567898', regionId: 'region-mountain', state: 'NV', city: 'Las Vegas', address: '2100 Las Vegas Blvd', phone: '702-555-0109', administrator: 'Barbara Moore', don: 'Charles Johnson', licensedBeds: 110, certifiedBeds: 100, currentCensus: 89, occupancyRate: 0.89, starRating: 4, lastSurveyDate: '2025-09-15', status: 'active' },
-  { id: 'fac-010', name: 'Heritage Oaks SNF', ccn: '325001', npi: '1234567899', regionId: 'region-south', state: 'TX', city: 'Houston', address: '5500 Westheimer Rd', phone: '713-555-0110', administrator: 'William Jones', don: 'Elizabeth Smith', licensedBeds: 180, certifiedBeds: 170, currentCensus: 148, occupancyRate: 0.87, starRating: 4, lastSurveyDate: '2025-12-10', status: 'active' },
-] as const;
-
-const FIRST_NAMES = ['Martha', 'Robert', 'Dorothy', 'James', 'Helen', 'William', 'Margaret', 'George', 'Ruth', 'Charles', 'Betty', 'Frank', 'Virginia', 'Harold', 'Florence', 'Raymond', 'Mildred', 'Eugene', 'Eleanor', 'Kenneth', 'Alice', 'Ralph', 'Evelyn', 'Albert', 'Gladys'];
-const LAST_NAMES = ['Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Wilson', 'Anderson', 'Taylor', 'Thomas', 'Jackson', 'White', 'Harris', 'Martin', 'Thompson', 'Robinson', 'Clark', 'Lewis', 'Lee', 'Walker', 'Hall', 'Allen', 'Young', 'King'];
-const PAYER_TYPES = ['medicare_a', 'medicare_b', 'medicaid', 'managed_care', 'private_pay', 'va'] as const;
-const CARE_LEVELS = ['skilled', 'intermediate', 'custodial', 'respite', 'hospice'] as const;
-const DIAGNOSES = ['Hypertension', 'Type 2 Diabetes', 'COPD', 'Heart Failure', 'Alzheimer\'s Disease', 'Hip Fracture', 'Stroke', 'Pneumonia', 'UTI', 'Parkinson\'s Disease'];
-
-const AGENT_IDS = [
-  'clinical-pharmacy-agent', 'clinical-infection-agent', 'clinical-therapy-agent',
-  'financial-billing-agent', 'financial-ar-agent', 'financial-treasury-agent',
-  'workforce-scheduling-agent', 'workforce-recruiting-agent',
-  'quality-outcomes-agent', 'quality-risk-agent',
-  'legal-compliance-agent', 'legal-contracts-agent',
-  'operations-environmental-agent', 'operations-supply-agent',
-  'admissions-census-agent', 'admissions-referral-agent',
-  'strategic-ma-agent',
+// Status distribution for 1000 decisions (minus 5 hero = 995 generated)
+const STATUS_DISTRIBUTION: string[] = [
+  ...Array(195).fill('pending'),      // 200 total (195 + 5 hero)
+  ...Array(400).fill('approved'),
+  ...Array(150).fill('overridden'),
+  ...Array(100).fill('escalated'),
+  ...Array(50).fill('deferred'),
+  ...Array(50).fill('auto_executed'),
+  ...Array(50).fill('expired'),
 ];
 
-const DECISION_CATEGORIES = [
-  'medication_reconciliation', 'psychotropic_review', 'infection_control',
-  'claim_denial', 'ar_followup', 'budget_variance',
-  'shift_coverage', 'license_expiry', 'credential_verification',
-  'survey_readiness', 'grievance_response', 'fall_investigation',
-  'contract_renewal', 'regulatory_filing',
-  'supply_reorder', 'work_order_approval',
-  'admission_review', 'discharge_planning',
+// Domain distribution weights for 995 generated decisions
+const DOMAIN_WEIGHTS: { domain: string; weight: number }[] = [
+  { domain: 'clinical', weight: 20 },
+  { domain: 'financial', weight: 15 },
+  { domain: 'workforce', weight: 15 },
+  { domain: 'admissions', weight: 10 },
+  { domain: 'quality', weight: 12 },
+  { domain: 'legal', weight: 8 },
+  { domain: 'operations', weight: 10 },
+  { domain: 'strategic', weight: 5 },
+  { domain: 'revenue', weight: 5 },
 ];
-
-const DECISION_STATUSES = ['pending', 'approved', 'overridden', 'escalated', 'deferred', 'auto_executed', 'expired'] as const;
-const PRIORITIES = ['critical', 'high', 'medium', 'low'] as const;
-const GOVERNANCE_LEVELS = [0, 1, 2, 3, 4, 5, 6] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function pick<T>(arr: readonly T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+function daysAgo(days: number): Date {
+  return new Date(Date.now() - days * 86400000);
 }
 
-function pickN<T>(arr: readonly T[], n: number): T[] {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
+function isoDate(d: Date): string {
+  return d.toISOString();
 }
 
-function randomFloat(min: number, max: number): number {
-  return Math.round((min + Math.random() * (max - min)) * 100) / 100;
-}
+/** Distribute N items across domains using weights. */
+function distributeCounts(total: number, weights: { domain: string; weight: number }[]): Map<string, number> {
+  const totalWeight = weights.reduce((s, w) => s + w.weight, 0);
+  const counts = new Map<string, number>();
+  let remaining = total;
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(min + Math.random() * (max - min + 1));
-}
-
-const GENESIS_HASH = '0'.repeat(64);
-
-function computeHash(entry: Record<string, unknown>, previousHash: string): string {
-  const payload = { ...entry, previousHash };
-  const canonical = JSON.stringify(payload, Object.keys(payload).sort());
-  return createHash('sha256').update(canonical).digest('hex');
+  for (let i = 0; i < weights.length; i++) {
+    if (i === weights.length - 1) {
+      counts.set(weights[i].domain, remaining);
+    } else {
+      const count = Math.round((weights[i].weight / totalWeight) * total);
+      counts.set(weights[i].domain, count);
+      remaining -= count;
+    }
+  }
+  return counts;
 }
 
 // ---------------------------------------------------------------------------
-// Seed functions
+// Truncation — idempotent reset
 // ---------------------------------------------------------------------------
 
-async function seedFacilities(client: Client): Promise<void> {
-  console.log('Seeding 10 facilities...');
+async function truncateAll(client: Client): Promise<void> {
+  console.log('Truncating existing seed data...');
 
-  for (const fac of FACILITIES) {
+  // Order matters due to foreign key constraints
+  await client.query('TRUNCATE orchestrator_pending_decisions CASCADE');
+  await client.query('TRUNCATE orchestrator_sessions CASCADE');
+  await client.query('TRUNCATE agent_steps CASCADE');
+  await client.query('TRUNCATE agent_runs CASCADE');
+  await client.query('TRUNCATE agent_builder_runs CASCADE');
+  await client.query('TRUNCATE decision_queue CASCADE');
+  await client.query('TRUNCATE agent_registry CASCADE');
+
+  // Audit trail is partitioned — truncate parent cascades to partitions
+  await client.query('TRUNCATE audit_trail CASCADE');
+}
+
+// ---------------------------------------------------------------------------
+// Ensure audit trail partitions exist
+// ---------------------------------------------------------------------------
+
+async function ensureAuditPartitions(client: Client): Promise<void> {
+  console.log('Creating audit trail partitions for seed data date range...');
+
+  // Create partitions for past 6 months + 3 months ahead
+  for (let m = -6; m <= 3; m++) {
+    const target = new Date();
+    target.setMonth(target.getMonth() + m);
+    const year = target.getFullYear();
+    const month = target.getMonth() + 1;
+
+    try {
+      await client.query('SELECT create_audit_partition($1, $2)', [year, month]);
+    } catch {
+      // Partition may already exist — safe to ignore
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Seed: Agent Registry (12 agents)
+// ---------------------------------------------------------------------------
+
+async function seedAgentRegistry(client: Client): Promise<void> {
+  console.log('Seeding 12 agents into agent_registry...');
+
+  const systemPromptPlaceholder = 'System prompt loaded from file at runtime. See agents.config.yaml for prompt_file reference.';
+
+  for (const agent of SEED_AGENTS) {
+    const tools = agent.department === 'agent-builder'
+      ? ['github__open_pr']
+      : ['pcc', 'workday', 'm365', 'regulatory', 'snf-hitl', 'snf-action'].filter(() => RNG.next() > 0.3);
+
     await client.query(
-      `INSERT INTO facilities (id, name, ccn, npi, region_id, state, city, address, phone, administrator, don, licensed_beds, certified_beds, current_census, occupancy_rate, star_rating, last_survey_date, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-       ON CONFLICT (id) DO NOTHING`,
-      [fac.id, fac.name, fac.ccn, fac.npi, fac.regionId, fac.state, fac.city, fac.address, fac.phone, fac.administrator, fac.don, fac.licensedBeds, fac.certifiedBeds, fac.currentCensus, fac.occupancyRate, fac.starRating, fac.lastSurveyDate, fac.status],
+      `INSERT INTO agent_registry (
+        id, name, tier, domain, version, description,
+        model_id, system_prompt, tools, max_tokens,
+        governance_thresholds, schedule, event_triggers,
+        status, actions_today, avg_confidence, override_rate, last_run_at
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+      [
+        agent.id, agent.name,
+        agent.tier as string, agent.domain as string,
+        agent.version, agent.description,
+        agent.modelId, systemPromptPlaceholder,
+        JSON.stringify(tools), agent.modelId.includes('opus') ? 8192 : 4096,
+        JSON.stringify({ autoExecute: 0.95, recommend: 0.80, requireApproval: 0.60 }),
+        agent.tier === 'domain' ? JSON.stringify({ cron: '0 */4 * * *', timezone: 'America/Los_Angeles', description: 'Every 4 hours' }) : null,
+        JSON.stringify(agent.tier === 'domain' ? [`${agent.department}_event`] : []),
+        'active',
+        RNG.int(5, 45), RNG.float(0.82, 0.96), RNG.float(0.02, 0.12),
+        isoDate(daysAgo(RNG.int(0, 2))),
+      ],
     );
   }
 }
 
-async function seedResidents(client: Client): Promise<string[]> {
-  console.log('Seeding 50 residents...');
-  const residentIds: string[] = [];
+// ---------------------------------------------------------------------------
+// Seed: Decisions (1000 = 995 generated + 5 hero)
+// ---------------------------------------------------------------------------
 
-  for (let i = 0; i < 50; i++) {
-    const id = `res-${String(i + 1).padStart(3, '0')}`;
-    const facility = FACILITIES[i % FACILITIES.length];
-    const firstName = pick(FIRST_NAMES);
-    const lastName = pick(LAST_NAMES);
-    const roomNumber = `${randomInt(1, 3)}${String(randomInt(1, 20)).padStart(2, '0')}${pick(['A', 'B'])}`;
-    const admissionDate = new Date(Date.now() - randomInt(30, 365) * 86400000).toISOString().split('T')[0];
-    const payerType = pick(PAYER_TYPES);
-    const careLevel = pick(CARE_LEVELS);
-    const diagnoses = pickN(DIAGNOSES, randomInt(1, 4));
-
-    await client.query(
-      `INSERT INTO residents (id, facility_id, first_name, last_name, room_number, admission_date, payer_type, diagnoses, care_level, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       ON CONFLICT (id) DO NOTHING`,
-      [id, facility.id, firstName, lastName, roomNumber, admissionDate, payerType, JSON.stringify(diagnoses), careLevel, 'active'],
-    );
-
-    residentIds.push(id);
-  }
-
-  return residentIds;
+interface GeneratedDecision {
+  id: string;
+  traceId: string;
+  title: string;
+  description: string;
+  category: string;
+  domain: string;
+  agentId: string;
+  confidence: number;
+  recommendation: string;
+  reasoning: string[];
+  evidence: object[];
+  governanceLevel: number;
+  priority: string;
+  dollarAmount: number | null;
+  facilityId: string;
+  targetType: string;
+  targetId: string;
+  targetLabel: string;
+  status: string;
+  createdAt: Date;
+  resolvedAt: Date | null;
+  sourceSystems: string[];
+  impact: object;
 }
 
-async function seedDecisions(client: Client, residentIds: string[]): Promise<string[]> {
-  console.log('Seeding 100 decisions...');
-  const decisionIds: string[] = [];
+function generateDecisions(residents: SeedResident[]): GeneratedDecision[] {
+  const decisions: GeneratedDecision[] = [];
+  const domainCounts = distributeCounts(995, DOMAIN_WEIGHTS);
+  let statusIdx = 0;
 
-  // Distribution: 30 pending, 35 approved, 10 overridden, 10 escalated, 5 deferred, 5 auto_executed, 5 expired
-  const statusDistribution: DecisionStatusDist[] = [
-    ...Array(30).fill('pending'),
-    ...Array(35).fill('approved'),
-    ...Array(10).fill('overridden'),
-    ...Array(10).fill('escalated'),
-    ...Array(5).fill('deferred'),
-    ...Array(5).fill('auto_executed'),
-    ...Array(5).fill('expired'),
-  ];
-  type DecisionStatusDist = typeof DECISION_STATUSES[number];
+  for (const [domainKey, count] of domainCounts) {
+    const config = DOMAIN_TEMPLATES[domainKey];
+    if (!config) continue;
 
-  for (let i = 0; i < 100; i++) {
-    const id = randomUUID();
-    const traceId = randomUUID();
-    const facility = FACILITIES[i % FACILITIES.length];
-    const agentId = pick(AGENT_IDS);
-    const category = pick(DECISION_CATEGORIES);
-    const status = statusDistribution[i];
-    const priority = pick(PRIORITIES);
-    const confidence = randomFloat(0.60, 0.99);
-    const governanceLevel = pick(GOVERNANCE_LEVELS);
-    const dollarAmount = Math.random() > 0.5 ? randomFloat(100, 75000) : null;
-    const resident = pick(residentIds);
-    const createdAt = new Date(Date.now() - randomInt(0, 30) * 86400000);
-    const isResolved = status !== 'pending';
-    const resolvedAt = isResolved ? new Date(createdAt.getTime() + randomInt(300, 86400) * 1000) : null;
+    for (let i = 0; i < count; i++) {
+      const resident = RNG.pick(residents);
+      const facility = SEED_FACILITIES.find((f) => f.id === resident.facilityId) ?? RNG.pick(SEED_FACILITIES);
+      const template = RNG.pick(config.templates);
+      const generated = template(resident, facility, RNG);
 
-    const reasoning = [
-      `Agent analysis of ${category} for ${facility.name}`,
-      `Confidence: ${(confidence * 100).toFixed(1)}%`,
-      'Data sourced from PCC and internal systems',
-    ];
+      const status = STATUS_DISTRIBUTION[statusIdx % STATUS_DISTRIBUTION.length];
+      statusIdx++;
 
-    const evidence = [
-      { source: 'PCC', label: 'Primary data', value: `${category} record`, confidence },
-    ];
+      const createdAt = daysAgo(RNG.int(0, 60));
+      const isResolved = status !== 'pending';
+      const resolvedAt = isResolved ? new Date(createdAt.getTime() + RNG.int(300, 86400) * 1000) : null;
 
-    const impact = {
-      financial: dollarAmount ? `$${dollarAmount.toFixed(2)}` : null,
-      clinical: category.includes('medication') ? 'Medication safety improvement' : null,
-      regulatory: category.includes('compliance') ? 'CMS compliance' : null,
-      operational: null,
-      timeSaved: `${randomInt(5, 60)} minutes`,
-    };
+      decisions.push({
+        id: randomUUID(),
+        traceId: randomUUID(),
+        title: generated.title,
+        description: generated.description,
+        category: generated.category,
+        domain: config.domain,
+        agentId: config.agentId,
+        confidence: generated.confidence,
+        recommendation: generated.recommendation,
+        reasoning: generated.reasoning,
+        evidence: generated.evidence,
+        governanceLevel: generated.governanceLevel,
+        priority: generated.priority,
+        dollarAmount: generated.dollarAmount,
+        facilityId: facility.id,
+        targetType: generated.targetType,
+        targetId: generated.targetId,
+        targetLabel: generated.targetLabel,
+        status,
+        createdAt,
+        resolvedAt,
+        sourceSystems: generated.sourceSystems,
+        impact: generated.impact,
+      });
+    }
+  }
 
+  return decisions;
+}
+
+async function seedDecisions(client: Client, residents: SeedResident[]): Promise<GeneratedDecision[]> {
+  console.log('Seeding 1000 decisions (995 generated + 5 hero)...');
+
+  const generated = generateDecisions(residents);
+
+  // Insert 5 hero decisions first (always pending)
+  for (const hero of HERO_DECISIONS) {
     await client.query(
       `INSERT INTO decision_queue (
         id, trace_id, title, description, category, domain,
@@ -208,132 +277,313 @@ async function seedDecisions(client: Client, residentIds: string[]): Promise<str
         created_at, expires_at, timeout_action,
         status, resolved_at, resolved_by, resolution_note,
         approvals, required_approvals, source_systems, impact
-      ) VALUES (
-        $1, $2, $3, $4, $5, $6,
-        $7, $8, $9, $10, $11,
-        $12, $13, $14,
-        $15, $16, $17, $18,
-        $19, $20, $21,
-        $22, $23, $24, $25,
-        $26, $27, $28, $29
-      ) ON CONFLICT (id) DO NOTHING`,
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)`,
       [
-        id, traceId, `${agentId}: ${category}`, `Decision for ${category}`, category, agentId.split('-')[0],
-        agentId, confidence, `Recommendation for ${category}`, JSON.stringify(reasoning), JSON.stringify(evidence),
-        governanceLevel, priority, dollarAmount,
-        facility.id, category, resident, `Resident ${resident}`,
-        createdAt.toISOString(), null, null,
-        status, resolvedAt?.toISOString() ?? null, isResolved ? 'user-admin' : null, isResolved ? `Resolved: ${status}` : null,
-        JSON.stringify([]), governanceLevel === 5 ? 2 : 1, JSON.stringify(['PCC', 'Workday']), JSON.stringify(impact),
+        hero.id, hero.traceId, hero.title, hero.description, hero.category, hero.domain,
+        hero.agentId, hero.confidence, hero.recommendation,
+        JSON.stringify(hero.reasoning), JSON.stringify(hero.evidence),
+        hero.governanceLevel, hero.priority, hero.dollarAmount,
+        hero.facilityId, hero.targetType, hero.targetId, hero.targetLabel,
+        isoDate(daysAgo(RNG.int(0, 3))), isoDate(daysAgo(-7)), null,
+        'pending', null, null, null,
+        JSON.stringify([]), hero.governanceLevel === 5 ? 2 : 1,
+        JSON.stringify(hero.sourceSystems), JSON.stringify(hero.impact),
       ],
     );
-
-    decisionIds.push(id);
   }
 
-  return decisionIds;
+  // Insert 995 generated decisions
+  for (const dec of generated) {
+    const isResolved = dec.status !== 'pending';
+    await client.query(
+      `INSERT INTO decision_queue (
+        id, trace_id, title, description, category, domain,
+        agent_id, confidence, recommendation, reasoning, evidence,
+        governance_level, priority, dollar_amount,
+        facility_id, target_type, target_id, target_label,
+        created_at, expires_at, timeout_action,
+        status, resolved_at, resolved_by, resolution_note,
+        approvals, required_approvals, source_systems, impact
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)`,
+      [
+        dec.id, dec.traceId, dec.title, dec.description, dec.category, dec.domain,
+        dec.agentId, dec.confidence, dec.recommendation,
+        JSON.stringify(dec.reasoning), JSON.stringify(dec.evidence),
+        dec.governanceLevel, dec.priority, dec.dollarAmount,
+        dec.facilityId, dec.targetType, dec.targetId, dec.targetLabel,
+        isoDate(dec.createdAt), dec.status === 'pending' ? isoDate(daysAgo(-7)) : null, null,
+        dec.status, dec.resolvedAt ? isoDate(dec.resolvedAt) : null,
+        isResolved ? 'user-admin' : null, isResolved ? `${dec.status} by administrator` : null,
+        JSON.stringify([]), dec.governanceLevel === 5 ? 2 : 1,
+        JSON.stringify(dec.sourceSystems), JSON.stringify(dec.impact),
+      ],
+    );
+  }
+
+  return generated;
 }
 
-async function seedAuditTrail(client: Client): Promise<void> {
-  console.log('Seeding 500 audit trail entries with valid hash chain...');
+// ---------------------------------------------------------------------------
+// Seed: Audit Trail (2000 entries with valid hash chain)
+// ---------------------------------------------------------------------------
+
+async function seedAuditTrail(client: Client, decisions: GeneratedDecision[]): Promise<void> {
+  console.log('Seeding 2000 audit trail entries with valid SHA-256 hash chain...');
+
+  const actionCategories = ['clinical', 'financial', 'workforce', 'operations', 'admissions', 'quality', 'legal', 'strategic', 'platform'] as const;
+  const actions = [
+    'decision_created', 'decision_approved', 'decision_overridden', 'decision_escalated',
+    'decision_deferred', 'decision_auto_executed', 'agent_run_started', 'agent_run_completed',
+    'tool_called', 'data_ingested', 'alert_generated', 'report_generated',
+    'medication_reviewed', 'claim_processed', 'schedule_updated', 'contract_reviewed',
+  ];
+  const outcomes = ['AUTO_APPROVED', 'AUTO_EXECUTED', 'RECOMMENDED', 'QUEUED_FOR_REVIEW', 'ESCALATED', 'HUMAN_APPROVED'] as const;
 
   let previousHash = GENESIS_HASH;
-  const actionCategories = ['clinical', 'financial', 'workforce', 'operations', 'quality', 'legal'] as const;
-  const actions = ['medication_review', 'claim_process', 'schedule_fill', 'inspection_check', 'survey_prep', 'contract_review'];
-  const outcomes = ['AUTO_APPROVED', 'AUTO_EXECUTED', 'RECOMMENDED', 'QUEUED_FOR_REVIEW', 'ESCALATED'] as const;
+  const batchSize = 100;
+  let batch: string[][] = [];
 
-  for (let i = 0; i < 500; i++) {
+  for (let i = 0; i < 2000; i++) {
     const id = randomUUID();
-    const traceId = randomUUID();
-    const timestamp = new Date(Date.now() - (500 - i) * 60000).toISOString();
-    const facility = FACILITIES[i % FACILITIES.length];
-    const agentId = pick(AGENT_IDS);
-    const actionCategory = pick(actionCategories);
-    const action = pick(actions);
-    const governanceLevel = pick(GOVERNANCE_LEVELS);
-    const confidence = randomFloat(0.60, 0.99);
+    const traceId = i < decisions.length ? decisions[i].traceId : randomUUID();
+    const minutesAgo = (2000 - i) * 3; // ~6000 minutes = ~4 days of audit data
+    const timestamp = new Date(Date.now() - minutesAgo * 60000).toISOString();
+    const facility = RNG.pick(SEED_FACILITIES);
+    const agent = RNG.pick(SEED_AGENTS);
+    const actionCategory = RNG.pick(actionCategories);
+    const action = RNG.pick(actions);
+    const governanceLevel = RNG.int(0, 6);
+    const confidence = RNG.float(0.60, 0.99);
 
-    const entryFields: Record<string, unknown> = {
+    const entryFields: AuditEntryFields = {
       traceId,
       parentId: null,
       timestamp,
       facilityLocalTime: timestamp,
-      agentId,
-      agentVersion: '1.0.0',
-      modelId: 'claude-sonnet-4-20250514',
+      agentId: agent.id,
+      agentVersion: agent.version,
+      modelId: agent.modelId,
       action,
       actionCategory,
       governanceLevel,
-      target: { type: 'resident', id: `res-${String(randomInt(1, 50)).padStart(3, '0')}`, label: 'Seeded resident', facilityId: facility.id },
-      input: { channel: 'api', source: 'pcc', receivedAt: timestamp, rawDocumentRef: null },
-      decision: { confidence, outcome: pick(outcomes), reasoning: [`Automated ${action}`], alternativesConsidered: [], policiesApplied: [] },
-      result: { status: 'completed', actionsPerformed: [action], timeSaved: `${randomInt(1, 30)} minutes`, costImpact: null },
+      target: {
+        type: i < decisions.length ? decisions[i].targetType : 'facility',
+        id: i < decisions.length ? decisions[i].targetId : facility.id,
+        label: i < decisions.length ? decisions[i].targetLabel : facility.name,
+        facilityId: facility.id,
+      },
+      input: {
+        channel: RNG.pick(['api', 'internal', 'portal', 'sensor']),
+        source: RNG.pick(['pcc', 'workday', 'm365', 'internal']),
+        receivedAt: timestamp,
+        rawDocumentRef: null,
+      },
+      decision: {
+        confidence,
+        outcome: RNG.pick(outcomes),
+        reasoning: [`${action} for ${facility.name}`, `Agent ${agent.id} confidence: ${(confidence * 100).toFixed(1)}%`],
+        alternativesConsidered: [],
+        policiesApplied: RNG.next() > 0.5 ? ['HIPAA-164.312', 'CMS-CoP'] : [],
+      },
+      result: {
+        status: 'completed',
+        actionsPerformed: [action],
+        timeSaved: `${RNG.int(2, 45)} minutes`,
+        costImpact: RNG.next() > 0.7 ? `$${RNG.int(100, 5000)}` : null,
+      },
       humanOverride: null,
     };
 
-    const hash = computeHash(entryFields, previousHash);
+    const hash = computeAuditHash(entryFields, previousHash);
 
-    await client.query(
-      `INSERT INTO audit_trail (
-        id, trace_id, parent_id, timestamp, facility_local_time,
-        agent_id, agent_version, model_id,
-        action, action_category, governance_level,
-        target, input, decision, result, human_override,
-        hash, previous_hash
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      ON CONFLICT (id) DO NOTHING`,
-      [
-        id, traceId, null, timestamp, timestamp,
-        agentId, '1.0.0', 'claude-sonnet-4-20250514',
-        action, actionCategory, governanceLevel,
-        JSON.stringify(entryFields.target), JSON.stringify(entryFields.input),
-        JSON.stringify(entryFields.decision), JSON.stringify(entryFields.result), null,
-        hash, previousHash,
-      ],
-    );
+    batch.push([
+      id, traceId, '', // parent_id placeholder
+      timestamp, timestamp,
+      agent.id, agent.version, agent.modelId,
+      action, actionCategory, String(governanceLevel),
+      JSON.stringify(entryFields.target), JSON.stringify(entryFields.input),
+      JSON.stringify(entryFields.decision), JSON.stringify(entryFields.result), '',
+      hash, previousHash,
+    ]);
 
     previousHash = hash;
+
+    // Flush batch
+    if (batch.length >= batchSize || i === 1999) {
+      for (const row of batch) {
+        await client.query(
+          `INSERT INTO audit_trail (
+            id, trace_id, parent_id, timestamp, facility_local_time,
+            agent_id, agent_version, model_id,
+            action, action_category, governance_level,
+            target, input, decision, result, human_override,
+            hash, previous_hash
+          ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)`,
+          [
+            row[0], row[1], row[2] || null,
+            row[3], row[4],
+            row[5], row[6], row[7],
+            row[8], row[9], parseInt(row[10]),
+            row[11], row[12], row[13], row[14], row[15] || null,
+            row[16], row[17],
+          ],
+        );
+      }
+      batch = [];
+      if ((i + 1) % 500 === 0) {
+        console.log(`  ${i + 1}/2000 audit entries inserted...`);
+      }
+    }
   }
 }
 
-async function seedAgentRunHistory(client: Client): Promise<void> {
-  console.log('Seeding agent run history...');
+// ---------------------------------------------------------------------------
+// Seed: Agent Runs (200 runs + steps)
+// ---------------------------------------------------------------------------
 
-  // Check if agent_runs table exists
-  const tableCheck = await client.query(
-    `SELECT EXISTS (
-      SELECT FROM information_schema.tables WHERE table_name = 'agent_runs'
-    ) AS exists`,
-  );
+interface GeneratedRun {
+  runId: string;
+  agentId: string;
+  traceId: string;
+  startedAt: Date;
+  durationMs: number;
+  status: string;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
+  costUsd: number;
+}
 
-  if (!tableCheck.rows[0].exists) {
-    console.log('  SKIP: agent_runs table does not exist yet');
-    return;
-  }
+async function seedAgentRuns(client: Client): Promise<GeneratedRun[]> {
+  console.log('Seeding 200 agent runs with steps...');
 
-  for (let i = 0; i < 50; i++) {
+  const runs: GeneratedRun[] = [];
+  const stepNames = ['input', 'ingest', 'classify', 'process', 'decide', 'present', 'act', 'log'] as const;
+
+  // Status: 180 completed, 15 failed, 5 cancelled (no 'timeout' in enum — use cancelled)
+  const runStatuses: string[] = [
+    ...Array(180).fill('completed'),
+    ...Array(15).fill('failed'),
+    ...Array(5).fill('cancelled'),
+  ];
+
+  for (let i = 0; i < 200; i++) {
     const runId = randomUUID();
-    const agentId = pick(AGENT_IDS);
+    const agent = RNG.pick(SEED_AGENTS.filter((a) => a.tier === 'domain'));
     const traceId = randomUUID();
-    const startedAt = new Date(Date.now() - randomInt(0, 7) * 86400000);
-    const durationMs = randomInt(500, 30000);
-    const completedAt = new Date(startedAt.getTime() + durationMs);
-    const status = Math.random() > 0.1 ? 'completed' : 'failed';
+    const startedAt = daysAgo(RNG.int(0, 14));
+    const durationMs = RNG.int(5000, 120000);
+    const status = runStatuses[i];
+    const completedAt = status !== 'running' ? new Date(startedAt.getTime() + durationMs) : null;
+    const inputTokens = RNG.int(500, 5000);
+    const outputTokens = RNG.int(200, 2000);
+    const cacheReadTokens = RNG.int(0, 3000);
+    const cacheWriteTokens = RNG.int(0, 500);
+    // Cost: sonnet ~$3/$15 per M input/output tokens
+    const costUsd = (inputTokens * 0.003 + outputTokens * 0.015 + cacheReadTokens * 0.0003) / 1000;
 
     await client.query(
-      `INSERT INTO agent_runs (run_id, agent_id, trace_id, task_definition_id, started_at, completed_at, status, total_duration_ms, token_usage)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-       ON CONFLICT (run_id) DO NOTHING`,
+      `INSERT INTO agent_runs (
+        run_id, agent_id, trace_id, task_definition_id,
+        started_at, completed_at, total_duration_ms,
+        status, input_tokens, output_tokens, cache_read_tokens, cache_write_tokens,
+        estimated_cost_usd, error_message, error_stack
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
       [
-        runId, agentId, traceId, `task-${pick(DECISION_CATEGORIES)}`,
-        startedAt.toISOString(), completedAt.toISOString(), status, durationMs,
-        JSON.stringify({
-          inputTokens: randomInt(1000, 10000),
-          outputTokens: randomInt(500, 5000),
-          cacheReadTokens: randomInt(0, 3000),
-          cacheWriteTokens: randomInt(0, 1000),
-          estimatedCostUsd: randomFloat(0.01, 0.50),
-        }),
+        runId, agent.id, traceId, `task-${agent.department}-${RNG.int(1, 20)}`,
+        isoDate(startedAt), completedAt ? isoDate(completedAt) : null, status !== 'running' ? durationMs : null,
+        status, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens,
+        Math.round(costUsd * 1000000) / 1000000,
+        status === 'failed' ? RNG.pick(['Tool timeout after 30s', 'PCC API rate limit exceeded', 'Invalid MDS assessment data', 'Workday session expired']) : null,
+        status === 'failed' ? 'Error: see error_message' : null,
+      ],
+    );
+
+    // Generate 3-8 steps per run
+    const numSteps = RNG.int(3, 8);
+    let stepStart = new Date(startedAt);
+    for (let s = 0; s < numSteps; s++) {
+      const stepDuration = RNG.int(500, 15000);
+      const stepEnd = new Date(stepStart.getTime() + stepDuration);
+      const stepName = stepNames[Math.min(s, stepNames.length - 1)];
+
+      const isFailed = status === 'failed' && s === numSteps - 1;
+
+      await client.query(
+        `INSERT INTO agent_steps (
+          id, run_id, step_number, step_name,
+          started_at, completed_at, duration_ms,
+          input, output, tool_calls, error
+        ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [
+          randomUUID(), runId, s + 1, stepName,
+          isoDate(stepStart), isoDate(stepEnd), stepDuration,
+          JSON.stringify({ step: stepName, agentId: agent.id }),
+          isFailed ? null : JSON.stringify({ status: 'ok', step: stepName }),
+          JSON.stringify(stepName === 'process' || stepName === 'act' ? [
+            { toolName: `${RNG.pick(['pcc', 'workday', 'snf-hitl'])}_${RNG.pick(['get', 'search', 'list'])}_${stepName}`, input: {}, output: {}, durationMs: RNG.int(100, 3000), timestamp: isoDate(stepStart) },
+          ] : []),
+          isFailed ? 'Step failed: see agent_runs.error_message' : null,
+        ],
+      );
+
+      stepStart = stepEnd;
+    }
+
+    runs.push({ runId, agentId: agent.id, traceId, startedAt, durationMs, status, inputTokens, outputTokens, cacheReadTokens, cacheWriteTokens, costUsd });
+  }
+
+  return runs;
+}
+
+// ---------------------------------------------------------------------------
+// Seed: Orchestrator Sessions (50)
+// ---------------------------------------------------------------------------
+
+async function seedOrchestratorSessions(client: Client, runs: GeneratedRun[]): Promise<void> {
+  console.log('Seeding 50 orchestrator sessions...');
+
+  // Status: 40 completed, 5 active, 3 failed, 2 cancelled
+  const sessionStatuses: string[] = [
+    ...Array(40).fill('completed'),
+    ...Array(5).fill('active'),
+    ...Array(3).fill('failed'),
+    ...Array(2).fill('cancelled'),
+  ];
+
+  for (let i = 0; i < 50; i++) {
+    const run = runs[i % runs.length];
+    const agent = SEED_AGENTS.find((a) => a.id === run.agentId) ?? RNG.pick(SEED_AGENTS);
+    const facility = RNG.pick(SEED_FACILITIES);
+    const status = sessionStatuses[i];
+    const launchedAt = new Date(run.startedAt);
+    const completedAt = status === 'completed' ? new Date(launchedAt.getTime() + run.durationMs) :
+      status === 'failed' ? new Date(launchedAt.getTime() + RNG.int(5000, 30000)) :
+      null;
+
+    await client.query(
+      `INSERT INTO orchestrator_sessions (
+        session_id, tenant, department, trigger_id, trigger_name,
+        run_id, facility_id, region_id, agent_id, agent_version,
+        launched_at, completed_at, status, last_event_cursor, metadata
+      ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+      [
+        `session-${randomUUID().slice(0, 8)}`,
+        'ensign-demo',
+        agent.department,
+        randomUUID(),
+        `${agent.department}_scheduled_run`,
+        run.runId,
+        facility.id,
+        facility.regionId,
+        agent.id,
+        1,
+        isoDate(launchedAt),
+        completedAt ? isoDate(completedAt) : null,
+        status,
+        status === 'active' ? `evt_${randomUUID().slice(0, 12)}` : null,
+        JSON.stringify({ tenant: 'ensign-demo', wave: '4', facility: facility.name }),
       ],
     );
   }
@@ -344,7 +594,7 @@ async function seedAgentRunHistory(client: Client): Promise<void> {
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
-  console.log('SNF Agentic Platform — Staging Data Seeder');
+  console.log('SNF Agentic Platform — Comprehensive Staging Data Seeder');
   console.log('='.repeat(60));
 
   const client = new Client({ connectionString: DATABASE_URL });
@@ -353,24 +603,48 @@ async function main(): Promise<void> {
     await client.connect();
     console.log('Connected to database.\n');
 
-    await seedFacilities(client);
-    const residentIds = await seedResidents(client);
-    await seedDecisions(client, residentIds);
-    await seedAuditTrail(client);
-    await seedAgentRunHistory(client);
+    // Phase 1: Clean slate
+    await truncateAll(client);
+    await ensureAuditPartitions(client);
 
-    console.log('\nSeeding complete.');
-    console.log('  10 facilities');
-    console.log('  50 residents');
-    console.log('  100 decisions');
-    console.log('  500 audit trail entries');
-    console.log('  50 agent runs');
+    // Phase 2: Foundation
+    await seedAgentRegistry(client);
+
+    // Phase 3: Generate residents in-memory (no DB table — referenced by decisions)
+    const residents = generateResidents(500, RNG);
+    console.log(`Generated 500 residents in-memory across ${SEED_FACILITIES.length} facilities.`);
+
+    // Phase 4: Decisions (the main event)
+    const decisions = await seedDecisions(client, residents);
+
+    // Phase 5: Audit trail with valid hash chain
+    await seedAuditTrail(client, decisions);
+
+    // Phase 6: Agent execution history
+    const runs = await seedAgentRuns(client);
+
+    // Phase 7: Orchestrator sessions
+    await seedOrchestratorSessions(client, runs);
+
+    // Summary
+    console.log('\n' + '='.repeat(60));
+    console.log('Seeding complete!');
+    console.log(`  12 agents registered`);
+    console.log(`  500 residents generated (in-memory, referenced by decisions)`);
+    console.log(`  1000 decisions (995 generated + 5 hero, across ${Object.keys(DOMAIN_TEMPLATES).length} domains)`);
+    console.log(`  2000 audit trail entries (SHA-256 hash chain valid)`);
+    console.log(`  200 agent runs with steps`);
+    console.log(`  50 orchestrator sessions`);
+    console.log(`\n  Hero decisions (pending in queue):`);
+    for (const hero of HERO_DECISIONS) {
+      console.log(`    - ${hero.title.slice(0, 80)}...`);
+    }
   } catch (err) {
     console.error('\nSeeding failed:', err);
     process.exit(1);
   } finally {
     await client.end();
-    console.log('Disconnected from database.');
+    console.log('\nDisconnected from database.');
   }
 }
 
