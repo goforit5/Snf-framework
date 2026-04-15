@@ -1,7 +1,7 @@
 # API_CONTRACT.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Source files**: `platform/packages/api/src/` (server, routes, middleware, websocket), `platform/packages/connectors/src/` (PCC, Workday, M365, Regulatory)
 
 ---
@@ -21,10 +21,26 @@
 
 | Method | Implementation | Header | Notes |
 |---|---|---|---|
-| Bearer JWT | `Authorization: Bearer <token>` | `Authorization` | Verified in `middleware/auth.ts` via `verifyToken()` |
-| Dev fallback | No header required | -- | Auto-injects enterprise admin (`ceo` role, all facilities) |
+| JWKS (RS256) | `Authorization: Bearer <token>` verified via Azure Entra ID JWKS endpoint | `Authorization` | Primary auth method; verifies RS256 signature, exp, issuer, audience (SNF-148) |
+| Service-to-service (HS256) | `Authorization: Bearer <token>` verified via `JWT_SECRET` symmetric key | `Authorization` | Fallback for internal API calls when JWKS is not configured; supports HS256/384/512 |
 | Public paths | No auth | -- | `/api/health` bypasses auth middleware |
-| WebSocket | Token query param (planned) | `?token=<jwt>` | Currently unauthenticated; TODO in `websocket/handler.ts` |
+| WebSocket | Token query param | `?token=<jwt>` | Authenticated via `token` query parameter on WS upgrade; unauthenticated connections rejected (SNF-140) |
+| JWKS Endpoint | Azure Entra ID discovery URL | -- | `https://login.microsoftonline.com/{AZURE_TENANT_ID}/discovery/v2.0/keys` |
+
+**Note**: Dev fallback (auto-injected enterprise admin context) was removed in SNF-149. All requests require a valid JWT. Use `npx tsx platform/scripts/generate-dev-token.ts --role=ceo` for local development tokens.
+
+### Authentication Error Responses
+
+| Status | Error | Cause |
+|---|---|---|
+| 401 | `Missing Authorization header` | No Bearer token provided |
+| 401 | `Token expired` | JWT `exp` claim in the past |
+| 401 | `Invalid token` | Signature verification failed (both JWKS and JWT_SECRET) |
+| 401 | `Token missing required claim: userId or sub` | No `sub` or `userId` in token payload |
+| 401 | `Invalid or missing role in token: {role}` | Role claim missing or not in `VALID_ROLES` set |
+| 401 | `Token missing or unrecognized role claim` | Entra ID token with unmapped role |
+| 403 | `Insufficient role for session trigger` | Non-`TRIGGER_ROLES` user calling trigger endpoint |
+| 403 | `Insufficient permissions` | Non-`APPROVAL_ROLES` user on decision action endpoint |
 
 ### User Context (JWT Claims)
 
@@ -42,6 +58,26 @@
 |---|---|---|
 | `APPROVAL_ROLES` | `administrator`, `don`, `cfo`, `ceo`, `regional_director`, `compliance_officer` | Approve/override/escalate/defer decisions |
 | `AGENT_ADMIN_ROLES` | `ceo`, `cfo`, `it_admin`, `regional_director` | Pause/resume agents (kill switch) |
+| `TRIGGER_ROLES` | `ceo`, `it_admin`, `regional_director` | Trigger agent sessions |
+
+### Role-Endpoint Access Matrix
+
+| Endpoint | `ceo` | `cfo` | `administrator` | `don` | `regional_director` | `compliance_officer` | `it_admin` | `auditor` | `read_only` |
+|---|---|---|---|---|---|---|---|---|---|
+| GET /api/decisions | Y | Y | Y | Y | Y | Y | Y | Y | Y |
+| GET /api/decisions/:id | Y | Y | Y | Y | Y | Y | Y | Y | Y |
+| POST /api/decisions/:id/approve | Y | Y | Y | Y | Y | Y | -- | -- | -- |
+| POST /api/decisions/:id/override | Y | Y | Y | Y | Y | Y | -- | -- | -- |
+| POST /api/decisions/:id/escalate | Y | Y | Y | Y | Y | Y | -- | -- | -- |
+| POST /api/decisions/:id/defer | Y | Y | Y | Y | Y | Y | -- | -- | -- |
+| GET /api/agents | Y | Y | Y | Y | Y | Y | Y | Y | Y |
+| POST /api/agents/:id/pause | Y | Y | -- | -- | Y | -- | Y | -- | -- |
+| POST /api/agents/:id/resume | Y | Y | -- | -- | Y | -- | Y | -- | -- |
+| POST /api/sessions/trigger | Y | -- | -- | -- | Y | -- | Y | -- | -- |
+| GET /api/audit | Y | Y | Y | Y | Y | Y | Y | Y | Y |
+| GET /api/audit/export | Y | Y | Y | Y | Y | Y | Y | Y | -- |
+
+**Source**: `APPROVAL_ROLES`, `AGENT_ADMIN_ROLES`, `TRIGGER_ROLES` in `platform/packages/api/src/middleware/auth.ts` and `platform/packages/api/src/server.ts`
 
 ---
 
@@ -56,8 +92,8 @@ Prefix: `/api/decisions`
 | GET | `/api/decisions/:id` | Bearer JWT | -- | `Decision` | 200, 403, 404 |
 | POST | `/api/decisions/:id/approve` | Bearer JWT (APPROVAL_ROLES) | `{ note: string }` | `{ decisionId, status: "approved", resolvedAt, resolvedBy }` | 200, 403 |
 | POST | `/api/decisions/:id/override` | Bearer JWT (APPROVAL_ROLES) | `{ note: string, overrideValue: string }` | `{ decisionId, status: "overridden", resolvedAt, resolvedBy }` | 200, 403 |
-| POST | `/api/decisions/:id/escalate` | Bearer JWT | `{ note: string }` | `{ decisionId, status: "escalated", resolvedAt, resolvedBy }` | 200, 403 |
-| POST | `/api/decisions/:id/defer` | Bearer JWT | `{ note: string }` | `{ decisionId, status: "deferred", resolvedAt, resolvedBy }` | 200, 403 |
+| POST | `/api/decisions/:id/escalate` | Bearer JWT (APPROVAL_ROLES) | `{ note: string }` | `{ decisionId, status: "escalated", resolvedAt, resolvedBy }` | 200, 403 |
+| POST | `/api/decisions/:id/defer` | Bearer JWT (APPROVAL_ROLES) | `{ note: string }` | `{ decisionId, status: "deferred", resolvedAt, resolvedBy }` | 200, 403 |
 
 ### GET /api/decisions -- Query Parameters
 
@@ -120,7 +156,7 @@ Prefix: `/api/agents`
 |---|---|---|---|
 | `page` | `integer` | `1` | Page number |
 | `pageSize` | `integer` | `10` | Results per page (max 50) |
-| `status` | `string` | -- | `running`, `completed`, `failed`, `cancelled` |
+| `status` | `string` | -- | `running`, `terminated`, `idle` |
 
 ### AgentSummary Shape
 
@@ -198,7 +234,7 @@ URL: `ws://<host>:<port>/api/ws`
 
 | Step | Direction | Detail |
 |---|---|---|
-| Connect | Client -> Server | `ws://host:port/api/ws` (auth via query param planned, currently open) |
+| Connect | Client -> Server | `ws://host:port/api/ws?token=<jwt>` (authenticated via token query param; SNF-140) |
 | Welcome | Server -> Client | `{ type: "heartbeat", payload: { message: "Connected to SNF Decision API" } }` |
 | Subscribe | Client -> Server | JSON `{ action: "subscribe", rooms: { ... } }` |
 | Events | Server -> Client | JSON `WsEvent` objects |
@@ -423,19 +459,22 @@ Source: `platform/.env.sample`
 
 | Variable | Default | Required | Description |
 |---|---|---|---|
-| `ANTHROPIC_API_KEY` | -- | Yes | Claude Agent SDK key |
+| `ANTHROPIC_API_KEY` | -- | Yes | Anthropic Managed Agents API key |
 | `DATABASE_URL` | `postgresql://snf:snf_dev@localhost:5432/snf_platform` | Yes | PostgreSQL connection string |
 | `DATABASE_SSL` | `false` | No | Enable SSL for DB |
-| `PCC_CLIENT_ID` | placeholder | Yes (production) | PCC OAuth client ID |
-| `PCC_CLIENT_SECRET` | placeholder | Yes (production) | PCC OAuth client secret |
+| `AZURE_TENANT_ID` | -- | Yes (production) | Azure Entra ID tenant ID for JWKS verification |
+| `AZURE_CLIENT_ID` | -- | Yes (production) | Azure Entra ID app registration client ID (JWKS audience) |
+| `JWT_SECRET` | -- | No (fallback) | Symmetric signing key for service-to-service tokens (HS256); optional when JWKS is configured |
+| `PCC_CLIENT_ID` | placeholder | Yes (production) | PCC OAuth client ID (from Secrets Manager in production) |
+| `PCC_CLIENT_SECRET` | placeholder | Yes (production) | PCC OAuth client secret (from Secrets Manager in production) |
 | `PCC_BASE_URL` | `https://api.pointclickcare.com/v1` | Yes | PCC API base URL |
 | `PCC_TOKEN_URL` | `https://api.pointclickcare.com/oauth/token` | Yes | PCC OAuth token endpoint |
-| `WORKDAY_CLIENT_ID` | placeholder | Yes (production) | Workday OAuth client ID |
-| `WORKDAY_CLIENT_SECRET` | placeholder | Yes (production) | Workday OAuth client secret |
+| `WORKDAY_CLIENT_ID` | placeholder | Yes (production) | Workday OAuth client ID (from Secrets Manager in production) |
+| `WORKDAY_CLIENT_SECRET` | placeholder | Yes (production) | Workday OAuth client secret (from Secrets Manager in production) |
 | `WORKDAY_TENANT_ID` | placeholder | Yes (production) | Workday tenant ID |
 | `WORKDAY_BASE_URL` | `https://TENANT.workday.com/api/v1` | Yes | Workday API base URL |
-| `M365_CLIENT_ID` | placeholder | Yes (production) | Azure AD app client ID |
-| `M365_CLIENT_SECRET` | placeholder | Yes (production) | Azure AD app client secret |
+| `M365_CLIENT_ID` | placeholder | Yes (production) | Azure AD app client ID (from Secrets Manager in production) |
+| `M365_CLIENT_SECRET` | placeholder | Yes (production) | Azure AD app client secret (from Secrets Manager in production) |
 | `M365_TENANT_ID` | placeholder | Yes (production) | Azure AD tenant ID |
 | `CMS_API_KEY` | placeholder | Yes (production) | CMS public data API key |
 | `OIG_API_KEY` | placeholder | Yes (production) | OIG LEIE API key |
@@ -445,7 +484,7 @@ Source: `platform/.env.sample`
 | `PORT` | `3100` | No | Fastify server port (in `server.ts`) |
 | `HOST` | `0.0.0.0` | No | Fastify bind host |
 | `LOG_LEVEL` | `info` | No | Logging level |
-| `NODE_ENV` | `development` | No | Environment name |
+| `NODE_ENV` | `development` | No | Environment name (dev fallback removed in SNF-149; no special behavior in development) |
 | `HEALTH_CHECK_INTERVAL_MS` | `30000` | No | Agent health check interval |
 | `CHAIN_VERIFY_INTERVAL_MIN` | `60` | No | Audit chain verification interval (minutes) |
 | `CHAIN_VERIFY_LOOKBACK_HR` | `24` | No | Audit chain verification lookback (hours) |

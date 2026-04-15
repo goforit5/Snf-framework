@@ -14,6 +14,9 @@ import { buildServer } from '../../packages/api/src/server.js';
 import type { DecisionServiceLike, AuditEngineLike } from '../../packages/api/src/server.js';
 import type { FastifyInstance } from 'fastify';
 import { randomUUID, createHash } from 'node:crypto';
+
+// Set JWT_SECRET before any server is built so auth middleware can verify tokens
+process.env.JWT_SECRET = 'test-secret-for-e2e-tests';
 import {
   HERO_DECISIONS,
   SEED_AGENTS,

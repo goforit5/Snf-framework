@@ -19,6 +19,7 @@ import {
   SEED_FACILITIES,
   SEED_FACILITY_IDS,
 } from './setup.js';
+import { makeTestToken } from './helpers.js';
 
 afterAll(async () => {
   await closeTestServer();
@@ -127,6 +128,7 @@ describe('Synthetic Data Integrity', () => {
         const res = await server.inject({
           method: 'GET',
           url: `/api/decisions/${hero.id}`,
+          headers: { authorization: `Bearer ${makeTestToken()}` },
         });
 
         expect(res.statusCode).toBe(200);

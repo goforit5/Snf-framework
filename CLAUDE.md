@@ -34,7 +34,7 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 
 ## Current State (as of 2026-04-14) — Production Ready, Security Hardened
 
-**Platform status: COMPLETE.** All development work is finished. Security hardening complete. SDK adapter layer aligned to Anthropic Managed Agents API. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
+**Platform status: COMPLETE.** All development work is finished. Security hardening complete. JWKS authentication implemented. Vault architecture complete. SDK adapter layer aligned to Anthropic Managed Agents API. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
 
 ### What is done
 
@@ -54,7 +54,12 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 
 ### Security hardening (completed 2026-04-14)
 
-- **JWT authentication** — real token verification with signature validation, exp claim checking, role/facility extraction (replaced hardcoded stub)
+- **JWKS authentication** — Azure Entra ID JWKS (RS256) with JWT_SECRET fallback for service-to-service (HS256); 6-hour key cache with auto-rotation on verification failure (SNF-148)
+- **Dev fallback removed** — all requests require valid JWT; use `generate-dev-token.ts` for local development (SNF-149)
+- **AWS Secrets Manager** — credentials pulled from `snf/{tenant}/{credential}` paths; `--source=env` fallback for local dev (SNF-151)
+- **Credential rotation** — 90-day automated Lambda rotation for PCC/Workday/M365 with CloudWatch alarms and dual-key pattern (SNF-152)
+- **Emergency revocation** — `emergency-revoke.ts` script for <15 minute credential revocation and re-provisioning
+- **Vault architecture** — Anthropic vault-and-proxy pattern; agents never see raw credentials; MCP proxy injects at request time
 - **WebSocket authentication** — JWT required via `?token=` query param on upgrade; unauthenticated connections rejected with 401
 - **RBAC enforcement** — escalate, defer, and trigger endpoints require appropriate roles; read_only/auditor users blocked from state-changing operations
 - **PHI token isolation** — session-scoped UUID prefix on all de-identification tokens prevents cross-session collision and silent overwrites
@@ -74,9 +79,10 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 
 ### What needs Ensign credentials to activate
 
-- **PCC MCP connector** — placeholder OAuth, needs Ensign's PCC API credentials
-- **Workday MCP connector** — placeholder OAuth, needs Ensign's Workday tenant credentials
-- **M365 MCP connector** — needs Ensign's Azure AD app registration (Graph API)
+- **PCC MCP connector** — needs Ensign's PCC API credentials. See `platform/docs/credential-registration/pcc-registration.md`
+- **Workday MCP connector** — needs Ensign's Workday tenant credentials. See `platform/docs/credential-registration/workday-registration.md`
+- **M365 MCP connector** — needs Ensign's Azure AD app registration (Graph API). See `platform/docs/credential-registration/m365-registration.md`
+- **Azure Entra ID** — needs Ensign Azure admin to provision app registrations. Terraform module ready at `platform/infra/terraform/modules/entra-id/`
 - **AWS Bedrock deployment** — needs Ensign's AWS account for in-VPC PHI processing
 
 **Live site**: https://goforit5.github.io/Snf-framework/
@@ -233,7 +239,7 @@ No code changes required — credential files are the only missing pieces.
 ### Engineering Quality Bar
 
 - **Zero warnings, zero lint errors** — every build must be clean. No suppressing warnings.
-- **Security by default** — JWT auth on every endpoint, RBAC on every state-changing operation, PHI tokenization with session isolation, audit chain integrity with monotonic ordering. No stubs, no "TODO: add auth later".
+- **Security by default** — JWKS auth (RS256) on every endpoint with JWT_SECRET fallback, RBAC on every state-changing operation, PHI tokenization with session isolation, vault-based credential isolation, audit chain integrity with monotonic ordering. No stubs, no "TODO: add auth later".
 - **Apple HIG design** — every UI element follows Apple Human Interface Guidelines. Clean typography, semantic colors, 44px touch targets, system dark mode support, <10s decision completion.
 - **Self-contained decisions** — every DecisionCard is a complete analyst briefing. The human never opens another application to make a decision.
 - **DRY architecture** — shared component library, hooks, and data layers. Pages are 150-250 lines of composition, not duplication.

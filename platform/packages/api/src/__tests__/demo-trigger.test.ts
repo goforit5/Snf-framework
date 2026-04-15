@@ -5,8 +5,34 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import jwt from 'jsonwebtoken';
 import { buildServer } from '../server.js';
 import type { TriggerRouterLike } from '../server.js';
+
+// ---------------------------------------------------------------------------
+// JWT test auth
+// ---------------------------------------------------------------------------
+
+const TEST_SECRET = 'test-secret-for-e2e-tests';
+process.env.JWT_SECRET = TEST_SECRET;
+
+function makeTestToken(overrides: Record<string, unknown> = {}): string {
+  return jwt.sign(
+    {
+      sub: 'test-user-001',
+      userId: 'test-user-001',
+      userName: 'Test Admin',
+      role: 'ceo',
+      facilityIds: [],
+      regionIds: [],
+      ...overrides,
+    },
+    TEST_SECRET,
+    { expiresIn: '1h' },
+  );
+}
+
+const authHeaders = { authorization: `Bearer ${makeTestToken()}` };
 
 // --- Mock TriggerRouter ---
 
@@ -58,6 +84,7 @@ describe('Demo Trigger Routes', () => {
         agentId: 'clinical',
         facilityId: 'fac-001',
       },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(201);
@@ -73,7 +100,7 @@ describe('Demo Trigger Routes', () => {
         facilityId: 'fac-001',
         context: expect.objectContaining({
           facilityId: 'fac-001',
-          userId: 'dev-user-001',
+          userId: 'test-user-001',
         }),
       }),
     );
@@ -91,6 +118,7 @@ describe('Demo Trigger Routes', () => {
         agentId: 'nonexistent-department',
         facilityId: 'fac-001',
       },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(404);
@@ -115,6 +143,7 @@ describe('Demo Trigger Routes', () => {
         agentId: 'clinical',
         facilityId: 'fac-001',
       },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(503);
@@ -148,6 +177,7 @@ describe('Demo Trigger Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/demo/trigger/session-abc-123/status',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -169,6 +199,7 @@ describe('Demo Trigger Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/demo/trigger/nonexistent-session/status',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(404);
@@ -185,11 +216,13 @@ describe('Demo Trigger Routes', () => {
         method: 'POST',
         url: '/api/demo/trigger',
         payload: { agentId: 'clinical', facilityId: 'fac-001' },
+        headers: authHeaders,
       }),
       server.inject({
         method: 'POST',
         url: '/api/demo/trigger',
         payload: { agentId: 'financial', facilityId: 'fac-002' },
+        headers: authHeaders,
       }),
     ]);
 
@@ -211,6 +244,7 @@ describe('Demo Trigger Routes', () => {
         facilityId: 'fac-001',
         payload: { residentId: 'RES-123', alertType: 'fall_risk' },
       },
+      headers: authHeaders,
     });
 
     expect(mockRouter.routeWebhook).toHaveBeenCalledWith(

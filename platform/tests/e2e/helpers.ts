@@ -5,7 +5,30 @@
  */
 
 import type { FastifyInstance } from 'fastify';
+import jwt from 'jsonwebtoken';
 import type { JsonRpcRequest, JsonRpcResponse } from '../../packages/connectors/src/gateway/mcp-server.js';
+
+// ---------------------------------------------------------------------------
+// JWT test token helper
+// ---------------------------------------------------------------------------
+
+export const TEST_JWT_SECRET = 'test-secret-for-e2e-tests';
+
+export function makeTestToken(overrides: Record<string, unknown> = {}): string {
+  return jwt.sign(
+    {
+      sub: 'test-user-001',
+      userId: 'test-user-001',
+      userName: 'Test Admin',
+      role: 'ceo',
+      facilityIds: [],
+      regionIds: [],
+      ...overrides,
+    },
+    TEST_JWT_SECRET,
+    { expiresIn: '1h' },
+  );
+}
 
 // ---------------------------------------------------------------------------
 // HTTP client helpers
@@ -21,7 +44,11 @@ export async function apiGet<T = unknown>(
   server: FastifyInstance,
   path: string,
 ): Promise<ApiResponse<T>> {
-  const res = await server.inject({ method: 'GET', url: path });
+  const res = await server.inject({
+    method: 'GET',
+    url: path,
+    headers: { authorization: `Bearer ${makeTestToken()}` },
+  });
   return {
     status: res.statusCode,
     body: JSON.parse(res.payload) as T,
@@ -34,7 +61,12 @@ export async function apiPost<T = unknown>(
   path: string,
   payload: Record<string, unknown>,
 ): Promise<ApiResponse<T>> {
-  const res = await server.inject({ method: 'POST', url: path, payload });
+  const res = await server.inject({
+    method: 'POST',
+    url: path,
+    payload,
+    headers: { authorization: `Bearer ${makeTestToken()}` },
+  });
   return {
     status: res.statusCode,
     body: JSON.parse(res.payload) as T,

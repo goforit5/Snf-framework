@@ -61,7 +61,7 @@ All credentials are stored in AWS Secrets Manager. The platform reads them via e
 | `snf/workday-oauth` | Workday OAuth2 client_id + client_secret | 90-day rotation |
 | `snf/m365-oauth` | Microsoft 365 OAuth2 client_id + client_secret + tenant_id | 90-day rotation |
 | `snf/anthropic-api-key` | Anthropic API key for Claude | 90-day rotation |
-| `snf/jwt-signing-key` | JWT signing key for API auth | 180-day rotation |
+| `snf/jwt-signing-key` | JWT signing key for API auth (SNF-139: full JWT verification implemented) | 180-day rotation |
 
 ### PCC (PointClickCare) OAuth2 Setup
 
@@ -97,10 +97,13 @@ PORT=3100
 HOST=0.0.0.0
 LOG_LEVEL=info
 
-# Auth
-JWT_SIGNING_KEY=<from secrets manager>
+# Auth — JWKS (primary)
+AZURE_TENANT_ID=<ensign-azure-tenant-id>
+AZURE_CLIENT_ID=<snf-app-registration-client-id>
+# Auth — symmetric fallback (service-to-service only)
+JWT_SECRET=<from secrets manager, optional when JWKS configured>
 
-# Connectors
+# Connectors (all from Secrets Manager in production)
 PCC_CLIENT_ID=<from secrets manager>
 PCC_CLIENT_SECRET=<from secrets manager>
 PCC_BASE_URL=https://api.pointclickcare.com
@@ -117,6 +120,125 @@ HEALTH_CHECK_INTERVAL_MS=30000
 CHAIN_VERIFY_INTERVAL_MIN=60
 CHAIN_VERIFY_LOOKBACK_HR=24
 ```
+
+---
+
+## 2b. Vault Management
+
+### Vault Provisioning
+
+Vault provisioning reads credentials from AWS Secrets Manager and creates/updates Anthropic Managed Agents vaults.
+
+```bash
+# Full provisioning (reads from AWS Secrets Manager)
+npx tsx platform/scripts/provision-vaults.ts --tenant=snf-ensign-prod
+
+# Local development (reads from environment variables)
+npx tsx platform/scripts/provision-vaults.ts --tenant=snf-local --source=env
+
+# Dry run (validates configuration without writing to vaults)
+npx tsx platform/scripts/provision-vaults.ts --tenant=snf-ensign-prod --dry-run
+```
+
+**Prerequisites**:
+- AWS credentials configured (`aws configure` or IAM role on ECS task)
+- Secrets Manager paths populated: `snf/{tenant}/pcc-oauth`, `snf/{tenant}/workday-oauth`, `snf/{tenant}/m365-oauth`, `snf/{tenant}/anthropic-api-key`
+- `ANTHROPIC_API_KEY` set for Vault API access
+
+### Credential Rotation
+
+Automated 90-day rotation runs via Lambda for PCC, Workday, and M365 OAuth credentials.
+
+**Automatic rotation** (no manual action required):
+- Lambda functions: `snf-rotate-pcc-oauth`, `snf-rotate-workday-oauth`, `snf-rotate-m365-oauth`
+- Schedule: EventBridge rule triggers every 90 days
+- Dual-key pattern: both old and new credentials valid during 24-hour transition window
+- CloudWatch alarms: `snf-rotation-pcc-failure`, `snf-rotation-workday-failure`, `snf-rotation-m365-failure`
+
+**Manual rotation** (force immediate rotation):
+```bash
+npx tsx platform/scripts/provision-vaults.ts --tenant=snf-ensign-prod --force-rotate
+```
+
+**Per-system rotation steps**:
+1. Lambda generates new credential at provider (PCC Developer Portal / Workday Studio / Azure AD)
+2. New credential stored in Secrets Manager alongside old credential
+3. Vault updated with new credential
+4. Old credential revoked at provider after 24-hour transition window
+
+**Monitoring rotation health**:
+```bash
+# Check rotation alarm status
+aws cloudwatch describe-alarms --alarm-names snf-rotation-pcc-failure snf-rotation-workday-failure snf-rotation-m365-failure
+
+# View recent rotation Lambda executions
+aws logs tail /aws/lambda/snf-rotate-pcc-oauth --since 7d
+```
+
+### Emergency Revocation
+
+Target: **<15 minutes** from detection to re-provisioning.
+
+```bash
+# Step 1: Revoke the compromised credential
+npx tsx platform/scripts/emergency-revoke.ts --tenant=snf-ensign-prod --credential=pcc-oauth
+
+# Step 2: Investigate the breach (review audit trail)
+curl https://{domain}/api/audit/export?fromDate={breach-window-start} -H "Authorization: Bearer {token}"
+
+# Step 3: Generate new credential at provider (PCC/Workday/Azure AD portal)
+
+# Step 4: Store new credential in Secrets Manager
+aws secretsmanager update-secret --secret-id snf/snf-ensign-prod/pcc-oauth --secret-string '{"client_id":"NEW_ID","client_secret":"NEW_SECRET"}'
+
+# Step 5: Re-provision vault with new credential
+npx tsx platform/scripts/provision-vaults.ts --tenant=snf-ensign-prod
+```
+
+---
+
+## 2c. JWKS Authentication Operations
+
+### How JWKS Authentication Works
+
+The API server verifies JWT tokens using Azure Entra ID's JWKS endpoint (RS256). The `jwks-rsa` client caches signing keys for 6 hours and automatically refreshes on verification failure (handles Azure key rotation).
+
+Verification order:
+1. Try JWKS (RS256) if `AZURE_TENANT_ID` + `AZURE_CLIENT_ID` are set
+2. On JWKS failure, retry once with cache bypass (key rotation recovery)
+3. Fall back to `JWT_SECRET` symmetric verification (HS256) for service-to-service tokens
+
+### JWKS Cache Troubleshooting
+
+If tokens are rejected after Azure Entra ID key rotation:
+1. The system automatically retries with cache bypass on first failure
+2. If still failing, restart the API server to clear the in-memory JWKS cache
+3. Verify the JWKS endpoint is reachable: `curl https://login.microsoftonline.com/{AZURE_TENANT_ID}/discovery/v2.0/keys`
+
+### Dev Token Generation
+
+For local development and testing (dev fallback was removed in SNF-149):
+
+```bash
+# Generate a dev token with specific role
+npx tsx platform/scripts/generate-dev-token.ts --role=ceo
+npx tsx platform/scripts/generate-dev-token.ts --role=administrator --facility=FAC-AZ-001
+npx tsx platform/scripts/generate-dev-token.ts --role=auditor
+
+# Use the generated token
+curl http://localhost:3100/api/decisions -H "Authorization: Bearer <generated-token>"
+```
+
+### Common Auth Errors and Resolution
+
+| Error | Cause | Resolution |
+|---|---|---|
+| `Missing Authorization header` | No Bearer token in request | Add `Authorization: Bearer <token>` header |
+| `Token expired` | JWT `exp` claim in the past | Generate a new token; check clock sync on server |
+| `Invalid token` | Signature verification failed | Verify token was signed by the correct key; check `AZURE_TENANT_ID` and `AZURE_CLIENT_ID` |
+| `Token missing required claim: userId or sub` | No `sub` in JWT payload | Ensure Azure app registration includes `sub` claim |
+| `Invalid or missing role in token` | Role not mapped in `ENTRA_ROLE_MAP` | Check Azure app role assignments; verify role name matches SNF convention |
+| `No authentication method configured` | Neither `AZURE_TENANT_ID` nor `JWT_SECRET` set | Set at least one auth method in environment variables |
 
 ---
 

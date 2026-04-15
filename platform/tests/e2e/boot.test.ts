@@ -7,7 +7,7 @@
 
 import { describe, it, expect, afterAll } from 'vitest';
 import { getTestServer, closeTestServer } from './setup.js';
-import { apiGet } from './helpers.js';
+import { apiGet, makeTestToken } from './helpers.js';
 
 afterAll(async () => {
   await closeTestServer();
@@ -66,6 +66,7 @@ describe('Platform Boot', () => {
       headers: {
         origin: 'http://localhost:5173',
         'access-control-request-method': 'GET',
+        authorization: `Bearer ${makeTestToken()}`,
       },
     });
     // CORS plugin should respond with allowed origin

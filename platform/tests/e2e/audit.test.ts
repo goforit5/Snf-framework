@@ -6,7 +6,7 @@
 
 import { describe, it, expect, afterAll } from 'vitest';
 import { getTestServer, closeTestServer, HERO_DECISIONS } from './setup.js';
-import { apiGet } from './helpers.js';
+import { apiGet, makeTestToken } from './helpers.js';
 import type { PaginatedBody } from './helpers.js';
 
 afterAll(async () => {
@@ -93,6 +93,7 @@ describe('Audit Trail API', () => {
       const res = await server.inject({
         method: 'GET',
         url: '/api/audit/export',
+        headers: { authorization: `Bearer ${makeTestToken()}` },
       });
 
       expect(res.statusCode).toBe(200);
@@ -106,6 +107,7 @@ describe('Audit Trail API', () => {
       const res = await server.inject({
         method: 'GET',
         url: '/api/audit/export?format=csv',
+        headers: { authorization: `Bearer ${makeTestToken()}` },
       });
 
       expect(res.statusCode).toBe(200);

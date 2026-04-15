@@ -5,15 +5,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "@fastify/cors": "^10.0.0",
+    "@fastify/multipart": "^9.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "@snf/audit": "*",
     "@snf/core": "*",
     "@snf/hitl": "*",
-    "@snf/audit": "*",
-    "@snf/tasks": "*",
     "@snf/orchestrator": "*",
+    "@snf/tasks": "*",
     "fastify": "^5.2.0",
-    "@fastify/websocket": "^11.0.0",
-    "@fastify/cors": "^10.0.0",
-    "@fastify/multipart": "^9.0.0"
+    "jsonwebtoken": "^9.0.3",
+    "jwks-rsa": "^4.0.1"
   },
   "scripts": {
     "build": "tsc",

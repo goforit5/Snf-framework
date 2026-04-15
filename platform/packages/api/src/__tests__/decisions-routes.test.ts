@@ -5,8 +5,34 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import jwt from 'jsonwebtoken';
 import { buildServer } from '../server.js';
 import type { DecisionServiceLike } from '../server.js';
+
+// ---------------------------------------------------------------------------
+// JWT test auth
+// ---------------------------------------------------------------------------
+
+const TEST_SECRET = 'test-secret-for-e2e-tests';
+process.env.JWT_SECRET = TEST_SECRET;
+
+function makeTestToken(overrides: Record<string, unknown> = {}): string {
+  return jwt.sign(
+    {
+      sub: 'test-user-001',
+      userId: 'test-user-001',
+      userName: 'Test Admin',
+      role: 'ceo',
+      facilityIds: [],
+      regionIds: [],
+      ...overrides,
+    },
+    TEST_SECRET,
+    { expiresIn: '1h' },
+  );
+}
+
+const authHeaders = { authorization: `Bearer ${makeTestToken()}` };
 
 // --- Mock DecisionService ---
 
@@ -83,6 +109,7 @@ describe('Decision Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/decisions?status=pending&page=1&pageSize=25',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -109,6 +136,7 @@ describe('Decision Routes', () => {
     await server.inject({
       method: 'GET',
       url: '/api/decisions?status=approved&domain=clinical&priority=high&page=2&pageSize=10',
+      headers: authHeaders,
     });
 
     expect(mockSvc.getPending).toHaveBeenCalledWith(
@@ -130,6 +158,7 @@ describe('Decision Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/decisions/stats',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -155,6 +184,7 @@ describe('Decision Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -170,6 +200,7 @@ describe('Decision Routes', () => {
     const res = await server.inject({
       method: 'GET',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001',
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(404);
@@ -184,16 +215,17 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/approve',
       payload: { note: 'Approved after review' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.payload);
     expect(body.status).toBe('approved');
-    expect(body.resolvedBy).toBe('dev-user-001');
+    expect(body.resolvedBy).toBe('test-user-001');
 
     expect(mockSvc.approve).toHaveBeenCalledWith(
       '550e8400-e29b-41d4-a716-446655440001',
-      'dev-user-001',
+      'test-user-001',
       'Approved after review',
     );
 
@@ -211,6 +243,7 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/approve',
       payload: { note: 'test' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(404);
@@ -229,6 +262,7 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/approve',
       payload: { note: 'test' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(409);
@@ -243,6 +277,7 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/override',
       payload: { note: 'Changed dosage', overrideValue: '500mg' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -251,7 +286,7 @@ describe('Decision Routes', () => {
 
     expect(mockSvc.override).toHaveBeenCalledWith(
       '550e8400-e29b-41d4-a716-446655440001',
-      'dev-user-001',
+      'test-user-001',
       '500mg',
       'Changed dosage',
     );
@@ -266,6 +301,7 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/escalate',
       payload: { note: 'Needs CFO approval' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -282,6 +318,7 @@ describe('Decision Routes', () => {
       method: 'POST',
       url: '/api/decisions/550e8400-e29b-41d4-a716-446655440001/defer',
       payload: { note: 'Will review tomorrow' },
+      headers: authHeaders,
     });
 
     expect(res.statusCode).toBe(200);
@@ -297,6 +334,7 @@ describe('Decision Routes', () => {
     await server.inject({
       method: 'GET',
       url: '/api/decisions?page=3&pageSize=10',
+      headers: authHeaders,
     });
 
     expect(mockSvc.getPending).toHaveBeenCalledWith(
