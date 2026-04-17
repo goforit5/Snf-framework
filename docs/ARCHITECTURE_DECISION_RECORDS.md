@@ -299,3 +299,60 @@ Append-only log of architecture decisions for the SNF Agentic Enterprise Platfor
 - SDK version must be kept current -- `@anthropic-ai/sdk` upgrades are treated as high-priority maintenance
 - All Zod validation of API responses is removed in favor of SDK's built-in TypeScript types
 - Provisioning scripts, session management, event relay, and HITL bridge all use the same SDK instance
+
+---
+
+## ADR-014 -- SSE Streaming for EventRelay (Replaces Polling)
+
+**Date**: 2026-04-14
+**Status**: Accepted
+**Supersedes**: Previous polling-based EventRelay implementation
+**Decision**: Use Server-Sent Events (SSE) streaming for the EventRelay component instead of periodic polling against the Managed Agents API.
+
+**Rationale**:
+- Polling introduced unnecessary latency (minimum one poll interval before events reached the HITL bridge) and wasted API quota on empty responses
+- The Anthropic Managed Agents API supports SSE streaming natively for session events -- EventRelay should consume these as they arrive
+- SSE provides automatic reconnection semantics via the `EventSource` protocol, reducing custom retry logic
+- Lower latency is critical for healthcare decision-making: a decision that arrives 5 seconds earlier can mean faster clinical intervention
+- Event cursor uses `after_id` field (SNF-136), not the previously incorrect `page` field, aligning with the actual Managed Agents API contract
+
+**Implementation**: `platform/packages/orchestrator/src/event-relay.ts` -- EventRelay subscribes to the SSE stream from the Managed Agents API and forwards events to the internal EventBus. Terminal events check `session.status_terminated` and `session.status_idle` (SNF-135) rather than the previously incorrect `completed`/`failed`/`cancelled` values.
+
+**Consequences**:
+- Near-real-time event delivery from Anthropic API to HITL bridge (sub-second vs multi-second polling)
+- Reduced API call volume -- no more empty poll responses
+- SSE connection must be monitored for drops; EventRelay implements reconnection with exponential backoff
+- Event ordering guaranteed by `after_id` cursor -- no duplicate or missed events
+
+---
+
+## ADR-015 -- Security Hardening Sprint (JWT, WebSocket Auth, RBAC, PHI Tokenization, Audit Integrity)
+
+**Date**: 2026-04-14
+**Status**: Accepted
+**Decision**: Complete a security hardening sprint addressing all known authentication, authorization, and data integrity gaps before demo readiness.
+
+**Rationale**:
+- The platform is being presented to Ensign's CEO and CTO -- security gaps visible in a demo undermine trust
+- Healthcare platforms handling PHI require defense-in-depth: authentication at every entry point, authorization on every action, integrity on every audit record
+- Multiple security items were scaffolded but not fully implemented during rapid feature development
+
+**Implementation** (16 Jira tickets, SNF-130 through SNF-145):
+- **JWT authentication** (SNF-139): Full JWT verification replaces the previous `verifyToken()` scaffold. Signature validation, expiration checking, and claim extraction are now production-grade
+- **WebSocket authentication** (SNF-140): Connections authenticated via `?token=<jwt>` query parameter on WS upgrade. Unauthenticated connections are rejected
+- **RBAC on all decision endpoints** (SNF-143): Escalate, defer, and trigger endpoints now require `APPROVAL_ROLES`, matching approve and override endpoints
+- **PHI token collision fix** (SNF-141): PHI tokenizer uses session-scoped prefixes to prevent token collisions across concurrent agent sessions
+- **Audit hash chain ordering** (SNF-142): Monotonic sequence numbers ensure deterministic hash chain ordering, fixing a race condition where concurrent inserts could produce non-reproducible chain hashes
+- **Hardcoded credential removal** (SNF-144): Azure DB password removed from Terraform configuration; all credentials sourced from environment variables or secrets manager
+- **Agent version pinning** (SNF-133): Agent references use `{ id, type, version }` object for deterministic agent selection
+- **Session status mapping** (SNF-134): Session terminal states use `terminated`/`idle` matching the Managed Agents API (not `completed`/`failed`/`cancelled`)
+- **Override tool confirmation** (SNF-137): Override operations use `user.tool_confirmation` event type for MCP tool approvals
+- **YAML nested config** (SNF-138): Task definition YAML restructured to nested `config:` API format
+- **Initial message handling** (SNF-132): `initial_message` sent as `user.message` event after session creation
+- **Dark mode modal theming** (SNF-130): CommandCenter and CEOBriefing modals properly themed in dark mode
+- **Dead import removal** (SNF-131): Unused `ComingSoon` import removed from App.jsx
+
+**Consequences**:
+- All known authentication and authorization gaps are closed
+- Platform is demo-ready for Ensign executive presentation
+- Remaining security work is production-deployment-specific (WAF, rate limiting, penetration testing, secrets manager integration) and blocked on Ensign AWS credentials

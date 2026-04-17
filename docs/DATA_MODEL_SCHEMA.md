@@ -1,7 +1,7 @@
 # DATA_MODEL_SCHEMA.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Status**: Production-ready. All 3 tiers implemented. Awaiting Ensign credentials for live data.
 
 ---

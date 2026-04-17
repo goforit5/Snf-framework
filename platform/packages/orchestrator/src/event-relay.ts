@@ -9,8 +9,8 @@
  * The cursor (`last_event_cursor`) is persisted on `orchestrator_sessions`
  * so a restart resumes exactly where polling left off.
  *
- * TODO(wave-6-optim): prefer SSE streaming once beta-client.ts surfaces it;
- * for now the shim only exposes list+create, so we poll.
+ * Uses SSE streaming via sdk.beta.sessions.events.stream() as the primary
+ * event source, with polling as a fallback for reconnection.
  *
  * Wave 6 (SNF-95). See plan § "Wave 6".
  */
@@ -158,6 +158,64 @@ export class EventRelay {
 
   private async runLoop(loop: ActiveLoop): Promise<void> {
     const { sessionId } = loop;
+
+    // Try SSE streaming first, fall back to polling on error
+    try {
+      await this.runStreamLoop(loop);
+      return; // Stream completed normally (session finished or stopped)
+    } catch (err) {
+      if (loop.stopped) return;
+      this.logger.warn(
+        { err, sessionId },
+        'event-relay.stream.failed — falling back to polling',
+      );
+    }
+
+    // Polling fallback for reconnection or when streaming is unavailable
+    await this.runPollLoop(loop);
+  }
+
+  /**
+   * SSE streaming loop using sdk.beta.sessions.events.stream().
+   * Preferred path — lower latency, no wasted requests.
+   */
+  private async runStreamLoop(loop: ActiveLoop): Promise<void> {
+    const { sessionId } = loop;
+
+    const stream = this.client.sessions.events.stream(sessionId, {
+      afterId: loop.lastSeenCursor ?? undefined,
+    });
+
+    for await (const raw of stream) {
+      if (loop.stopped) break;
+
+      loop.consecutiveErrors = 0;
+
+      const normalized = this.normalize(raw, sessionId);
+      await this.dispatch(normalized);
+      loop.lastSeenCursor = raw.id;
+      loop.eventsSinceCursorFlush += 1;
+
+      if (loop.eventsSinceCursorFlush >= this.cursorFlushInterval) {
+        await this.sessionManager.updateEventCursor(sessionId, raw.id);
+        loop.eventsSinceCursorFlush = 0;
+      }
+
+      if (this.isSessionFinished(raw)) {
+        await this.sessionManager.updateEventCursor(sessionId, raw.id);
+        await this.sessionManager.markCompleted(sessionId, 'completed');
+        loop.stopped = true;
+        this.loops.delete(sessionId);
+        return;
+      }
+    }
+  }
+
+  /**
+   * Polling fallback loop. Used when SSE streaming fails or is unavailable.
+   */
+  private async runPollLoop(loop: ActiveLoop): Promise<void> {
+    const { sessionId } = loop;
     while (!loop.stopped) {
       try {
         const events = await this.client.sessions.events.list(sessionId, {
@@ -183,7 +241,6 @@ export class EventRelay {
             loop.eventsSinceCursorFlush = 0;
           }
           if (this.isSessionFinished(raw)) {
-            // Flush cursor and mark the session complete.
             await this.sessionManager.updateEventCursor(sessionId, raw.id);
             await this.sessionManager.markCompleted(sessionId, 'completed');
             loop.stopped = true;
@@ -206,7 +263,6 @@ export class EventRelay {
           this.loops.delete(sessionId);
           return;
         }
-        // Exponential backoff capped at 30s.
         const backoff = Math.min(
           30_000,
           this.pollIntervalMs * Math.pow(2, loop.consecutiveErrors),
@@ -270,7 +326,13 @@ export class EventRelay {
     // confirmation of the exact event type, we also look at the event `type`
     // itself.
     const rawRecord = raw as unknown as Record<string, unknown>;
-    if (raw.type === 'session.completed' || raw.type === 'agent.session_ended') {
+    // SNF-135: The actual SDK terminal event type is 'session.status_terminated',
+    // not 'session.completed' or 'agent.session_ended'. Also treat
+    // 'session.status_idle' as an optional stop condition.
+    if (
+      raw.type === 'session.status_terminated' ||
+      raw.type === 'session.status_idle'
+    ) {
       return true;
     }
     const content = (raw.content as Record<string, unknown> | undefined) ??

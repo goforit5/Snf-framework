@@ -1,7 +1,7 @@
 # ACCESSIBILITY_AUDIT.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Standard**: WCAG 2.2 AA + Apple Accessibility Guidelines
 **Auditor**: Automated code review of all shared components, hooks, and representative pages
 

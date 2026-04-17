@@ -116,12 +116,23 @@ export class PostgresTokenStore implements TokenStore {
   }
 
   async put(token: string, record: PhiToken): Promise<void> {
-    await this.pg.query(
+    const { rows } = await this.pg.query<{ original: string }>(
       `INSERT INTO phi_tokens (token, kind, original)
        VALUES ($1, $2, $3)
-       ON CONFLICT (token) DO UPDATE SET kind = EXCLUDED.kind, original = EXCLUDED.original`,
+       ON CONFLICT (token) DO NOTHING
+       RETURNING original`,
       [token, record.kind, record.original],
     );
+    // If no row returned and token already exists, check for collision
+    if (rows.length === 0) {
+      const existing = await this.get(token);
+      if (existing !== null && existing !== record.original) {
+        console.warn(
+          `[PHI_TOKEN_COLLISION] Token ${token} already mapped to different value. ` +
+          `Existing original differs from new original. Session prefix should prevent this.`
+        );
+      }
+    }
   }
 
   async findByOriginal(original: string, kind: PhiKind): Promise<string | null> {
@@ -207,6 +218,7 @@ export interface PhiTokenizerOptions {
 export class PhiTokenizer {
   private readonly store: TokenStore;
   private readonly nameMatcher: NameMatcher;
+  private sessionPrefix: string;
   private counters: Record<PhiKind, number> = {
     name: 0, mrn: 0, dob: 0, ssn: 0, phone: 0, email: 0, address: 0,
   };
@@ -214,6 +226,7 @@ export class PhiTokenizer {
   constructor(opts: PhiTokenizerOptions) {
     this.store = opts.store;
     this.nameMatcher = opts.nameMatcher ?? new DefaultNameMatcher();
+    this.sessionPrefix = generateSessionPrefix();
   }
 
   /** Tokenize all PHI spans in text. Returns the redacted string. */
@@ -268,8 +281,9 @@ export class PhiTokenizer {
     return out;
   }
 
-  /** Reset per-session counters. Tests call this between runs. */
+  /** Reset per-session counters with a new session prefix. Tests call this between runs. */
   resetSession(): void {
+    this.sessionPrefix = generateSessionPrefix();
     this.counters = {
       name: 0, mrn: 0, dob: 0, ssn: 0, phone: 0, email: 0, address: 0,
     };
@@ -350,7 +364,7 @@ export class PhiTokenizer {
     }
 
     const idx = ++this.counters[span.kind];
-    const token = `[${span.kind.toUpperCase()}_${String(idx).padStart(4, '0')}]`;
+    const token = `[${span.kind.toUpperCase()}_${this.sessionPrefix}_${String(idx).padStart(4, '0')}]`;
     await this.store.put(token, {
       token,
       kind: span.kind,
@@ -359,6 +373,15 @@ export class PhiTokenizer {
     });
     return token;
   }
+}
+
+/** Generate a short 4-character hex prefix from a UUID for session scoping. */
+function generateSessionPrefix(): string {
+  // Use crypto.randomUUID if available, otherwise fall back to Math.random
+  const uuid = typeof globalThis.crypto?.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${Math.random().toString(16).slice(2)}${Math.random().toString(16).slice(2)}`;
+  return uuid.replace(/-/g, '').slice(0, 4);
 }
 
 /** Map a birth year to its 5-year bucket token. */

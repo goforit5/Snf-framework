@@ -61,7 +61,7 @@ export default function CommandCenter() {
       content: (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-500">{facility.city} — {facility.region}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{facility.city} — {facility.region}</p>
             <div className="text-right">
               <HealthScoreCard score={facility.healthScore} label="Health Score" size="md" />
             </div>
@@ -73,23 +73,23 @@ export default function CommandCenter() {
               { label: 'AP Aging', value: `$${(facility.apAging / 1000).toFixed(0)}K`, sub: 'Outstanding payables' },
               { label: 'Open Incidents', value: facility.openIncidents, sub: facility.openIncidents > 5 ? 'Needs attention' : 'Within normal range' },
             ].map((stat) => (
-              <div key={stat.label} className="bg-gray-50 rounded-xl p-3">
+              <div key={stat.label} className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
                 <p className="text-[10px] text-gray-400 uppercase tracking-wider">{stat.label}</p>
-                <p className="text-lg font-bold text-gray-900">{stat.value}</p>
-                <p className="text-[11px] text-gray-500">{stat.sub}</p>
+                <p className="text-lg font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">{stat.sub}</p>
               </div>
             ))}
           </div>
           {riskItems.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Survey Risk Factors</h4>
+              <h4 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Survey Risk Factors</h4>
               <div className="space-y-2">
                 {riskItems.map((risk, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-xl">
-                    <span className="text-xs font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded">{risk.tag}</span>
+                  <div key={i} className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-xl">
+                    <span className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/40 px-2 py-0.5 rounded">{risk.tag}</span>
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{risk.description}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{risk.details}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{risk.description}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{risk.details}</p>
                     </div>
                   </div>
                 ))}
@@ -98,13 +98,13 @@ export default function CommandCenter() {
           )}
           {facilityExceptions.length > 0 && (
             <div>
-              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Pending Exceptions ({facilityExceptions.length})</h4>
+              <h4 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Pending Exceptions ({facilityExceptions.length})</h4>
               <div className="space-y-2">
                 {facilityExceptions.map((exc) => (
-                  <div key={exc.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  <div key={exc.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                     <div className="flex items-center gap-2">
                       <PriorityBadge priority={exc.priority} />
-                      <span className="text-sm text-gray-700">{exc.title}</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{exc.title}</span>
                     </div>
                     <ConfidenceBar value={exc.confidence} />
                   </div>
@@ -130,11 +130,11 @@ export default function CommandCenter() {
         <div className="space-y-4">
           <div className="flex items-start gap-3">
             <div className={`flex-shrink-0 w-2.5 h-2.5 rounded-full mt-1.5 ${item.type === 'positive' ? 'bg-green-500' : 'bg-red-500'}`} />
-            <p className="text-base text-gray-900 font-medium leading-relaxed">{item.text}</p>
+            <p className="text-base text-gray-900 dark:text-gray-100 font-medium leading-relaxed">{item.text}</p>
           </div>
-          <div className="bg-gray-50 rounded-xl p-4">
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Details</h4>
-            <p className="text-sm text-gray-700 leading-relaxed">{item.detail}</p>
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">
+            <h4 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Details</h4>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{item.detail}</p>
           </div>
         </div>
       ),
@@ -149,32 +149,32 @@ export default function CommandCenter() {
       content: (
         <div className="space-y-5">
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-50 rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-gray-900">{agent.actions}</p>
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{agent.actions}</p>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">Processed</p>
             </div>
-            <div className="bg-green-50 rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-green-600">{agent.savings}</p>
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-green-600 dark:text-green-400">{agent.savings}</p>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">Savings</p>
             </div>
-            <div className="bg-blue-50 rounded-xl p-3 text-center">
-              <p className="text-lg font-bold text-blue-600">{agent.detail}</p>
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
+              <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{agent.detail}</p>
               <p className="text-[10px] text-gray-400 uppercase tracking-wider">Impact</p>
             </div>
           </div>
           {match && (
             <>
               <div>
-                <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Policies Checked</h4>
+                <h4 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Policies Checked</h4>
                 <div className="flex flex-wrap gap-2">
                   {match.policiesChecked.map((p, i) => (
-                    <span key={i} className="px-2.5 py-1 rounded-lg bg-gray-100 text-xs text-gray-600 font-medium">{p}</span>
+                    <span key={i} className="px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs text-gray-600 dark:text-gray-400 font-medium">{p}</span>
                   ))}
                 </div>
               </div>
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <h4 className="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-2">Summary</h4>
-                <p className="text-sm text-gray-700 leading-relaxed">{match.action}. Confidence: {(match.confidence * 100).toFixed(0)}%. Time saved: {match.timeSaved}.</p>
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-4">
+                <h4 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">Summary</h4>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{match.action}. Confidence: {(match.confidence * 100).toFixed(0)}%. Time saved: {match.timeSaved}.</p>
               </div>
             </>
           )}

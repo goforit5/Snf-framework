@@ -1,4 +1,4 @@
-import type { FastifyInstance } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import type { WebSocket } from 'ws';
 import type {
   Decision,
@@ -6,6 +6,7 @@ import type {
   AuditEntry,
   AgentDomain,
 } from '@snf/core';
+import { verifyToken } from '../middleware/auth.js';
 
 // --- Event types pushed to clients ---
 
@@ -293,10 +294,22 @@ export async function websocketHandler(server: FastifyInstance): Promise<void> {
   server.get(
     '/',
     { websocket: true },
-    (socket: WebSocket, _request) => {
-      // TODO: Authenticate via token query param or first message
-      // const token = request.query.token;
-      // const user = await verifyToken(token);
+    async (socket: WebSocket, request: FastifyRequest) => {
+      // Authenticate via ?token= query param on WebSocket upgrade
+      const query = request.query as Record<string, string | undefined>;
+      const token = query.token;
+
+      if (!token) {
+        socket.close(4001, 'Authentication required: missing token query parameter');
+        return;
+      }
+
+      try {
+        await verifyToken(token);
+      } catch {
+        socket.close(4001, 'Authentication failed: invalid or expired token');
+        return;
+      }
 
       connectionManager.addClient(socket);
 

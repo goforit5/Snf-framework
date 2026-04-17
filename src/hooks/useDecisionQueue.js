@@ -32,7 +32,7 @@ export function useDecisionQueue(initialDecisions = [], { onAction, domain } = {
     initialDecisions.map(d => ({ ...d, _status: 'pending' }))
   );
   const [actionLog, setActionLog] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(isLiveMode);
   const wsRef = useRef(null);
 
   // Live mode: fetch decisions from API on mount
@@ -40,7 +40,6 @@ export function useDecisionQueue(initialDecisions = [], { onAction, domain } = {
     if (!isLiveMode) return;
 
     let cancelled = false;
-    setLoading(true);
 
     fetchDecisions({ domain }).then((data) => {
       if (cancelled || !data) return;

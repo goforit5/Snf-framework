@@ -1,7 +1,7 @@
 # FEATURE_FLAG_REGISTRY.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 
 ---
 

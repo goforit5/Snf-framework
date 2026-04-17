@@ -1,7 +1,7 @@
 # INCIDENT_RESPONSE.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Classification**: Healthcare / HIPAA-regulated
 
 ---

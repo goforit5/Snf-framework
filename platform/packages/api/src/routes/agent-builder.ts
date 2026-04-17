@@ -16,7 +16,7 @@
  *    startup so the API keeps booting if the dep is absent (local dev).
  */
 
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import type {
@@ -63,8 +63,11 @@ function getSessionManagerStub(): SessionManagerLike {
 
 export async function agentBuilderRoutes(
   server: FastifyInstance,
-  store: AgentBuilderStore = new InMemoryAgentBuilderStore(),
+  _opts?: FastifyPluginOptions,
 ): Promise<void> {
+  const store: AgentBuilderStore =
+    (server as unknown as { agentBuilderStore?: AgentBuilderStore }).agentBuilderStore ??
+    new InMemoryAgentBuilderStore();
   // Register multipart parser lazily — if the dep isn't installed, upload will
   // return 501 but the other routes still work.
   let multipartRegistered = false;

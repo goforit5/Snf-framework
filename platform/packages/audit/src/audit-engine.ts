@@ -77,9 +77,9 @@ export class AuditEngine {
         HASH_CHAIN_LOCK_KEY,
       ]);
 
-      // Fetch the most recent hash to link to
+      // Fetch the most recent hash to link to, using monotonic sequence_number
       const prevResult = await client.query<{ hash: string }>(
-        `SELECT hash FROM audit_trail ORDER BY timestamp DESC, id DESC LIMIT 1`
+        `SELECT hash FROM audit_trail ORDER BY sequence_number DESC LIMIT 1`
       );
       const previousHash =
         prevResult.rows.length > 0 ? prevResult.rows[0].hash : GENESIS_HASH;
@@ -97,14 +97,14 @@ export class AuditEngine {
 
       await client.query(
         `INSERT INTO audit_trail (
-          id, trace_id, parent_id,
+          id, sequence_number, trace_id, parent_id,
           timestamp, facility_local_time,
           agent_id, agent_version, model_id,
           action, action_category, governance_level,
           target, input, decision, result, human_override,
           hash, previous_hash
         ) VALUES (
-          $1, $2, $3,
+          $1, nextval('audit_trail_sequence_number_seq'), $2, $3,
           $4, $5,
           $6, $7, $8,
           $9, $10, $11,
@@ -304,7 +304,7 @@ export class AuditEngine {
       conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const { rows } = await this.pool.query<AuditRow>(
-      `SELECT * FROM audit_trail ${where} ORDER BY timestamp ASC, id ASC`,
+      `SELECT * FROM audit_trail ${where} ORDER BY sequence_number ASC`,
       params
     );
 
@@ -434,6 +434,7 @@ export class AuditEngine {
 /** Raw row shape from PostgreSQL (snake_case columns, JSONB as objects). */
 interface AuditRow {
   id: string;
+  sequence_number: number;
   trace_id: string;
   parent_id: string | null;
   timestamp: string;

@@ -1,7 +1,7 @@
 # Ensign Group — Integration Credential Checklist
 
 **Prepared by**: Andrew (Taskvisory)
-**Date**: April 5, 2026
+**Date**: April 14, 2026
 **Purpose**: Everything needed to activate the SNF Agentic Platform against Ensign's live systems. No code changes required — credential files are the only missing pieces.
 
 ---
@@ -11,7 +11,7 @@
 | Component | Status | Notes |
 |-----------|--------|-------|
 | Frontend (69 pages, 8 nav sections) | COMPLETE | Live at goforit5.github.io/Snf-framework |
-| Backend API + Agent Framework | COMPLETE | Claude Agent SDK, MCP connectors, audit engine |
+| Backend API + Agent Framework | COMPLETE | Claude Agent SDK (Managed Agents API), MCP connectors, audit engine, JWT auth (SNF-139), WebSocket auth (SNF-140), RBAC hardened (SNF-143), SSE event streaming (SNF-145) |
 | Infrastructure-as-Code (Terraform) | COMPLETE | AWS + Azure modules ready |
 | Docker / Local Dev Environment | COMPLETE | PostgreSQL, Redis, LocalStack |
 | PCC Connector (14 tools) | SCAFFOLDED | Needs OAuth credentials |

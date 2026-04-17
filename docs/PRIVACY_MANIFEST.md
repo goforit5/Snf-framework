@@ -1,7 +1,7 @@
 # PRIVACY_MANIFEST.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Regulatory Framework**: HIPAA (Health Insurance Portability and Accountability Act)
 **Status**: Architecture complete. Awaiting Ensign credentials for live data activation.
 

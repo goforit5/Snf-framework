@@ -1,7 +1,7 @@
 # APP_STORE_SUBMISSION.md
 
 **Project**: SNF Agentic Framework -- Native Companion Apps
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 **Apps**: SNF_iOS (iPhone/iPad), SNF_macOS (Mac)
 **Shared Package**: SNFKit (SNFModels, SNFData, SNFServices)
 

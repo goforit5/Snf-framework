@@ -65,6 +65,12 @@ variable "auto_pause" {
   default     = null
 }
 
+variable "azure_db_password" {
+  description = "Administrator password for Azure PostgreSQL Flexible Server. Must be provided at plan time — never hardcode."
+  type        = string
+  sensitive   = true
+}
+
 locals {
   is_aws      = var.cloud_provider == "aws"
   is_azure    = var.cloud_provider == "azure"
@@ -193,7 +199,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   }
 
   administrator_login    = "snf_admin"
-  administrator_password = "CHANGE_ME_USE_KEY_VAULT" # Placeholder — rotated via Key Vault
+  administrator_password = var.azure_db_password
 
   storage_mb = var.storage_gb * 1024
 

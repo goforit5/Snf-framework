@@ -37,12 +37,19 @@ import {
 
 interface EnvironmentConfig {
   name: string;
-  type: 'cloud';
-  networking: 'limited' | 'open' | 'none';
-  allow_mcp_servers: boolean;
-  allowed_hosts: string[];
-  pip_packages: string[];
-  apt_packages: string[];
+  config: {
+    type: 'cloud';
+    networking: {
+      type: 'limited' | 'open' | 'none';
+      allowed_hosts: string[];
+      allow_mcp_servers?: boolean;
+      allow_package_managers?: boolean;
+    };
+    packages?: {
+      pip?: string[];
+      apt?: string[];
+    };
+  };
   id?: string;
 }
 
@@ -56,15 +63,11 @@ const CONFIG_PATH = resolve(__dirname, '..', 'environments.config.yaml');
 // Core logic
 // ---------------------------------------------------------------------------
 
+// SNF-138: Pass the nested `config` structure that the Anthropic API expects.
 function toDesired(env: EnvironmentConfig): Record<string, unknown> {
   return {
     name: env.name,
-    type: env.type,
-    networking: env.networking,
-    allow_mcp_servers: env.allow_mcp_servers,
-    allowed_hosts: env.allowed_hosts,
-    pip_packages: env.pip_packages,
-    apt_packages: env.apt_packages,
+    config: env.config,
   };
 }
 

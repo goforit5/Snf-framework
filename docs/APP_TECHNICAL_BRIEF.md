@@ -1,7 +1,7 @@
 # APP_TECHNICAL_BRIEF.md
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
-**Status**: Production-ready (awaiting Ensign credentials)
+**Updated**: 2026-04-14
+**Status**: Production-ready and demo-ready (awaiting Ensign credentials)
 
 ## App Definition
 
@@ -37,7 +37,7 @@ Agentic enterprise platform for skilled nursing facility (SNF) operations across
 | Pages | Shipped | Frontend | 69 pages across 8 nav sections + 3 demo pages |
 | DecisionQueue integration | Shipped | Frontend | 65 pages with functional `useDecisionQueue` hook |
 | AI agents | Shipped | Backend | 30 agents (26 domain + 4 orchestration/meta) |
-| YAML task definitions | Shipped | Backend | 57 task definitions across 8 domains |
+| YAML task definitions | Shipped | Backend | 57 task definitions across 8 domains; nested `config:` API format (SNF-138) |
 | MCP connectors | Planned | Backend | 4 connectors (PCC, Workday, M365, Regulatory) — awaiting credentials |
 | Governance levels | Shipped | Backend | 7 levels (0-6): observe-only through escalate-only |
 | Immutable audit trail | Shipped | Backend | SHA-256 hash chain, HIPAA/SOX compliant |
@@ -47,7 +47,7 @@ Agentic enterprise platform for skilled nursing facility (SNF) operations across
 | Dark mode | Shipped | Frontend | System preference detection + manual toggle |
 | Tablet responsive | Shipped | Frontend | Sidebar overlay, 44px touch targets, responsive grids |
 | Code splitting | Shipped | Frontend | React.lazy on all pages, vendor chunks (react 48kB, recharts 429kB, lucide 35kB) |
-| Real-time WebSocket | Shipped | Backend | Push new decisions to frontend as agents process |
+| Real-time WebSocket | Shipped | Backend | Push new decisions to frontend as agents process; authenticated via JWT token query param (SNF-140) |
 | Graph DB | Shipped | Backend | Gremlin-compatible for decision replay and cascade tracing |
 | Native iOS app | Shipped | Native | iOS 26, SwiftUI, SNFKit shared package |
 | Native macOS app | Shipped | Native | macOS 26, SwiftUI, SNFKit shared package |
@@ -55,7 +55,7 @@ Agentic enterprise platform for skilled nursing facility (SNF) operations across
 | Notification center | Shipped | Frontend | Bell icon, severity-based, toast feedback |
 | Global search | Shipped | Frontend | Spotlight-style search bar with filter chips |
 | Facility heatmap | Shipped | Frontend | 330 facilities, click-through to detail views |
-| Auth/RBAC | Shipped | Frontend + Backend | Role-based nav filtering, facility/region/enterprise scope |
+| Auth/RBAC | Shipped | Frontend + Backend | JWT authentication (SNF-139), WebSocket auth (SNF-140), RBAC on all decision endpoints including escalate/defer/trigger (SNF-143), role-based nav filtering, facility/region/enterprise scope |
 
 ## Frontend -- Page Inventory
 
@@ -72,7 +72,7 @@ Agentic enterprise platform for skilled nursing facility (SNF) operations across
 | Strategic | 5 | 5 | MAPipeline, MarketIntelligence, BoardGovernance, InvestorRelations, GovernmentAffairs |
 | Demo | 3 | 1 | StrategicFrameworks, EnsignAIReadiness, AILandscape |
 
-**Total**: 69 pages, 65 with DecisionQueue. 4 without DecisionQueue: AgentWorkLedger (monitoring view), AuditTrail (monitoring view), Settings (config), ComingSoon (deployment timeline).
+**Total**: 69 pages, 65 with DecisionQueue. 4 without DecisionQueue: AgentWorkLedger (monitoring view), AuditTrail (monitoring view), Settings (config), ComingSoon (deployment timeline; dead import removed from router, SNF-131).
 
 ## Frontend -- Component Library
 
@@ -144,11 +144,12 @@ Agentic enterprise platform for skilled nursing facility (SNF) operations across
 |---|---|---|
 | `@snf/core` | Shared types, interfaces, utilities | GovernanceLevel, AgentDefinition, Decision, TaskDefinition, AgentEvent, Facility, Credentials |
 | `@snf/agents` | Agent framework | BaseSnfAgent, AgentRegistry, GovernanceEngine, EventBus, CascadeManager, AgentHealthMonitor, AnomalyDetector, KillSwitch, MetricsCollector, AlertService |
-| `@snf/audit` | Immutable audit trail | AuditEngine, ChainVerifier, AgentLogger (SHA-256 hash chain, HIPAA/SOX compliant) |
+| `@snf/audit` | Immutable audit trail | AuditEngine, ChainVerifier, AgentLogger (SHA-256 hash chain with monotonic sequence numbers, HIPAA/SOX compliant; SNF-142) |
 | `@snf/hitl` | Human-in-the-loop | DecisionService, TimeoutWorker, OverrideTracker, DecisionReplayEngine, DecisionComparison, GraphClient |
 | `@snf/tasks` | Task scheduling | TaskRegistry, TaskScheduler, EventProcessor, RunManager (YAML-driven, cron + event triggers) |
 | `@snf/connectors` | MCP connectors | PCC, Workday, M365, Regulatory (4 MCP servers with OAuth/API key auth) |
-| `@snf/api` | REST API + WebSocket | Fastify 5 server, decisions/agents/audit routes, WebSocket handler, auth middleware |
+| `@snf/api` | REST API + WebSocket | Fastify 5 server, decisions/agents/audit routes, WebSocket handler with JWT auth (SNF-140), RBAC middleware (SNF-143) |
+| `@snf/orchestrator` | Managed Agents SDK adapter | SessionManager, EventRelay (SSE streaming; SNF-145), HITL bridge — uses official `@anthropic-ai/sdk` only (ADR-013) |
 
 ## Backend -- Agent Registry (30 agents)
 

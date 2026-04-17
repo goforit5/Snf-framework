@@ -393,19 +393,19 @@ export class HITLBridge {
         deny_message: resolution.reason,
       };
     }
+    // SNF-137: snf_hitl__request_decision is an MCP tool, so its pause event
+    // is `agent.mcp_tool_use`. MCP tool pauses must be resumed via
+    // `user.tool_confirmation`, not `user.custom_tool_result`. The override
+    // sends an allow with a deny_message containing the corrected payload so
+    // the agent knows to use the modified parameters.
     if (resolution.kind === 'override') {
       return {
-        type: 'user.custom_tool_result',
+        type: 'user.tool_confirmation',
         tool_use_id: toolUseId,
-        content: [
-          {
-            type: 'text',
-            text:
-              'Action modified by human: ' +
-              JSON.stringify(resolution.correctedPayload),
-          },
-        ],
-        is_error: false,
+        result: 'allow',
+        deny_message:
+          'Action modified by human: ' +
+          JSON.stringify(resolution.correctedPayload),
       };
     }
     // defer / escalate are handled upstream and never reach here.

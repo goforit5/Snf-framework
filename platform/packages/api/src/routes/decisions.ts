@@ -378,6 +378,11 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
     },
     async (request, reply) => {
       const user = getUser(request);
+
+      if (!hasRole(user, APPROVAL_ROLES)) {
+        return reply.code(403).send({ error: 'Insufficient role for escalation' });
+      }
+
       const { id } = request.params;
       const { note } = request.body;
 
@@ -430,6 +435,11 @@ export async function decisionsRoutes(server: FastifyInstance): Promise<void> {
     },
     async (request, reply) => {
       const user = getUser(request);
+
+      if (!hasRole(user, APPROVAL_ROLES)) {
+        return reply.code(403).send({ error: 'Insufficient role for deferral' });
+      }
+
       const { id } = request.params;
       const { note } = request.body;
 

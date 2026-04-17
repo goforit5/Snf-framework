@@ -234,7 +234,18 @@ export class SessionManager {
       },
     };
 
-    const session = await this.client.sessions.create(sessionBody);
+    // SNF-132: Do not include initial_message in session create body — it is
+    // not a valid SessionCreateParams field. Instead, send it as a user.message
+    // event after session creation.
+    const { initial_message: _dropped, ...createBody } = sessionBody;
+    const session = await this.client.sessions.create(createBody);
+
+    // Send the initial instruction as the first user message event.
+    await this.client.sessions.events.create(session.id, {
+      type: 'user.message',
+      content: [{ type: 'text', text: initialMessage }],
+    });
+
     const startedAt = session.created_at ?? this.now();
 
     await this.persistSession({
@@ -366,14 +377,18 @@ export class SessionManager {
     // EventRelay will continue polling. If the remote side reports "completed",
     // we mark the local row accordingly.
     const session = await this.client.sessions.retrieve(sessionId);
+    // SNF-134: The Managed Agents API returns status values:
+    //   'rescheduling' | 'running' | 'idle' | 'terminated'
+    // Map these to our local status enum.
     const remoteStatus = (session.status ?? '').toLowerCase();
     if (
-      remoteStatus === 'completed' ||
+      remoteStatus === 'terminated' ||
+      remoteStatus === 'idle' ||
       remoteStatus === 'failed' ||
       remoteStatus === 'cancelled'
     ) {
       const localStatus: 'completed' | 'failed' | 'cancelled' =
-        remoteStatus === 'completed'
+        remoteStatus === 'terminated' || remoteStatus === 'idle'
           ? 'completed'
           : remoteStatus === 'failed'
             ? 'failed'

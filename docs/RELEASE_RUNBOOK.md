@@ -1,7 +1,7 @@
 # RELEASE_RUNBOOK.md
 
 **Project**: SNF Agentic Framework
-**Updated**: 2026-04-05
+**Updated**: 2026-04-14
 
 ---
 
@@ -316,8 +316,8 @@ SNF_macOS/ (depends: SNFKit -> SNFModels, SNFData, SNFServices)
 |---|---|---|
 | No credentials in source | `grep -r "placeholder_" platform/.env.sample` only | `docs/SECURITY_ARCHITECTURE.md` -- Credential Storage |
 | `.env` in `.gitignore` | `grep ".env" .gitignore` | `docs/SECURITY_ARCHITECTURE.md` -- Credential Storage |
-| JWT auth enabled (production) | Dev fallback removed from `auth.ts` lines 73-80 | `docs/SECURITY_ARCHITECTURE.md` -- Known Security Gaps |
-| WebSocket auth enabled | Token query param validation on WS upgrade | `docs/SECURITY_ARCHITECTURE.md` -- Known Security Gaps |
+| JWT auth enabled (production) | JWT authentication implemented (SNF-139); dev fallback removed from `auth.ts` lines 73-80 for production | `docs/SECURITY_ARCHITECTURE.md` -- Authentication |
+| WebSocket auth enabled | Token query param validation on WS upgrade (SNF-140) | `docs/SECURITY_ARCHITECTURE.md` -- Authentication |
 | CORS origins correct | Check `platform/packages/api/src/server.ts` | Only `goforit5.github.io`, `localhost:5173`, `localhost:4173` |
 | RLS policies active | Verify `facility_isolation` on `decision_queue`, `audit_facility_isolation` on `audit_trail` | `docs/SECURITY_ARCHITECTURE.md` -- Database Security |
 | Audit immutability trigger | Verify `prevent_audit_modification()` trigger exists | `docs/SECURITY_ARCHITECTURE.md` -- Audit Trail Security |

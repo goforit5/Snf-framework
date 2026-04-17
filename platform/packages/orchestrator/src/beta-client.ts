@@ -169,6 +169,11 @@ export interface BetaClient {
         opts?: { order?: 'asc' | 'desc'; afterId?: string; limit?: number },
       ): Promise<SessionEvent[]>;
       create(sessionId: string, event: Record<string, unknown>): Promise<SessionEvent>;
+      /** SSE stream of session events. Returns an async iterable. */
+      stream(
+        sessionId: string,
+        opts?: { afterId?: string },
+      ): AsyncIterable<SessionEvent>;
     };
   };
 }
@@ -441,7 +446,12 @@ function sessionsNs(sdk: Anthropic): BetaClient['sessions'] {
     },
     async create(input) {
       // Map legacy `agent_id` field to SDK's `agent` field.
-      const agent = (input.agent ?? input.agent_id) as string;
+      const agentId = (input.agent ?? input.agent_id) as string;
+      // SNF-133: Support version pinning — the SDK accepts either a bare
+      // string or { id, type: 'agent', version: N } for the `agent` field.
+      const agent = input.agent_version
+        ? { id: agentId, type: 'agent' as const, version: input.agent_version as number }
+        : agentId;
       const s = await sdk.beta.sessions.create({
         agent,
         environment_id: input.environment_id as string,
@@ -467,13 +477,12 @@ function sessionsNs(sdk: Anthropic): BetaClient['sessions'] {
 
     events: {
       async list(sessionId, opts) {
-        const params: { order?: 'asc' | 'desc'; limit?: number; page?: string } = {};
+        const params: { order?: 'asc' | 'desc'; limit?: number; after_id?: string } = {};
         if (opts?.order) params.order = opts.order;
         if (opts?.limit) params.limit = opts.limit;
-        // The SDK uses opaque `page` cursor, not `after_id`. When the
-        // caller passes `afterId` we pass it as the `page` param which
-        // is the correct cursor token for continuation.
-        if (opts?.afterId) params.page = opts.afterId;
+        // SNF-136: EventListParams uses `after_id`, not `page`. Using `page`
+        // caused every poll to refetch ALL events from the beginning.
+        if (opts?.afterId) params.after_id = opts.afterId;
 
         const items = await collectPage(
           sdk.beta.sessions.events.list(sessionId, params),
@@ -492,6 +501,24 @@ function sessionsNs(sdk: Anthropic): BetaClient['sessions'] {
           id: (result as unknown as Record<string, string>).id ?? '',
           session_id: sessionId,
           type: (event.type as string) ?? 'unknown',
+        };
+      },
+      stream(sessionId, _opts) {
+        // Use the SDK's SSE streaming endpoint for real-time event delivery.
+        // Returns an async iterable that yields SessionEvent objects.
+        // Note: The SDK's stream() does not support after_id; filtering by
+        // afterId must be done client-side if needed.
+
+        const sdkStream = sdk.beta.sessions.events.stream(sessionId, {});
+        // Wrap the SDK stream to map to our SessionEvent type.
+        // The SDK returns APIPromise<Stream<...>> which must be awaited.
+        return {
+          async *[Symbol.asyncIterator]() {
+            const resolvedStream = await sdkStream;
+            for await (const event of resolvedStream) {
+              yield event as unknown as SessionEvent;
+            }
+          },
         };
       },
     },

@@ -8,7 +8,8 @@ import { auditRoutes } from './routes/audit.js';
 import { agentBuilderRoutes } from './routes/agent-builder.js';
 import { demoRoutes } from './routes/demo.js';
 import { websocketHandler } from './websocket/handler.js';
-import { authMiddleware } from './middleware/auth.js';
+import { authMiddleware, getUser, hasRole } from './middleware/auth.js';
+import type { UserRole } from './middleware/auth.js';
 
 /**
  * Minimal structural interface so this file doesn't import the
@@ -130,7 +131,15 @@ export async function buildServer(opts: BuildServerOptions = {}) {
   await server.register(websocketHandler, { prefix: '/api/ws' });
 
   // --- Orchestrator trigger (Wave 6, SNF-95) ---
+  const TRIGGER_ROLES: UserRole[] = ['ceo', 'it_admin', 'regional_director'];
   server.post('/api/sessions/trigger', async (request, reply) => {
+    const user = getUser(request);
+    if (!hasRole(user, TRIGGER_ROLES)) {
+      return reply
+        .status(403)
+        .send({ error: 'Insufficient role for session trigger' });
+    }
+
     if (!opts.triggerRouter) {
       return reply
         .status(503)
