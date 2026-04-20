@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barry Engagement Plan — SNF Agentic Platform</title>
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --surface: #141414;
+            --surface-2: #1c1c1e;
+            --border: #2c2c2e;
+            --text: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --accent: #0a84ff;
+            --accent-dim: rgba(10, 132, 255, 0.12);
+            --green: #30d158;
+            --green-dim: rgba(48, 209, 88, 0.12);
+            --amber: #ff9f0a;
+            --amber-dim: rgba(255, 159, 10, 0.12);
+            --red: #ff453a;
+            --violet: #bf5af2;
+            --violet-dim: rgba(191, 90, 242, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 24px 120px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 64px;
+            padding-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+        }
+
+        header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        header .date {
+            margin-top: 16px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .section {
+            margin-bottom: 56px;
+        }
+
+        .section-number {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 20px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            margin-top: 28px;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+        }
+
+        .text-message {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .text-message::before {
+            content: 'TEXT MESSAGE';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg);
+            padding: 0 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--green);
+            letter-spacing: 0.1em;
+        }
+
+        .text-message p {
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 0;
+        }
+
+        .why-box {
+            background: var(--accent-dim);
+            border: 1px solid rgba(10, 132, 255, 0.2);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+        }
+
+        .why-box h4 {
+            color: var(--accent);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+
+        .why-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .why-box li {
+            color: var(--text);
+            font-size: 0.9rem;
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .why-box li::before {
+            content: '>';
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .dont-box {
+            background: rgba(255, 69, 58, 0.08);
+            border: 1px solid rgba(255, 69, 58, 0.2);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 20px 0;
+        }
+
+        .dont-box h4 {
+            color: var(--red);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+        }
+
+        .dont-box ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .dont-box li {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 4px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .dont-box li::before {
+            content: '×';
+            position: absolute;
+            left: 0;
+            color: var(--red);
+            font-weight: 700;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 32px;
+            margin: 24px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 4px;
+            bottom: 4px;
+            width: 2px;
+            background: var(--border);
+            border-radius: 1px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 28px;
+            padding: 16px 20px;
+            background: var(--surface);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -28px;
+            top: 22px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg);
+        }
+
+        .timeline-item .time {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 6px;
+        }
+
+        .timeline-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .timeline-item p {
+            font-size: 0.88rem;
+            margin-bottom: 0;
+        }
+
+        .key-line {
+            background: var(--violet-dim);
+            border-left: 3px solid var(--violet);
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .key-line p {
+            color: var(--text);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 0;
+        }
+
+        .video-script {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .video-script::before {
+            content: '30-SECOND VIDEO SCRIPT';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--bg);
+            padding: 0 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--violet);
+            letter-spacing: 0.1em;
+        }
+
+        .video-script p {
+            color: var(--text);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .objection-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 24px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .objection-table th {
+            background: var(--surface-2);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 14px 16px;
+            text-align: left;
+        }
+
+        .objection-table td {
+            padding: 14px 16px;
+            font-size: 0.88rem;
+            border-top: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        .objection-table td:first-child {
+            color: var(--amber);
+            font-weight: 600;
+            white-space: nowrap;
+            width: 140px;
+        }
+
+        .objection-table td:last-child {
+            color: var(--text-secondary);
+        }
+
+        .objection-table tr:nth-child(even) td {
+            background: var(--surface);
+        }
+
+        .strategic-frame {
+            background: linear-gradient(135deg, rgba(10, 132, 255, 0.08), rgba(191, 90, 242, 0.08));
+            border: 1px solid rgba(10, 132, 255, 0.2);
+            border-radius: 16px;
+            padding: 32px;
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        .strategic-frame h3 {
+            color: var(--text);
+            font-size: 1.3rem;
+            margin-bottom: 16px;
+            margin-top: 0;
+        }
+
+        .strategic-frame p {
+            color: var(--text);
+            font-size: 1.05rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+
+        .tag {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tag-green { background: var(--green-dim); color: var(--green); }
+        .tag-amber { background: var(--amber-dim); color: var(--amber); }
+        .tag-violet { background: var(--violet-dim); color: var(--violet); }
+
+        @media (max-width: 600px) {
+            .container { padding: 40px 16px 80px; }
+            header h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.4rem; }
+            .objection-table td:first-child { white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Barry Engagement Plan</h1>
+            <p class="subtitle">Strategy for meeting with Barry Port, CEO of Ensign Group</p>
+            <p class="date">April 2026 — Prepared by Andrew</p>
+        </header>
+
+        <!-- Section 1: The Text -->
+        <div class="section">
+            <div class="section-number">Step 1</div>
+            <h2>The Text Message</h2>
+            <p>Short, warm, peer-to-peer. Don't sell. Create curiosity. Get in the room.</p>
+
+            <div class="text-message">
+                <p>Hey Barry — hope you're doing well. Had a great meeting with Ryan and Tom a few weeks back. Got to show them the agentic platform I built after our lunch and walk through the architecture. Something clicked for me during that meeting that I think would be worth 30-60 minutes of your time this week. Not a pitch — just want to show you what I'm seeing in the market that I don't think anyone on your team is telling you. If you're open to it, I'll come to you. If not, no worries at all — our friendship matters way more than any business conversation.</p>
+            </div>
+
+            <div class="why-box">
+                <h4>Why This Works</h4>
+                <ul>
+                    <li>References Ryan/Tom meeting — shows momentum, Barry likely already heard about it</li>
+                    <li>"Something clicked" — curiosity hook without revealing what</li>
+                    <li>"No one on your team is telling you" — CEO's biggest fear is blind spots</li>
+                    <li>"Not a pitch" — disarms defensiveness</li>
+                    <li>"I'll come to you" — zero friction</li>
+                    <li>"Friendship matters more" — genuine, removes pressure that makes him avoid responding</li>
+                    <li>No mention of the app, no links, no attachments — save the show for the meeting</li>
+                </ul>
+            </div>
+
+            <div class="dont-box">
+                <h4>Do Not Include</h4>
+                <ul>
+                    <li>No video (save for follow-up if no response in 48 hours)</li>
+                    <li>No links to the app or presentation</li>
+                    <li>No mention of PACS/Hansen/Hunter (comes across as pressure)</li>
+                    <li>No technical terms (Bedrock, VPC, agentic)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2: The Meeting -->
+        <div class="section">
+            <div class="section-number">Step 2</div>
+            <h2>The 60-Minute Meeting</h2>
+            <p>You have one hour. Barry is smart, skeptical, and getting bad advice from people with financial incentives. Here's how to structure every minute.</p>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="time">Minutes 0–10</div>
+                    <h4>The Market Reality <span class="tag tag-amber">Not Your Product</span></h4>
+                    <p>Pull up stock charts: Workday down 38% to five-year low. $2T in SaaS market cap erased. Nadella quote: "SaaS applications collapse in the agentic era." Benioff cut 4,000 people because agents replaced them. Show Barry's Q4 quote on screen — then the Blockbuster analogy.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="time">Minutes 10–20</div>
+                    <h4>The T-Ledger Analogy <span class="tag tag-green">Anchor Concept</span></h4>
+                    <p>"Right now, Ensign is running a $4B company where every department head manually logs into PCC, Workday, SharePoint — that's the T-ledger. What I've built is the Excel macro layer. Agents do 99% of the work. One person per department reviews and approves." Show the DecisionCard concept — self-contained analyst briefing, under 10 seconds to act.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="time">Minutes 20–40</div>
+                    <h4>Live Demo <span class="tag tag-violet">Show Don't Tell</span></h4>
+                    <p>Open the app. Walk through Command Center → Morning Standup → one clinical page → one financial page. Show a DecisionCard: "The agent already pulled the resident name, room number, medication, dosage, CMS citation, dollar impact. Your DON doesn't open PCC. She approves or escalates in 5 seconds." Show the 330-facility heatmap. Click into a facility. Show dark mode, tablet responsive — Apple quality.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="time">Minutes 40–50</div>
+                    <h4>Address His Fears <span class="tag tag-amber">Critical</span></h4>
+                    <p><strong>Hallucinations:</strong> Confidence scores. 95%+ = certain. Below 80% = human reviews. Nothing auto-executes.<br><br><strong>Credentials:</strong> Agents never see raw passwords. Vault holds them. Proxy injects at request time. Agent can't leak what it doesn't have.<br><br><strong>HIPAA:</strong> AWS Bedrock inside YOUR VPC. PHI never leaves your cloud. BAA-covered, SOC 2, HITRUST. Actually more secure than current SaaS vendors.</p>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="time">Minutes 50–60</div>
+                    <h4>The Ask <span class="tag tag-green">Close</span></h4>
+                    <p>"I'm not asking you to commit to anything today. I'm asking for 30 days and four credential files — PCC, Workday, Azure AD, AWS. In 30 days, this goes from demo to live across all 330 facilities. If it doesn't deliver, you've lost nothing. If it does, you've just leapfrogged every competitor in the industry."</p>
+                </div>
+            </div>
+
+            <div class="key-line">
+                <p>"Barry, the people advising you have a financial incentive to tell you their roadmap includes AI. But they can't cannibalize their own product. That's not how disruption works."</p>
+            </div>
+        </div>
+
+        <!-- Section 3: The Video -->
+        <div class="section">
+            <div class="section-number">Step 3 — Backup Play</div>
+            <h2>The 30-Second Video</h2>
+            <p>Only send if Barry doesn't respond to the text within 48 hours. Talking head with Command Center on screen behind you. Casual — phone video is fine.</p>
+
+            <div class="video-script">
+                <p>"Hey Barry — quick 30-second thing. After meeting with Ryan and Tom, I wanted to show you one screen from what I built.</p>
+                <p><em>[screen shows Command Center with DecisionCards]</em></p>
+                <p>This is what one person running an entire department looks like. Every card is a complete decision — the agent already pulled the data from PCC, Workday, all your systems. The human just approves or escalates. No logging into five different apps. No reports. No dashboards. Just decisions.</p>
+                <p>Would love 30 minutes to walk you through it. Talk soon."</p>
+            </div>
+
+            <div class="why-box">
+                <h4>Production Notes</h4>
+                <ul>
+                    <li>Film with Command Center page on screen behind you (or screen share)</li>
+                    <li>Keep it casual — phone video, don't over-produce</li>
+                    <li>End with the ask — "30 minutes"</li>
+                    <li>Don't send the video with the initial text — it's your follow-up move</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4: Objection Handling -->
+        <div class="section">
+            <div class="section-number">Reference</div>
+            <h2>Objection Handling for a Business Person</h2>
+            <p>Barry's real concerns and how to translate technical architecture into business language he immediately understands.</p>
+
+            <table class="objection-table">
+                <thead>
+                    <tr>
+                        <th>His Concern</th>
+                        <th>Business Translation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>VPC</td>
+                        <td>"Your own private room in Amazon's building. Nobody else has a key. Your patient data never leaves that room."</td>
+                    </tr>
+                    <tr>
+                        <td>AWS Bedrock</td>
+                        <td>"Amazon's AI service that runs inside your private room. Same AI, but it's in YOUR cloud, not ours."</td>
+                    </tr>
+                    <tr>
+                        <td>Hallucinations</td>
+                        <td>"Every decision has a confidence score. Low confidence = human reviews it. Nothing auto-executes without approval."</td>
+                    </tr>
+                    <tr>
+                        <td>Credentials</td>
+                        <td>"The AI never sees passwords. A vault holds them. A proxy injects them at the moment of the API call. The AI can't leak what it doesn't have."</td>
+                    </tr>
+                    <tr>
+                        <td>Going Rogue</td>
+                        <td>"Six governance levels. Read-only by default. Every action logged to immutable audit trail. Kill switch on every agent. SOX-auditable."</td>
+                    </tr>
+                    <tr>
+                        <td>HIPAA / PHI</td>
+                        <td>"PHI never leaves your AWS account. BAA-covered. Actually safer than current SaaS vendors because YOU control the boundary."</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Strategic Frame -->
+        <div class="strategic-frame">
+            <h3>The One Line That Cuts Through Everything</h3>
+            <p>"The people you're listening to have a financial incentive to tell you they've got this handled. I don't. I'm your friend, and I'm telling you what I see."</p>
+        </div>
+    </div>
+</body>
+</html>
