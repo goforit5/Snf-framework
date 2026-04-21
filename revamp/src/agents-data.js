@@ -1,0 +1,115 @@
+// Agents layer — shared data.
+// Directory · Inspector · Team Chat (Flows) · Policy Console · Escalation card.
+
+export const AGENTS = [
+  { id: 'clin-mon',   name: 'Clinical Monitor',     domain: 'Clinical',  owner: 'DON',      sla: 'live',     load: 540, confidence: .88, override: .04, cost: 0.22, color: 'var(--violet)' },
+  { id: 'pharm-mon',  name: 'Pharmacy Monitor',     domain: 'Clinical',  owner: 'DON',      sla: '4 hrs',    load: 148, confidence: .91, override: .02, cost: 0.14, color: 'var(--violet)' },
+  { id: 'ifc',        name: 'Infection Control',    domain: 'Clinical',  owner: 'DON',      sla: '30 min',   load: 62,  confidence: .86, override: .07, cost: 0.19, color: 'var(--violet)' },
+  { id: 'therapy',    name: 'Therapy Audit',        domain: 'Clinical',  owner: 'Admin',    sla: 'daily',    load: 217, confidence: .82, override: .11, cost: 0.10, color: 'var(--violet)' },
+  { id: 'bill-spec',  name: 'Billing Specialist',   domain: 'Finance',   owner: 'Billing',  sla: '2 hrs',    load: 894, confidence: .97, override: .01, cost: 0.08, color: 'var(--green)' },
+  { id: 'ap-proc',    name: 'AP Processing',        domain: 'Finance',   owner: 'Acctg',    sla: 'overnight',load: 47,  confidence: .99, override: .00, cost: 0.03, color: 'var(--green)' },
+  { id: 'gl-coder',   name: 'GL Coding',            domain: 'Finance',   owner: 'Acctg',    sla: 'overnight',load: 41,  confidence: .94, override: .03, cost: 0.04, color: 'var(--green)' },
+  { id: 'treasury',   name: 'Treasury',             domain: 'Finance',   owner: 'Acctg',    sla: '1 hr',     load: 8,   confidence: .98, override: .00, cost: 0.05, color: 'var(--green)' },
+  { id: 'close-orch', name: 'Close Orchestrator',   domain: 'Finance',   owner: 'Acctg',    sla: 'monthly',  load: 1,   confidence: .92, override: .08, cost: 0.90, color: 'var(--green)' },
+  { id: 'payroll',    name: 'Payroll Audit',        domain: 'Workforce', owner: 'Admin',    sla: 'bi-weekly',load: 892, confidence: .96, override: .02, cost: 0.05, color: 'var(--accent)' },
+  { id: 'cred',       name: 'Credentialing',        domain: 'Workforce', owner: 'Admin',    sla: 'daily',    load: 234, confidence: .99, override: .01, cost: 0.06, color: 'var(--accent)' },
+  { id: 'sched',      name: 'Scheduling',           domain: 'Workforce', owner: 'Admin',    sla: 'live',     load: 412, confidence: .90, override: .05, cost: 0.08, color: 'var(--accent)' },
+  { id: 'wf-fin',     name: 'Workforce Finance',    domain: 'Workforce', owner: 'CEO',      sla: 'daily',    load: 18,  confidence: .84, override: .09, cost: 0.30, color: 'var(--accent)' },
+  { id: 'emp-rel',    name: 'Employee Relations',   domain: 'Workforce', owner: 'Admin',    sla: '4 hrs',    load: 6,   confidence: .74, override: .18, cost: 0.45, color: 'var(--accent)' },
+  { id: 'census',     name: 'Census',               domain: 'Admissions',owner: 'Admin',    sla: 'live',     load: 18,  confidence: .89, override: .06, cost: 0.11, color: 'var(--amber)' },
+  { id: 'referral',   name: 'Referral Intake',      domain: 'Admissions',owner: 'Admin',    sla: '15 min',   load: 34,  confidence: .87, override: .08, cost: 0.09, color: 'var(--amber)' },
+  { id: 'payer-mix',  name: 'Payer Mix',            domain: 'Admissions',owner: 'CEO',      sla: 'weekly',   load: 1,   confidence: .81, override: .10, cost: 0.70, color: 'var(--amber)' },
+  { id: 'qual-safety',name: 'Patient Safety',       domain: 'Quality',   owner: 'DON',      sla: '30 min',   load: 41,  confidence: .85, override: .08, cost: 0.18, color: 'var(--red)' },
+  { id: 'risk-mgmt',  name: 'Risk Management',      domain: 'Quality',   owner: 'Legal',    sla: 'daily',    load: 12,  confidence: .79, override: .13, cost: 0.26, color: 'var(--red)' },
+  { id: 'survey',     name: 'Survey Readiness',     domain: 'Quality',   owner: 'DON',      sla: 'weekly',   load: 5,   confidence: .83, override: .10, cost: 0.40, color: 'var(--red)' },
+  { id: 'facilities', name: 'Facility Ops',         domain: 'Operations',owner: 'Admin',    sla: 'daily',    load: 87,  confidence: .88, override: .05, cost: 0.07, color: 'oklch(.62 .10 215)' },
+  { id: 'supply',     name: 'Supply Chain',         domain: 'Operations',owner: 'Admin',    sla: 'daily',    load: 156, confidence: .92, override: .03, cost: 0.05, color: 'oklch(.62 .10 215)' },
+  { id: 'procure',    name: 'Procurement',          domain: 'Operations',owner: 'Acctg',    sla: 'daily',    load: 234, confidence: .97, override: .02, cost: 0.06, color: 'oklch(.62 .10 215)' },
+  { id: 'life-safety',name: 'Life Safety',          domain: 'Operations',owner: 'Admin',    sla: 'weekly',   load: 14,  confidence: .94, override: .02, cost: 0.12, color: 'oklch(.62 .10 215)' },
+  { id: 'contract',   name: 'Contract Lifecycle',   domain: 'Legal',     owner: 'Legal',    sla: 'daily',    load: 18,  confidence: .90, override: .06, cost: 0.21, color: 'oklch(.60 .12 310)' },
+  { id: 'compliance', name: 'Corp. Compliance',     domain: 'Legal',     owner: 'Legal',    sla: 'daily',    load: 22,  confidence: .86, override: .07, cost: 0.24, color: 'oklch(.60 .12 310)' },
+  { id: 'litigation', name: 'Litigation Tracker',   domain: 'Legal',     owner: 'Legal',    sla: 'daily',    load: 7,   confidence: .80, override: .12, cost: 0.38, color: 'oklch(.60 .12 310)' },
+  { id: 'ma',         name: 'M&A Pipeline',         domain: 'Strategic', owner: 'CEO',      sla: 'weekly',   load: 3,   confidence: .72, override: .15, cost: 1.20, color: 'oklch(.60 .10 340)' },
+  { id: 'mkt-intel',  name: 'Market Intelligence',  domain: 'Strategic', owner: 'CEO',      sla: 'weekly',   load: 1,   confidence: .78, override: .12, cost: 0.80, color: 'oklch(.60 .10 340)' },
+  { id: 'board',      name: 'Board Governance',     domain: 'Strategic', owner: 'CEO',      sla: 'monthly',  load: 1,   confidence: .88, override: .05, cost: 0.60, color: 'oklch(.60 .10 340)' },
+];
+
+export const ORCHESTRATOR = { id: 'orch', name: 'Enterprise Orchestrator', role: 'Routes work, resolves conflicts, enforces scope' };
+
+/* messages between agents — typed intents */
+export const AGENT_MESSAGES = [
+  {
+    thread: 'TH-1042', status: 'resolved', duration: '47s', escalated: false,
+    topic: 'Therapy minutes — R-214 (PDPM recalc)',
+    participants: ['bill-spec', 'clin-mon'],
+    messages: [
+      { from: 'bill-spec', to: 'clin-mon', type: 'REQUEST_DATA', t: '11:42:14',
+        body: 'Need Feb\u2013Mar therapy minutes for R-214 Margaret Chen. Suspect under-billed ~$840. Need by EOD for PDPM correction window.',
+        fields: { subject: 'R-214', range: 'Feb 1 \u2013 Mar 31', deadline: 'today 5pm' } },
+      { from: 'clin-mon', to: 'bill-spec', type: 'RESPONSE', t: '11:42:31',
+        body: '420 minutes total. OT 180 / PT 160 / ST 80. Source: PCC therapy log. Verified against progress notes.',
+        fields: { minutes: 420, breakdown: 'OT 180, PT 160, ST 80', source: 'PCC therapy log' } },
+      { from: 'bill-spec', to: 'clin-mon', type: 'ACKNOWLEDGE', t: '11:43:01',
+        body: 'Filing PDPM correction. Est. recovery $840, 14d. Closing thread.',
+        fields: { action: 'PDPM correction filed', est: 840, eta_days: 14 } },
+    ],
+  },
+  {
+    thread: 'TH-1043', status: 'escalated', duration: '4m 12s', escalated: true,
+    topic: 'Margaret Chen \u2014 OT increase disagreement',
+    participants: ['clin-mon', 'wf-fin'],
+    humans: ['DON', 'CEO'],
+    messages: [
+      { from: 'clin-mon', to: 'wf-fin', type: 'PROPOSAL', t: '09:14:08',
+        body: 'Recommending OT +4 hrs/day for Heritage Oaks unit 2 (fall-prevention). Margaret Chen 3rd fall \u2014 F-689 risk. Cost: $2,400/mo \u00d7 3 facilities.',
+        fields: { ask: 'OT +4h/day', sites: 3, monthly_cost: 7200, rationale: 'F-689 prevention' } },
+      { from: 'wf-fin', to: 'clin-mon', type: 'COUNTER', t: '09:15:22',
+        body: 'Declined. Agency labor +67% vs budget already. $7,200/mo puts Heritage Oaks $25K over plan. Propose differential pilot instead ($6/h night CNA diff, 60d).',
+        fields: { issue: 'Budget variance', counter: 'Night CNA differential pilot', est: 5400 } },
+      { from: 'clin-mon', to: 'wf-fin', type: 'DISPUTE', t: '09:16:41',
+        body: 'Differential addresses call-offs, not unit coverage. Incidents are daytime. Escalating to humans.',
+        fields: { resolution: 'cannot_reconcile', reason: 'Root cause mismatch' } },
+      { from: 'orch', to: 'orch', type: 'ESCALATE', t: '09:18:20',
+        body: 'Routing to DON + CEO. Both agents stand by recommendations. Decision card D-4830 created.',
+        fields: { decision_id: 'D-4830', parties: ['DON', 'CEO'] } },
+    ],
+  },
+  {
+    thread: 'TH-1044', status: 'pending', duration: '\u2014', escalated: false,
+    topic: 'Sysco pricing dispute \u2014 need volume data',
+    participants: ['procure', 'gl-coder'],
+    messages: [
+      { from: 'procure', to: 'gl-coder', type: 'REQUEST_DATA', t: '10:02:09',
+        body: '12-month paper-goods spend by facility, coded 6420-* series. For Sysco dispute (18% over contract cap).',
+        fields: { subject: 'GL 6420-*', range: 'trailing 12mo', deadline: 'today EOD' } },
+      { from: 'gl-coder', to: 'procure', type: 'WORKING', t: '10:02:14',
+        body: 'Querying Workday GL. Expected completion 10:07am.',
+        fields: { eta: '10:07am' } },
+    ],
+  },
+  {
+    thread: 'TH-1045', status: 'resolved', duration: '18s', escalated: false,
+    topic: 'Sarah Mitchell RN license \u2014 renewal status',
+    participants: ['cred', 'sched'],
+    messages: [
+      { from: 'cred', to: 'sched', type: 'FYI', t: '08:02:11',
+        body: 'Sarah Mitchell RN-2019-45678 expires Apr 24 (4 days). Renewal not filed. Stand by for backup schedule if escalated.',
+        fields: { license: 'RN-2019-45678', expires: 'Apr 24' } },
+      { from: 'sched', to: 'cred', type: 'ACKNOWLEDGE', t: '08:02:29',
+        body: 'Acknowledged. 12 shifts affected Apr 22\u201328. Backup draft pre-built: 4 internal fills, 8 need coverage.',
+        fields: { backup_ready: true, internal_fills: 4, gap: 8 } },
+    ],
+  },
+];
+
+/* policies (governance) */
+export const POLICIES = [
+  { id: 'P-001', agent: 'Billing Specialist',  name: 'Claim refile auto-approve',    rule: 'Confidence \u2265 95% AND recoverable \u2264 $25K AND precedent count \u2265 10', action: 'auto', overrides: 3 },
+  { id: 'P-002', agent: 'AP Processing',        name: 'Invoice auto-post',            rule: '3-way match AND variance \u2264 2% AND vendor on allow-list',             action: 'auto', overrides: 0 },
+  { id: 'P-003', agent: 'Clinical Monitor',     name: 'Fall-risk med changes',        rule: 'Always require physician + DON',                                      action: 'require_human', overrides: null },
+  { id: 'P-004', agent: 'Workforce Finance',    name: 'OT above budget',              rule: 'Delta \u2265 +15% vs budget \u2192 escalate to CEO',                            action: 'escalate', overrides: 2 },
+  { id: 'P-005', agent: 'Contract Lifecycle',   name: 'Vendor contract renewal',      rule: 'Delta \u2264 CPI+2% AND no new indemnification \u2192 auto',                    action: 'auto', overrides: 1 },
+  { id: 'P-006', agent: 'Census',               name: 'Referral acceptance',          rule: 'Payer mix impact, clinical fit, bed availability \u2192 propose',          action: 'propose', overrides: null },
+  { id: 'P-007', agent: 'Employee Relations',   name: 'Termination recommendation',   rule: 'Always require human + Legal review',                                 action: 'require_human', overrides: null },
+  { id: 'P-008', agent: 'Treasury',             name: 'Cash sweep',                   rule: 'Below-threshold balance transfers from operating',                    action: 'auto', overrides: 0 },
+];
