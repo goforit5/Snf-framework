@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DECISIONS, ROLES } from '../data';
+import DomainDashboard from './DomainDashboard';
 
 const DOMAINS = [
   { id: 'home',       name: 'Home',         icon: 'home',   sections: null },
@@ -232,7 +233,7 @@ function RightPane({ domain, page, decision, onNavTo }) {
     const d = DECISIONS.find((x) => x.id === decision) || DECISIONS[0];
     return <DecisionDetail d={d} onNavTo={onNavTo} />;
   }
-  if (!page) return <DomainHero domain={domain} />;
+  if (!page) return <DomainDashboard domainKey={domain.id} />;
   if (page === 'Patient Safety') return <PatientSafetyPage domain={domain} />;
   return <GenericPage domain={domain} page={page} />;
 }
