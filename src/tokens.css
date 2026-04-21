@@ -1,0 +1,75 @@
+/* SNF Command — Design tokens (oklch color system, Apple HIG) */
+/* Used by shell components. Coexists with Tailwind defaults on legacy pages. */
+
+:root {
+  /* Type */
+  --font-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+  /* Neutrals — cool gray, low chroma */
+  --bg:         oklch(0.990 0.002 250);
+  --bg-sunk:    oklch(0.970 0.003 250);
+  --surface:    oklch(1.000 0 0);
+  --surface-2:  oklch(0.980 0.003 250);
+  --line:       oklch(0.925 0.004 250);
+  --line-soft:  oklch(0.955 0.003 250);
+  --ink-1:      oklch(0.200 0.010 250);
+  --ink-2:      oklch(0.360 0.010 250);
+  --ink-3:      oklch(0.540 0.008 250);
+  --ink-4:      oklch(0.680 0.006 250);
+
+  /* One accent (Apple blue) */
+  --accent:      oklch(0.620 0.160 258);
+  --accent-weak: oklch(0.955 0.035 258);
+
+  /* Semantic */
+  --red:       oklch(0.620 0.200 25);
+  --red-bg:    oklch(0.965 0.040 25);
+  --amber:     oklch(0.750 0.150 75);
+  --amber-bg:  oklch(0.970 0.045 85);
+  --green:     oklch(0.620 0.130 155);
+  --green-bg:  oklch(0.965 0.040 155);
+  --violet:    oklch(0.600 0.160 290);
+  --violet-bg: oklch(0.965 0.045 290);
+
+  /* Radius */
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-3: 14px;
+  --r-pill: 999px;
+
+  /* Shadows */
+  --sh-1: 0 1px 0 oklch(0.93 0.004 250);
+  --sh-2: 0 1px 2px rgba(16,18,22,.04), 0 4px 14px rgba(16,18,22,.04);
+  --sh-pop: 0 10px 40px rgba(16,18,22,.10), 0 2px 6px rgba(16,18,22,.05);
+}
+
+[data-theme="dark"] {
+  --bg:         oklch(0.165 0.008 250);
+  --bg-sunk:    oklch(0.135 0.008 250);
+  --surface:    oklch(0.200 0.008 250);
+  --surface-2:  oklch(0.230 0.008 250);
+  --line:       oklch(0.280 0.008 250);
+  --line-soft:  oklch(0.235 0.008 250);
+  --ink-1:      oklch(0.970 0.003 250);
+  --ink-2:      oklch(0.820 0.004 250);
+  --ink-3:      oklch(0.650 0.006 250);
+  --ink-4:      oklch(0.510 0.006 250);
+
+  --accent:      oklch(0.720 0.160 258);
+  --accent-weak: oklch(0.270 0.060 258);
+
+  --red:       oklch(0.720 0.180 25);
+  --red-bg:    oklch(0.290 0.080 25);
+  --amber:     oklch(0.820 0.140 75);
+  --amber-bg:  oklch(0.290 0.060 75);
+  --green:     oklch(0.740 0.130 155);
+  --green-bg:  oklch(0.280 0.060 155);
+  --violet:    oklch(0.740 0.150 290);
+  --violet-bg: oklch(0.290 0.060 290);
+
+  --sh-1: 0 1px 0 oklch(0.28 0.008 250);
+  --sh-2: 0 1px 2px rgba(0,0,0,.25), 0 4px 18px rgba(0,0,0,.25);
+  --sh-pop: 0 14px 48px rgba(0,0,0,.45), 0 2px 8px rgba(0,0,0,.35);
+}

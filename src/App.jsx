@@ -100,6 +100,13 @@ const BoardGovernance = lazy(() => import('./pages/strategic/BoardGovernance'));
 const InvestorRelations = lazy(() => import('./pages/strategic/InvestorRelations'));
 const GovernmentAffairs = lazy(() => import('./pages/strategic/GovernmentAffairs'));
 
+/* ─── Agents ─── */
+const AgentDirectory = lazy(() => import('./pages/agents/AgentDirectory'));
+const AgentInspector = lazy(() => import('./pages/agents/AgentInspector'));
+const TeamChat = lazy(() => import('./pages/agents/TeamChat'));
+const EscalationCardPage = lazy(() => import('./pages/agents/EscalationCard'));
+const PolicyConsole = lazy(() => import('./pages/agents/PolicyConsole'));
+
 /* ─── Demo ─── */
 const StrategicFrameworks = lazy(() => import('./pages/strategic/StrategicFrameworks'));
 const EnsignAIReadiness = lazy(() => import('./pages/demo/EnsignAIReadiness'));
@@ -133,6 +140,12 @@ function AppRoutes() {
                         <Route path="/audit" element={<AuditTrail />} />
                         <Route path="/settings" element={<SettingsPage />} />
                         <Route path="/platform/agent-builder" element={<AgentBuilder />} />
+                        <Route path="/agents/directory" element={<AgentDirectory />} />
+                        <Route path="/agents/inspect/:agentId" element={<AgentInspector />} />
+                        <Route path="/agents/flows" element={<TeamChat />} />
+                        <Route path="/agents/escalation/:id" element={<EscalationCardPage />} />
+                        <Route path="/agents/policies" element={<PolicyConsole />} />
+                        <Route path="/agents/ledger" element={<AgentOperations />} />
 
                         {/* Backward compat */}
                         <Route path="/standup" element={<MorningBriefing />} />

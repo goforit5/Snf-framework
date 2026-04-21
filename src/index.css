@@ -1,3 +1,4 @@
+@import "./tokens.css";
 @import "tailwindcss";
 
 /* ─── Tailwind 4: class-based dark mode (enables manual toggle) ─── */

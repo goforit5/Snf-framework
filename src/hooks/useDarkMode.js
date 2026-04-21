@@ -20,13 +20,16 @@ function getInitialMode() {
 export function useDarkMode() {
   const [isDark, setIsDark] = useState(getInitialMode);
 
-  // Apply dark class to html element
+  // Apply dark class + data-theme attribute to html element
+  // Bridge: .dark class for legacy Tailwind pages, data-theme for new shell tokens
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
       root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
     } else {
       root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
     }
   }, [isDark]);
 
