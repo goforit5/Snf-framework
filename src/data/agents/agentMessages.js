@@ -7,7 +7,7 @@ export const agentMessages = [
   // ─── TH-1042: Billing requests therapy minutes from Clinical ──────────
   // Straightforward data handoff — billing needs therapy data for PDPM claim accuracy
   {
-    thread: 'TH-1042',
+    threadId: 'TH-1042',
     status: 'resolved',
     duration: '47s',
     escalated: false,
@@ -63,7 +63,7 @@ export const agentMessages = [
   // ─── TH-1043: OT staffing increase proposal — dispute escalates to DON + CEO ─
   // The Margaret Chen fall cascade triggers a cross-domain staffing debate
   {
-    thread: 'TH-1043',
+    threadId: 'TH-1043',
     status: 'escalated',
     duration: '4m 12s',
     escalated: true,
@@ -143,7 +143,7 @@ export const agentMessages = [
   // ─── TH-1044: Procurement needs GL spend data for Sysco dispute ───────
   // Cross-domain data request — procurement building contract dispute evidence
   {
-    thread: 'TH-1044',
+    threadId: 'TH-1044',
     status: 'pending',
     duration: '\u2014',
     escalated: false,
@@ -186,7 +186,7 @@ export const agentMessages = [
   // ─── TH-1045: Credentialing FYIs Scheduling about expiring RN license ─
   // Fast coordination — license alert triggers immediate schedule adjustment
   {
-    thread: 'TH-1045',
+    threadId: 'TH-1045',
     status: 'resolved',
     duration: '18s',
     escalated: false,
@@ -232,7 +232,7 @@ export const agentMessages = [
   // ─── TH-1046: Revenue Optimization proposes PDPM reclassification ─────
   // Revenue optimization identifies missed revenue, monthly close validates impact
   {
-    thread: 'TH-1046',
+    threadId: 'TH-1046',
     status: 'resolved',
     duration: '2m 8s',
     escalated: false,
@@ -292,7 +292,7 @@ export const agentMessages = [
   // ─── TH-1047: AP Processing flags duplicate vendor invoice ────────────
   // Quick fraud/error detection — AP catches duplicate, supply chain confirms
   {
-    thread: 'TH-1047',
+    threadId: 'TH-1047',
     status: 'resolved',
     duration: '31s',
     escalated: false,

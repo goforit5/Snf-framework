@@ -201,7 +201,7 @@ function ThreadItem({ thread, selected, onSelect }) {
           color: 'var(--ink-3)',
         }}
       >
-        {thread.threadId} &middot; {duration(thread.startedAt, thread.resolvedAt)}
+        {thread.threadId} &middot; {thread.duration || duration(thread.startedAt, thread.resolvedAt)}
       </div>
     </div>
   );
@@ -220,7 +220,7 @@ function MessageRow({ msg }) {
           <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--ink-1)' }}>
             {agentName(msg.agentId)}
           </span>
-          <IntentBadge intent={msg.intent} />
+          <IntentBadge intent={msg.type} />
           <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', marginLeft: 'auto' }}>
             {time}
           </span>
@@ -283,7 +283,7 @@ function ResolutionBar({ thread }) {
         }}
       >
         <span style={{ fontSize: 14 }}>&#10003;</span>
-        Resolved in {duration(thread.startedAt, thread.resolvedAt)} &middot; {thread.messages.length} messages
+        Resolved in {thread.duration || duration(thread.startedAt, thread.resolvedAt)} &middot; {thread.messages.length} messages
       </div>
     );
   }
@@ -393,7 +393,7 @@ export default function TeamChat() {
               {selected.topic}
             </div>
             <div style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: 'var(--ink-3)', marginTop: 2 }}>
-              {selected.threadId} &middot; {duration(selected.startedAt, selected.resolvedAt)}
+              {selected.threadId} &middot; {selected.duration || duration(selected.startedAt, selected.resolvedAt)}
             </div>
           </div>
           <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -406,8 +406,8 @@ export default function TeamChat() {
 
         {/* Messages */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px' }}>
-          {selected.messages.map((msg) => (
-            <MessageRow key={msg.id} msg={msg} />
+          {selected.messages.map((msg, idx) => (
+            <MessageRow key={idx} msg={msg} />
           ))}
         </div>
 
