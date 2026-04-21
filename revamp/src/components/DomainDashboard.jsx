@@ -36,7 +36,7 @@ const DOMAIN_AGENT_MAP = {
 
 /* ─── Main component ─── */
 
-export default function DomainDashboard({ domainKey, pageName, onRecordClick }) {
+export default function DomainDashboard({ domainKey, pageName, onRecordClick, onDecisionClick }) {
   const domain = getDomain(domainKey);
 
   const agents = useMemo(() =>
@@ -126,12 +126,16 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick }) 
           borderRadius: 10, overflow: 'hidden', marginBottom: 22,
         }}>
           {domainDecisions.map((d, i) => (
-            <div key={d.id} style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '10px 14px',
-              borderTop: i ? '1px solid var(--line-soft)' : 'none',
-              cursor: 'pointer',
-            }}>
+            <div key={d.id} onClick={() => onDecisionClick?.(d.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 14px',
+                borderTop: i ? '1px solid var(--line-soft)' : 'none',
+                cursor: 'pointer', transition: 'background .12s',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent-weak)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+            >
               <PriorityDot priority={d.priority} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
@@ -145,6 +149,7 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick }) 
               <span className="tnum" style={{
                 fontSize: 11.5, fontWeight: 600, color: 'var(--ink-2)',
               }}>{Math.round(d.confidence * 100)}%</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeLinecap="round"><path d="M3.5 2l4 3-4 3"/></svg>
             </div>
           ))}
         </div>

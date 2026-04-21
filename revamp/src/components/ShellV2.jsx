@@ -95,6 +95,28 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [selectedRecordDomain, setSelectedRecordDomain] = useState(null);
 
+  // Navigation history stack (back button like Arc/Linear)
+  const [history, setHistory] = useState([]);
+
+  const pushHistory = useCallback(() => {
+    setHistory((prev) => [...prev.slice(-19), { domain, page, selDecision, selectedRecord, selectedRecordDomain }]);
+  }, [domain, page, selDecision, selectedRecord, selectedRecordDomain]);
+
+  const canGoBack = history.length > 0;
+
+  const goBack = useCallback(() => {
+    setHistory((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      setDomain(last.domain);
+      setPage(last.page);
+      setSelDecision(last.selDecision);
+      setSelectedRecord(last.selectedRecord);
+      setSelectedRecordDomain(last.selectedRecordDomain);
+      return prev.slice(0, -1);
+    });
+  }, []);
+
   // Ticket 1: decision queue
   const queue = useDecisionQueue(DECISIONS);
 
@@ -103,36 +125,50 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const currentDomain = DOMAINS.find((d) => d.id === domain);
 
   const handleRecordClick = useCallback((record, domainKey) => {
+    pushHistory();
     setSelectedRecord(record);
     setSelectedRecordDomain(domainKey || domain);
-  }, [domain]);
+  }, [domain, pushHistory]);
 
   const handleCloseRecord = useCallback(() => {
     setSelectedRecord(null);
     setSelectedRecordDomain(null);
   }, []);
 
-  // Palette callbacks
-  const handleSelectDecision = useCallback((decisionId) => {
+  // Navigate to a decision from anywhere (domain dashboard, palette, etc.)
+  const handleDecisionClick = useCallback((decisionId) => {
+    pushHistory();
     setDomain('home');
     setPage(null);
     setSelDecision(decisionId);
     setSelectedRecord(null);
-  }, []);
+    setSelectedRecordDomain(null);
+  }, [pushHistory]);
+
+  // Palette callbacks
+  const handleSelectDecision = useCallback((decisionId) => {
+    pushHistory();
+    setDomain('home');
+    setPage(null);
+    setSelDecision(decisionId);
+    setSelectedRecord(null);
+  }, [pushHistory]);
 
   const handleNavTo = useCallback((d, p) => {
+    pushHistory();
     setDomain(d);
     setPage(p);
     setSelectedRecord(null);
     setSelectedRecordDomain(null);
-  }, []);
+  }, [pushHistory]);
 
   const handleNavToRecord = useCallback((domainKey, record) => {
+    pushHistory();
     setDomain(domainKey);
     setPage(null);
     setSelectedRecord(record);
     setSelectedRecordDomain(domainKey);
-  }, []);
+  }, [pushHistory]);
 
   useEffect(() => {
     const k = (e) => {
@@ -149,13 +185,15 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
       fontFamily: 'var(--font-text)', fontSize: 13, display: 'grid',
       gridTemplateColumns: '52px 260px 1fr', overflow: 'hidden', position: 'relative',
     }}>
-      <CommandRail rail={rail} active={domain} onPick={(id) => { setDomain(id); setPage(null); setSelectedRecord(null); }} role={role} />
-      <MidColumn domain={currentDomain} role={role} page={page} onPick={setPage} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} />
+      <CommandRail rail={rail} active={domain} onPick={(id) => { pushHistory(); setDomain(id); setPage(null); setSelectedRecord(null); setSelectedRecordDomain(null); setSelDecision(null); }} role={role} />
+      <MidColumn domain={currentDomain} role={role} page={page} onPick={(p) => { pushHistory(); setPage(p); setSelectedRecord(null); setSelectedRecordDomain(null); }} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} />
       <RightPane
         domain={currentDomain} page={page} decision={selDecision}
-        onNavTo={handleNavTo} queue={queue}
+        onNavTo={handleNavTo} onNavToRecord={handleNavToRecord} queue={queue}
         selectedRecord={selectedRecord} selectedRecordDomain={selectedRecordDomain}
         onRecordClick={handleRecordClick} onCloseRecord={handleCloseRecord}
+        onDecisionClick={handleDecisionClick}
+        canGoBack={canGoBack} goBack={goBack}
       />
       {paletteOpen && (
         <Palette
@@ -309,21 +347,74 @@ function DomainIndex({ domain, page, onPick, scope }) {
   );
 }
 
+/* ─── Back button bar (shown when history exists) ─── */
+function BackBar({ canGoBack, goBack, label }) {
+  if (!canGoBack) return null;
+  return (
+    <button onClick={goBack} style={{
+      all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+      padding: '8px 16px', fontSize: 12.5, color: 'var(--accent)', fontWeight: 500,
+      borderBottom: '1px solid var(--line)', width: '100%',
+      background: 'var(--bg-sunk)',
+    }}>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7.5 2L3.5 6l4 4"/></svg>
+      {label || 'Back'}
+    </button>
+  );
+}
+
 /* ─── Right pane: decision detail OR page content OR record inspector ─── */
-function RightPane({ domain, page, decision, onNavTo, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord }) {
-  // Ticket 3: record inspector takes priority
+function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack }) {
+  // Record inspector takes priority
   if (selectedRecord) {
-    return <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} label="Back to records" />
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />
+        </div>
+      </div>
+    );
   }
 
   if (domain.id === 'home') {
     const d = queue.items.find((x) => x.id === decision) || queue.items[0];
-    return <DecisionDetail d={d} onNavTo={onNavTo} queue={queue} />;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} />
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+          <DecisionDetail d={d} onNavTo={onNavTo} onNavToRecord={onNavToRecord} queue={queue} />
+        </div>
+      </div>
+    );
   }
-  // Ticket 2: page-scoped DomainDashboard replaces GenericPage
-  if (!page) return <DomainDashboard domainKey={domain.id} onRecordClick={(r) => onRecordClick(r, domain.id)} />;
-  if (page === 'Patient Safety') return <PatientSafetyPage domain={domain} />;
-  return <DomainDashboard domainKey={domain.id} pageName={page} onRecordClick={(r) => onRecordClick(r, domain.id)} />;
+
+  // Page-scoped DomainDashboard replaces GenericPage
+  const dashProps = {
+    domainKey: domain.id,
+    onRecordClick: (r) => onRecordClick(r, domain.id),
+    onDecisionClick,
+  };
+
+  if (page === 'Patient Safety') {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <PatientSafetyPage domain={domain} />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+      <BackBar canGoBack={canGoBack} goBack={goBack} label={page ? `Back to ${domain.name}` : null} />
+      <div style={{ flex: 1, overflow: 'auto' }}>
+        <DomainDashboard {...dashProps} pageName={page || undefined} />
+      </div>
+    </div>
+  );
 }
 
 function DomainHero({ domain }) {
@@ -364,7 +455,7 @@ function Breadcrumbs({ items }) {
 }
 
 /* ─── Decision Detail with navigate-to-page chip ─── */
-function DecisionDetail({ d, onNavTo, queue }) {
+function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
   const { approve, escalate, defer } = queue;
   const actionStatus = d._status;
   const isPending = actionStatus === 'pending';
@@ -393,19 +484,26 @@ function DecisionDetail({ d, onNavTo, queue }) {
             <button onClick={() => onNavTo(deepLink.domain, deepLink.page)} style={{
               all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
               padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
-              background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
+              background: 'var(--surface)', fontSize: 11.5, color: 'var(--accent)', fontWeight: 500,
             }}>
-              Open in {deepLink.page}
               <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
+              {deepLink.page}
             </button>
-            <button onClick={() => onNavTo(deepLink.domain, null)} style={{
-              all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-              padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
-              background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
-            }}>
-              View source record
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
-            </button>
+            {(() => {
+              const domData = DOMAIN_DATA.find((dd) => dd.id === domainId);
+              const firstRecord = domData?.records?.[0];
+              if (!firstRecord) return null;
+              return (
+                <button onClick={() => onNavToRecord(domainId, firstRecord)} style={{
+                  all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+                  padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
+                  background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
+                }}>
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
+                  View records
+                </button>
+              );
+            })()}
           </>
         )}
       </div>
