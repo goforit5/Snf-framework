@@ -29,7 +29,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
 
       {/* Role switcher chips */}
-      <div style={{ display: 'flex', gap: 2 }}>
+      <div className="controlbar-roles" style={{ display: 'flex', gap: 2 }}>
         {ROLES.map((r) => (
           <button key={r.id} onClick={() => setRole(r.id)} style={{
             all: 'unset', cursor: 'pointer',
@@ -46,21 +46,24 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
 
       {/* Scope indicator */}
       {scopeLabel && (
-        <>
+        <span className="controlbar-scope" style={{ display: 'contents' }}>
           <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
           <span style={{ fontSize: 11.5, color: 'var(--ink-3)', whiteSpace: 'nowrap' }}>
             {scopeLabel}
           </span>
-        </>
+        </span>
       )}
 
       <span style={{ flex: 1 }} />
 
-      {/* View section: Home | Agents */}
+      {/* View section */}
       <div style={{ display: 'flex', gap: 2 }}>
         {[
           { key: 'home', label: 'Home', path: '/' },
           { key: 'agents', label: 'Agents', path: '/agents' },
+          { key: 'briefing', label: 'Briefing', path: '/briefing' },
+          { key: 'audit', label: 'Audit', path: '/audit' },
+          { key: 'settings', label: 'Settings', path: '/settings' },
         ].map(({ key, label, path }) => (
           <button key={key} onClick={() => navigate(path)} style={{
             all: 'unset', cursor: 'pointer',
@@ -115,7 +118,14 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       </button>
 
       {/* Notification slide-over */}
-      <NotificationPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
+      <NotificationPanel
+        open={notifOpen}
+        onClose={() => setNotifOpen(false)}
+        onNavigate={(link) => {
+          navigate('/');
+          setNotifOpen(false);
+        }}
+      />
     </div>
   );
 }

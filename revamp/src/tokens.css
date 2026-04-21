@@ -82,3 +82,31 @@ body {
 }
 .mono { font-family: var(--font-mono); font-feature-settings: "tnum"; }
 .tnum { font-variant-numeric: tabular-nums; }
+
+/* ─── Responsive: tablet ─── */
+@media (max-width: 1024px) {
+  .hide-tablet { display: none !important; }
+  .controlbar-roles { display: none !important; }
+  .controlbar-scope { display: none !important; }
+}
+
+/* ─── Responsive: mobile ─── */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+  .shell-grid {
+    grid-template-columns: 52px 1fr !important;
+  }
+  .shell-mid-column {
+    position: fixed !important;
+    left: 52px !important;
+    top: 44px !important;
+    bottom: 0 !important;
+    width: 260px !important;
+    z-index: 30 !important;
+    background: var(--bg) !important;
+    box-shadow: var(--sh-pop) !important;
+  }
+  .shell-right-pane {
+    grid-column: 2 !important;
+  }
+}

@@ -2,9 +2,12 @@
 // Unifies 69 pages behind Apple Mail / System Settings pattern.
 // Adapted from wireframe shell2.jsx — window globals replaced with ES module imports.
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { DECISIONS, ROLES } from '../data';
+import { DOMAINS as DOMAIN_DATA } from '../data/domains';
 import DomainDashboard from './DomainDashboard';
+import RecordInspector from './RecordInspector';
+import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { LabelSmall, PriorityDot, priorityColor } from './shared';
 
 const DOMAINS = [
@@ -55,6 +58,18 @@ const RAIL_ORDER = {
   Accounting: ['home','finance','workforce','operations','admissions','clinical','quality','legal','strategic'],
 };
 
+/* ─── Deep-link map: decision domain → best page ─── */
+const DOMAIN_PAGE_MAP = {
+  clinical:   'Clinical Command',
+  finance:    'Billing & Claims',
+  workforce:  'Workforce Command',
+  operations: 'Facility Command',
+  admissions: 'Census Command',
+  quality:    'Quality Command',
+  legal:      'Legal Command',
+  strategic:  'M&A Pipeline',
+};
+
 function RailIcon({ name, size = 16 }) {
   const p = {
     home:   <path d="M3 8l5-5 5 5v5H3z"/>,
@@ -77,10 +92,47 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const [selDecision, setSelDecision] = useState(initialDecision);
   const [paletteOpen, setPaletteOpen] = useState(showPalette);
   const [scope, setScope] = useState(ROLES.find((r) => r.id === role)?.scope || '');
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [selectedRecordDomain, setSelectedRecordDomain] = useState(null);
+
+  // Ticket 1: decision queue
+  const queue = useDecisionQueue(DECISIONS);
 
   const order = RAIL_ORDER[role] || RAIL_ORDER.CEO;
   const rail = order.map((id) => DOMAINS.find((d) => d.id === id)).filter(Boolean);
   const currentDomain = DOMAINS.find((d) => d.id === domain);
+
+  const handleRecordClick = useCallback((record, domainKey) => {
+    setSelectedRecord(record);
+    setSelectedRecordDomain(domainKey || domain);
+  }, [domain]);
+
+  const handleCloseRecord = useCallback(() => {
+    setSelectedRecord(null);
+    setSelectedRecordDomain(null);
+  }, []);
+
+  // Palette callbacks
+  const handleSelectDecision = useCallback((decisionId) => {
+    setDomain('home');
+    setPage(null);
+    setSelDecision(decisionId);
+    setSelectedRecord(null);
+  }, []);
+
+  const handleNavTo = useCallback((d, p) => {
+    setDomain(d);
+    setPage(p);
+    setSelectedRecord(null);
+    setSelectedRecordDomain(null);
+  }, []);
+
+  const handleNavToRecord = useCallback((domainKey, record) => {
+    setDomain(domainKey);
+    setPage(null);
+    setSelectedRecord(record);
+    setSelectedRecordDomain(domainKey);
+  }, []);
 
   useEffect(() => {
     const k = (e) => {
@@ -92,15 +144,27 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   });
 
   return (
-    <div data-theme={theme} style={{
+    <div data-theme={theme} className="shell-grid" style={{
       width, height, background: 'var(--bg)', color: 'var(--ink-1)',
       fontFamily: 'var(--font-text)', fontSize: 13, display: 'grid',
       gridTemplateColumns: '52px 260px 1fr', overflow: 'hidden', position: 'relative',
     }}>
-      <CommandRail rail={rail} active={domain} onPick={(id) => { setDomain(id); setPage(null); }} role={role} />
-      <MidColumn domain={currentDomain} role={role} page={page} onPick={setPage} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} />
-      <RightPane domain={currentDomain} page={page} decision={selDecision} onNavTo={(d, p) => { setDomain(d); setPage(p); }} />
-      {paletteOpen && <Palette onClose={() => setPaletteOpen(false)} onNav={(d, p) => { setDomain(d); setPage(p); setPaletteOpen(false); }} />}
+      <CommandRail rail={rail} active={domain} onPick={(id) => { setDomain(id); setPage(null); setSelectedRecord(null); }} role={role} />
+      <MidColumn domain={currentDomain} role={role} page={page} onPick={setPage} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} />
+      <RightPane
+        domain={currentDomain} page={page} decision={selDecision}
+        onNavTo={handleNavTo} queue={queue}
+        selectedRecord={selectedRecord} selectedRecordDomain={selectedRecordDomain}
+        onRecordClick={handleRecordClick} onCloseRecord={handleCloseRecord}
+      />
+      {paletteOpen && (
+        <Palette
+          onClose={() => setPaletteOpen(false)}
+          onNav={(d, p) => { handleNavTo(d, p); setPaletteOpen(false); }}
+          onSelectDecision={(id) => { handleSelectDecision(id); setPaletteOpen(false); }}
+          onNavToRecord={(dk, rec) => { handleNavToRecord(dk, rec); setPaletteOpen(false); }}
+        />
+      )}
     </div>
   );
 }
@@ -147,47 +211,64 @@ function CommandRail({ rail, active, onPick, role }) {
 }
 
 /* ─── Middle column: worklist OR domain index ─── */
-function MidColumn({ domain, role, page, onPick, selDecision, onSelDecision, scope }) {
+function MidColumn({ domain, role, page, onPick, selDecision, onSelDecision, scope, queue }) {
   if (domain.id === 'home') {
-    return <WorklistMid role={role} selDecision={selDecision} onSel={onSelDecision} />;
+    return <WorklistMid role={role} selDecision={selDecision} onSel={onSelDecision} queue={queue} />;
   }
   return <DomainIndex domain={domain} page={page} onPick={onPick} scope={scope} />;
 }
 
-function WorklistMid({ role, selDecision, onSel }) {
-  const open = DECISIONS;
-  const crit = open.filter((d) => d.priority === 'critical');
-  const high = open.filter((d) => d.priority === 'high');
-  const med  = open.filter((d) => d.priority === 'medium');
+function WorklistMid({ role, selDecision, onSel, queue }) {
+  const { items, stats } = queue;
   const user = ROLES.find((r) => r.id === role) || ROLES[0];
+
+  const crit = items.filter((d) => d.priority === 'critical');
+  const high = items.filter((d) => d.priority === 'high');
+  const med  = items.filter((d) => d.priority === 'medium');
 
   return (
     <div style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--line)' }}>
         <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 3 }}>Home</div>
         <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: -0.2 }}>Decisions</div>
-        <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 3 }} className="tnum">{open.length} open &middot; {user.scope}</div>
+        <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 3 }} className="tnum">
+          {stats.pending} pending &middot; {stats.approved} approved &middot; {stats.escalated} escalated
+        </div>
       </div>
       <div style={{ flex: 1, overflow: 'auto' }}>
         {[['Critical', crit], ['High', high], ['Medium', med]].map(([lab, list]) => list.length > 0 && (
           <div key={lab}>
             <div style={{ padding: '10px 16px 4px', fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600 }}>{lab}</div>
-            {list.map((d) => (
-              <div key={d.id} onClick={() => onSel(d.id)} style={{
-                padding: '10px 16px 11px', borderBottom: '1px solid var(--line-soft)',
-                borderLeft: `3px solid ${selDecision === d.id ? 'var(--accent)' : 'transparent'}`,
-                background: selDecision === d.id ? 'var(--accent-weak)' : 'transparent',
-                cursor: 'pointer',
-              }}>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                  <span style={{ marginTop: 5 }}><PriorityDot priority={d.priority} /></span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.title}</div>
-                    <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{d.facility} &middot; {d.since}</div>
+            {list.map((d) => {
+              const isDone = d._status !== 'pending';
+              return (
+                <div key={d.id} onClick={() => onSel(d.id)} style={{
+                  padding: '10px 16px 11px', borderBottom: '1px solid var(--line-soft)',
+                  borderLeft: `3px solid ${selDecision === d.id ? 'var(--accent)' : 'transparent'}`,
+                  background: selDecision === d.id ? 'var(--accent-weak)' : 'transparent',
+                  cursor: 'pointer',
+                  opacity: isDone ? 0.5 : 1,
+                }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
+                    <span style={{ marginTop: 5 }}><PriorityDot priority={d.priority} /></span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{d.title}</span>
+                        {isDone && (
+                          <span style={{
+                            fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .4,
+                            padding: '1px 5px', borderRadius: 4,
+                            background: d._status === 'approved' ? 'var(--green)' : d._status === 'escalated' ? 'var(--amber)' : 'var(--ink-3)',
+                            color: '#fff',
+                          }}>{d._status}</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{d.facility} &middot; {d.since}</div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ))}
       </div>
@@ -228,15 +309,21 @@ function DomainIndex({ domain, page, onPick, scope }) {
   );
 }
 
-/* ─── Right pane: decision detail OR page content ─── */
-function RightPane({ domain, page, decision, onNavTo }) {
-  if (domain.id === 'home') {
-    const d = DECISIONS.find((x) => x.id === decision) || DECISIONS[0];
-    return <DecisionDetail d={d} onNavTo={onNavTo} />;
+/* ─── Right pane: decision detail OR page content OR record inspector ─── */
+function RightPane({ domain, page, decision, onNavTo, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord }) {
+  // Ticket 3: record inspector takes priority
+  if (selectedRecord) {
+    return <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />;
   }
-  if (!page) return <DomainDashboard domainKey={domain.id} />;
+
+  if (domain.id === 'home') {
+    const d = queue.items.find((x) => x.id === decision) || queue.items[0];
+    return <DecisionDetail d={d} onNavTo={onNavTo} queue={queue} />;
+  }
+  // Ticket 2: page-scoped DomainDashboard replaces GenericPage
+  if (!page) return <DomainDashboard domainKey={domain.id} onRecordClick={(r) => onRecordClick(r, domain.id)} />;
   if (page === 'Patient Safety') return <PatientSafetyPage domain={domain} />;
-  return <GenericPage domain={domain} page={page} />;
+  return <DomainDashboard domainKey={domain.id} pageName={page} onRecordClick={(r) => onRecordClick(r, domain.id)} />;
 }
 
 function DomainHero({ domain }) {
@@ -277,8 +364,16 @@ function Breadcrumbs({ items }) {
 }
 
 /* ─── Decision Detail with navigate-to-page chip ─── */
-function DecisionDetail({ d, onNavTo }) {
-  const deepLink = { 'D-4822': { domain: 'quality', page: 'Patient Safety' } }[d.id];
+function DecisionDetail({ d, onNavTo, queue }) {
+  const { approve, escalate, defer } = queue;
+  const actionStatus = d._status;
+  const isPending = actionStatus === 'pending';
+
+  // Ticket 4: deep-link ALL decisions
+  const domainId = d.domain || 'home';
+  const deepPage = DOMAIN_PAGE_MAP[domainId] || null;
+  const deepLink = deepPage ? { domain: domainId, page: deepPage } : null;
+
   const impactPills = [
     d.impact?.dollars != null && { k: `$${d.impact.dollars.toLocaleString()}`, v: d.impact.unit || '' },
     d.impact?.citation && { k: d.impact.citation, v: 'citation risk' },
@@ -294,14 +389,24 @@ function DecisionDetail({ d, onNavTo }) {
         <Breadcrumbs items={['Home', 'Decisions', d.id]} />
         <span style={{ flex: 1 }} />
         {deepLink && (
-          <button onClick={() => onNavTo(deepLink.domain, deepLink.page)} style={{
-            all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-            padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
-            background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
-          }}>
-            Open in {deepLink.page}
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
-          </button>
+          <>
+            <button onClick={() => onNavTo(deepLink.domain, deepLink.page)} style={{
+              all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
+              background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
+            }}>
+              Open in {deepLink.page}
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
+            </button>
+            <button onClick={() => onNavTo(deepLink.domain, null)} style={{
+              all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
+              background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
+            }}>
+              View source record
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
+            </button>
+          </>
         )}
       </div>
 
@@ -346,10 +451,25 @@ function DecisionDetail({ d, onNavTo }) {
         </div>
       </div>
 
+      {/* Ticket 1: action buttons with feedback */}
       <div style={{ padding: '12px 24px', borderTop: '1px solid var(--line)', display: 'flex', gap: 10 }}>
-        <button style={{ all: 'unset', cursor: 'pointer', padding: '8px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600 }}>Approve recommendation &#x21B5;</button>
-        <button style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Escalate E</button>
-        <button style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Defer D</button>
+        {isPending ? (
+          <>
+            <button onClick={() => approve(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600 }}>Approve recommendation &#x21B5;</button>
+            <button onClick={() => escalate(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Escalate E</button>
+            <button onClick={() => defer(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Defer D</button>
+          </>
+        ) : (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8,
+            background: actionStatus === 'approved' ? 'var(--green)' : actionStatus === 'escalated' ? 'var(--amber)' : 'var(--ink-3)',
+            color: '#fff', fontSize: 13, fontWeight: 600,
+          }}>
+            {actionStatus === 'approved' && '\u2713 Approved'}
+            {actionStatus === 'escalated' && '\u26A1 Escalated'}
+            {actionStatus === 'deferred' && '\u23F8 Deferred'}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -431,32 +551,84 @@ function PatientSafetyPage({ domain }) {
   );
 }
 
-function GenericPage({ domain, page }) {
-  return (
-    <div style={{ padding: '20px 32px' }}>
-      <Breadcrumbs items={[domain.name, page]} />
-      <h1 style={{ margin: '8px 0 14px', fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>{page}</h1>
-      <div style={{ fontSize: 13, color: 'var(--ink-3)' }}>Agent summary &middot; decision queue &middot; live metrics (page renders here).</div>
-    </div>
-  );
-}
-
 /* ─── Command+K Palette ─── */
-function Palette({ onClose, onNav }) {
+function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
   const [q, setQ] = useState('');
+  const [activeIdx, setActiveIdx] = useState(0);
+  const listRef = useRef(null);
+
   const items = useMemo(() => {
     const all = [];
     DOMAINS.forEach((d) => (d.sections || []).forEach((s) => s.pages.forEach((p) => all.push({ kind: 'Page', label: p, sub: `${d.name} \u00b7 ${s.label}`, domain: d.id, page: p }))));
-    DECISIONS.forEach((x) => all.push({ kind: 'Decision', label: x.title, sub: `${x.id} \u00b7 ${x.facility}`, domain: 'home' }));
+    DECISIONS.forEach((x) => all.push({ kind: 'Decision', label: x.title, sub: `${x.id} \u00b7 ${x.facility}`, domain: 'home', decisionId: x.id }));
     ['Heritage Oaks', 'Bayview', 'Meadowbrook', 'Pacific Gardens', 'Sunrise Senior'].forEach((f) => all.push({ kind: 'Facility', label: f, sub: 'Scope switcher' }));
-    ['Margaret Chen (R-214)', 'Invoice INV-22841', 'Contract Aetna-2024-0156', 'License RN-2019-45678'].forEach((x) => all.push({ kind: 'Record', label: x, sub: 'Cross-system search' }));
+    // Records from domains data
+    DOMAIN_DATA.forEach((dom) => {
+      (dom.records || []).slice(0, 3).forEach((rec) => {
+        all.push({ kind: 'Record', label: `${rec.name} (${rec.id})`, sub: `${dom.name} \u00b7 ${rec.facility}`, domainKey: dom.id, record: rec });
+      });
+    });
     return all;
   }, []);
+
   const results = useMemo(() => {
     if (!q) return items.slice(0, 10);
     const ql = q.toLowerCase();
     return items.filter((i) => (i.label + i.sub).toLowerCase().includes(ql)).slice(0, 10);
   }, [q, items]);
+
+  // Reset active index when results change
+  useEffect(() => { setActiveIdx(0); }, [results]);
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (listRef.current) {
+      const el = listRef.current.children[activeIdx];
+      if (el) el.scrollIntoView({ block: 'nearest' });
+    }
+  }, [activeIdx]);
+
+  const activateResult = useCallback((r) => {
+    if (r.kind === 'Page' && r.page) {
+      onNav(r.domain, r.page);
+    } else if (r.kind === 'Decision' && r.decisionId) {
+      onSelectDecision(r.decisionId);
+    } else if (r.kind === 'Facility') {
+      onNav('home', null);
+    } else if (r.kind === 'Record' && r.record) {
+      onNavToRecord(r.domainKey, r.record);
+    }
+  }, [onNav, onSelectDecision, onNavToRecord]);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIdx((prev) => Math.min(prev + 1, results.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIdx((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === 'Enter' && results[activeIdx]) {
+      e.preventDefault();
+      activateResult(results[activeIdx]);
+    } else if (e.key === 'Escape') {
+      onClose();
+    }
+  }, [results, activeIdx, activateResult, onClose]);
+
+  // Highlight matching text
+  const highlightMatch = (text) => {
+    if (!q) return text;
+    const ql = q.toLowerCase();
+    const idx = text.toLowerCase().indexOf(ql);
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <span style={{ background: 'var(--accent-weak)', borderRadius: 2, padding: '0 1px' }}>{text.slice(idx, idx + q.length)}</span>
+        {text.slice(idx + q.length)}
+      </>
+    );
+  };
 
   return (
     <div onClick={onClose} style={{
@@ -469,22 +641,22 @@ function Palette({ onClose, onNav }) {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', borderBottom: '1px solid var(--line)' }}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" strokeWidth="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
-          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search pages, decisions, facilities, records\u2026"
+          <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={handleKeyDown} placeholder="Search pages, decisions, facilities, records\u2026"
             style={{ all: 'unset', flex: 1, fontSize: 15, color: 'var(--ink-1)' }} />
           <span className="mono" style={{ fontSize: 10, color: 'var(--ink-3)', padding: '3px 6px', borderRadius: 4, background: 'var(--surface-2)', border: '1px solid var(--line)' }}>esc</span>
         </div>
-        <div style={{ maxHeight: 420, overflow: 'auto', padding: '6px 0' }}>
+        <div ref={listRef} style={{ maxHeight: 420, overflow: 'auto', padding: '6px 0' }}>
           {results.map((r, i) => (
-            <div key={i} onClick={() => r.page && onNav(r.domain, r.page)} style={{
+            <div key={i} onClick={() => activateResult(r)} style={{
               padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-              background: i === 0 ? 'var(--accent-weak)' : 'transparent',
+              background: i === activeIdx ? 'var(--accent-weak)' : 'transparent',
             }}>
               <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: .4, color: 'var(--ink-3)', width: 64, textTransform: 'uppercase' }}>{r.kind}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink-1)' }}>{r.label}</div>
+                <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink-1)' }}>{highlightMatch(r.label)}</div>
                 <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{r.sub}</div>
               </div>
-              {i === 0 && <span className="mono" style={{ fontSize: 10, color: 'var(--ink-3)' }}>&#x21B5;</span>}
+              {i === activeIdx && <span className="mono" style={{ fontSize: 10, color: 'var(--ink-3)' }}>&#x21B5;</span>}
             </div>
           ))}
         </div>

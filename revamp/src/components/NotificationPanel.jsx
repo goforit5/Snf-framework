@@ -1,5 +1,6 @@
 // NotificationPanel — slide-over panel triggered by bell icon.
 // Shows recent agent actions and decisions requiring attention.
+// Supports type filtering, click-to-navigate, and mark-as-read.
 
 import { useState, useCallback } from 'react';
 
@@ -14,6 +15,11 @@ const MOCK_NOTIFICATIONS = [
   { id: 'n-8', type: 'info',     title: 'PDPM optimizer completed quarterly analysis',  body: 'Potential $42K/mo revenue uplift across 12 facilities.',         ts: '2h ago',  read: true },
   { id: 'n-9', type: 'escalation', title: 'Workers comp claim flagged — Heritage Oaks', body: 'Pattern detected: 3rd claim in 60 days from same unit.',         ts: '3h ago',  read: true },
   { id: 'n-10', type: 'agent',   title: 'Scheduling agent filled 4 open shifts',        body: 'Meadowbrook night CNA coverage restored to 100%.',              ts: '4h ago',  read: true },
+  { id: 'n-11', type: 'critical', title: 'Antibiotic-resistant UTI cluster — 6 residents', body: 'ESBL+ E. coli across Heritage Oaks and Pacific Gardens. Links to D-4835.', ts: '1h ago', read: false, link: 'D-4835' },
+  { id: 'n-12', type: 'agent',    title: 'PDPM optimizer found 12 coding opportunities', body: 'Potential $42K/mo revenue uplift across 12 facilities.',        ts: '2h ago',  read: true },
+  { id: 'n-13', type: 'info',     title: 'Board deck draft ready for review',           body: '42 slides for Q1 2026 results. Revenue +6.2% YoY.',              ts: '3h ago',  read: true },
+  { id: 'n-14', type: 'critical', title: 'Valley View census below 80%',                body: '95/120 beds occupied. 3-week declining trend.',                  ts: '4h ago',  read: true, link: 'D-4842' },
+  { id: 'n-15', type: 'agent',    title: 'Contract Agent flagged UHC renewal deadline',  body: 'Counter-proposal due Apr 28. 340 residents affected.',          ts: '5h ago',  read: true, link: 'D-4846' },
 ];
 
 const DOT_COLOR = {
@@ -23,14 +29,41 @@ const DOT_COLOR = {
   info: 'var(--accent)',
 };
 
-export default function NotificationPanel({ open, onClose }) {
+const FILTER_TABS = [
+  { key: 'all',        label: 'All' },
+  { key: 'critical',   label: 'Critical' },
+  { key: 'escalation', label: 'Escalations' },
+  { key: 'agent',      label: 'Agent' },
+  { key: 'info',       label: 'Info' },
+];
+
+export default function NotificationPanel({ open, onClose, onNavigate }) {
   const [items, setItems] = useState(MOCK_NOTIFICATIONS);
+  const [filter, setFilter] = useState('all');
+  const [hoveredId, setHoveredId] = useState(null);
 
   const unreadCount = items.filter((n) => !n.read).length;
+
+  const filteredItems = filter === 'all'
+    ? items
+    : items.filter((n) => n.type === filter);
 
   const markAllRead = useCallback(() => {
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
+
+  const handleClick = useCallback((notification) => {
+    // Mark as read
+    setItems((prev) =>
+      prev.map((n) => n.id === notification.id ? { ...n, read: true } : n)
+    );
+
+    // If it has a link, navigate and close
+    if (notification.link && onNavigate) {
+      onNavigate(notification.link);
+      onClose();
+    }
+  }, [onNavigate, onClose]);
 
   if (!open) return null;
 
@@ -78,51 +111,95 @@ export default function NotificationPanel({ open, onClose }) {
           )}
         </div>
 
+        {/* Filter tabs */}
+        <div style={{
+          display: 'flex', gap: 2, padding: '8px 16px',
+          borderBottom: '1px solid var(--line)',
+        }}>
+          {FILTER_TABS.map((tab) => (
+            <button key={tab.key} onClick={() => setFilter(tab.key)} style={{
+              all: 'unset', cursor: 'pointer',
+              padding: '4px 10px', borderRadius: 6,
+              fontSize: 11.5, fontWeight: filter === tab.key ? 600 : 400,
+              color: filter === tab.key ? 'var(--accent)' : 'var(--ink-3)',
+              background: filter === tab.key ? 'var(--accent-weak)' : 'transparent',
+              transition: 'background .15s, color .15s',
+            }}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         {/* List */}
         <div style={{ flex: 1, overflow: 'auto' }}>
-          {items.length === 0 ? (
+          {filteredItems.length === 0 ? (
             <div style={{
               padding: '48px 16px', textAlign: 'center',
               fontSize: 13, color: 'var(--ink-3)',
             }}>
-              All caught up.
+              {filter === 'all' ? 'All caught up.' : `No ${filter} notifications.`}
             </div>
           ) : (
-            items.map((n) => (
-              <div key={n.id} style={{
-                padding: '12px 16px', borderBottom: '1px solid var(--line-soft)',
-                display: 'flex', gap: 10, alignItems: 'flex-start',
-                background: n.read ? 'transparent' : 'var(--accent-weak)',
-                cursor: 'pointer',
-              }}>
-                {/* Colored dot */}
-                <span style={{
-                  width: 7, height: 7, borderRadius: 4, marginTop: 5, flexShrink: 0,
-                  background: DOT_COLOR[n.type] || 'var(--ink-3)',
-                }} />
+            filteredItems.map((n) => {
+              const isHovered = hoveredId === n.id;
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => handleClick(n)}
+                  onMouseEnter={() => setHoveredId(n.id)}
+                  onMouseLeave={() => setHoveredId(null)}
+                  style={{
+                    padding: '12px 16px', borderBottom: '1px solid var(--line-soft)',
+                    display: 'flex', gap: 10, alignItems: 'flex-start',
+                    background: isHovered
+                      ? (n.read ? 'var(--accent-weak)' : 'color-mix(in srgb, var(--accent-weak) 70%, var(--surface))')
+                      : (n.read ? 'transparent' : 'var(--accent-weak)'),
+                    cursor: 'pointer',
+                    transition: 'background .12s ease',
+                  }}
+                >
+                  {/* Colored dot */}
+                  <span style={{
+                    width: 7, height: 7, borderRadius: 4, marginTop: 5, flexShrink: 0,
+                    background: DOT_COLOR[n.type] || 'var(--ink-3)',
+                  }} />
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 12.5, fontWeight: 600, color: 'var(--ink-1)',
-                    marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {n.title}
-                  </div>
-                  <div style={{
-                    fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.4,
-                    marginBottom: 3,
-                  }}>
-                    {n.body}
-                  </div>
-                  <div className="mono" style={{
-                    fontSize: 11, color: 'var(--ink-3)',
-                  }}>
-                    {n.ts}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 12.5, fontWeight: 600, color: 'var(--ink-1)',
+                      marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {n.title}
+                    </div>
+                    <div style={{
+                      fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.4,
+                      marginBottom: 3,
+                    }}>
+                      {n.body}
+                    </div>
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                      <span className="mono" style={{
+                        fontSize: 11, color: 'var(--ink-3)',
+                      }}>
+                        {n.ts}
+                      </span>
+                      {n.link && (
+                        <span style={{
+                          fontSize: 10, fontWeight: 600, color: 'var(--accent)',
+                          background: 'var(--accent-weak)', borderRadius: 4,
+                          padding: '1px 5px',
+                        }}>
+                          {n.link}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>

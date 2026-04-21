@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AGENTS, ORCHESTRATOR } from '../agents-data';
 import { AgentDot, LabelSmall } from './shared';
 
@@ -10,6 +11,7 @@ const Stat = ({ k, v }) => (
 );
 
 export default function AgentDirectory({ width, height, theme = 'light' }) {
+  const navigate = useNavigate();
   const byDomain = useMemo(() => {
     const m = {};
     AGENTS.forEach((a) => { (m[a.domain] = m[a.domain] || []).push(a); });
@@ -41,7 +43,16 @@ export default function AgentDirectory({ width, height, theme = 'light' }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
             {agents.map((a) => (
-              <div key={a.id} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
+              <div
+                key={a.id}
+                onClick={() => navigate(`/agents/inspect/${a.id}`)}
+                style={{
+                  background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px',
+                  cursor: 'pointer', transition: 'border-color .15s, box-shadow .15s',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,.06)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <AgentDot id={a.id} size={26} />
                   <div style={{ minWidth: 0, flex: 1 }}>

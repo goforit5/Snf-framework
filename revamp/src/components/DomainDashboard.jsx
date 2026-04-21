@@ -36,7 +36,7 @@ const DOMAIN_AGENT_MAP = {
 
 /* ─── Main component ─── */
 
-export default function DomainDashboard({ domainKey, onRecordClick }) {
+export default function DomainDashboard({ domainKey, pageName, onRecordClick }) {
   const domain = getDomain(domainKey);
 
   const agents = useMemo(() =>
@@ -66,10 +66,17 @@ export default function DomainDashboard({ domainKey, onRecordClick }) {
     <div style={{ overflow: 'auto', padding: '22px 32px 40px' }}>
 
       {/* ─── 1. Domain header ─── */}
+      {pageName && (
+        <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
+          <span style={{ cursor: 'pointer' }}>{domain.name}</span>
+          <span style={{ opacity: .5 }}>&rsaquo;</span>
+          <span>{pageName}</span>
+        </div>
+      )}
       <h1 style={{
         margin: '0 0 4px', fontSize: 26, fontWeight: 600,
         letterSpacing: -0.5, fontFamily: 'var(--font-display)',
-      }}>{domain.name}</h1>
+      }}>{pageName || domain.name}</h1>
       <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginBottom: 20 }}>
         {agents.length} agents &middot; {domain.agentSummary.actionsToday} actions today &middot; {domain.agentSummary.timeSaved} saved
       </div>

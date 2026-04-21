@@ -4,6 +4,9 @@ import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
 // Lazy-load view wrappers
 const ShellView = lazy(() => import('./components/ShellView'));
 const AgentView = lazy(() => import('./components/AgentView'));
+const AuditTrail = lazy(() => import('./components/AuditTrail'));
+const BriefingView = lazy(() => import('./components/BriefingView'));
+const SettingsView = lazy(() => import('./components/SettingsView'));
 
 // Eager-load ControlBar (always visible, tiny)
 import ControlBar from './components/ControlBar';
@@ -27,7 +30,11 @@ function AppInner() {
   const location = useLocation();
 
   // Derive active view from URL
-  const activeView = location.pathname.startsWith('/agents') ? 'agents' : 'home';
+  const activeView = location.pathname.startsWith('/agents') ? 'agents'
+    : location.pathname.startsWith('/audit') ? 'audit'
+    : location.pathname.startsWith('/briefing') ? 'briefing'
+    : location.pathname.startsWith('/settings') ? 'settings'
+    : 'home';
 
   // Apply theme to document
   useEffect(() => {
@@ -68,6 +75,11 @@ function AppInner() {
             <Route path="/agents/escalation/:id" element={<AgentView theme={theme} />} />
             <Route path="/agents/escalation" element={<AgentView theme={theme} />} />
             <Route path="/agents/policies" element={<AgentView theme={theme} />} />
+
+            {/* Audit / Briefing / Settings */}
+            <Route path="/audit" element={<AuditTrail theme={theme} />} />
+            <Route path="/briefing" element={<BriefingView />} />
+            <Route path="/settings" element={<SettingsView role={role} />} />
           </Routes>
         </Suspense>
       </div>
