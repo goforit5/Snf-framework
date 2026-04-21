@@ -1,32 +1,6 @@
 import { useState } from 'react';
 import { AGENTS, AGENT_MESSAGES, ORCHESTRATOR } from '../agents-data';
-
-function AgentDot({ id, size = 22 }) {
-  const a = AGENTS.find((x) => x.id === id);
-  if (!a) return null;
-  const initials = a.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
-  return (
-    <div title={a.name} style={{
-      width: size, height: size, borderRadius: size / 2, background: a.color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.42, fontWeight: 600,
-      letterSpacing: .2, flexShrink: 0,
-    }}>{initials}</div>
-  );
-}
-
-const ALabel = ({ children, style }) => (
-  <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, ...style }}>{children}</div>
-);
-
-function StatusPill({ status }) {
-  const map = {
-    resolved:   { c: 'var(--green)', bg: 'var(--green-bg)', lab: 'Resolved' },
-    pending:    { c: 'var(--amber)', bg: 'var(--amber-bg)', lab: 'Pending' },
-    escalated:  { c: 'var(--red)',   bg: 'var(--red-bg)',   lab: 'Escalated' },
-  };
-  const m = map[status] || map.pending;
-  return <span style={{ padding: '2px 8px', borderRadius: 4, background: m.bg, color: m.c, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4 }}>{m.lab}</span>;
-}
+import { AgentDot, StatusPill, LabelSmall } from './shared';
 
 function MessageBubble({ m }) {
   const typeColor = {
@@ -73,7 +47,7 @@ export default function TeamChat({ width, height, theme = 'light' }) {
       {/* left: threads */}
       <div style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--line)' }}>
-          <ALabel>Agent Chat</ALabel>
+          <LabelSmall>Agent Chat</LabelSmall>
           <div style={{ fontSize: 15, fontWeight: 600, letterSpacing: -0.2, marginTop: 2 }}>Flows</div>
           <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 3 }} className="tnum">47 threads today · 46 auto-resolved · 1 escalated</div>
         </div>

@@ -1,21 +1,5 @@
 import { AGENTS } from '../agents-data';
-
-function AgentDot({ id, size = 22 }) {
-  const a = AGENTS.find((x) => x.id === id);
-  if (!a) return null;
-  const initials = a.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
-  return (
-    <div title={a.name} style={{
-      width: size, height: size, borderRadius: size / 2, background: a.color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.42, fontWeight: 600,
-      letterSpacing: .2, flexShrink: 0,
-    }}>{initials}</div>
-  );
-}
-
-const ALabel = ({ children, style }) => (
-  <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, ...style }}>{children}</div>
-);
+import { AgentDot, LabelSmall } from './shared';
 
 function PositionCard({ agent, side, one, rationale, cost, citations }) {
   const a = AGENTS.find((x) => x.id === agent);
@@ -72,7 +56,7 @@ export default function EscalationCard({ width, height, theme = 'light' }) {
         />
       </div>
 
-      <ALabel style={{ marginBottom: 8 }}>Your choices</ALabel>
+      <LabelSmall style={{ marginBottom: 8 }}>Your choices</LabelSmall>
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <button style={{ all: 'unset', cursor: 'pointer', padding: '9px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600 }}>Approve Clinical</button>
         <button style={{ all: 'unset', cursor: 'pointer', padding: '9px 14px', borderRadius: 8, background: 'var(--surface)', color: 'var(--ink-1)', border: '1px solid var(--line)', fontSize: 13, fontWeight: 500 }}>Approve Finance</button>

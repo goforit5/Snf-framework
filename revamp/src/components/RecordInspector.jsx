@@ -4,33 +4,7 @@
 import { useMemo } from 'react';
 import { DECISIONS } from '../data';
 import { AGENTS } from '../agents-data';
-
-/* ─── Helpers ─── */
-
-const LabelSmall = ({ children, style }) => (
-  <div style={{
-    fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600,
-    textTransform: 'uppercase', letterSpacing: .5, marginBottom: 8, ...style,
-  }}>{children}</div>
-);
-
-function StatusBadge({ status }) {
-  const map = {
-    critical: { c: 'var(--red)', bg: 'var(--red-bg)', label: 'Critical' },
-    watch:    { c: 'var(--amber)', bg: 'var(--amber-bg)', label: 'Watch' },
-    stable:   { c: 'var(--green)', bg: 'var(--green-bg)', label: 'Stable' },
-    overdue:  { c: 'var(--red)', bg: 'var(--red-bg)', label: 'Overdue' },
-  };
-  const m = map[status] || map.stable;
-  return (
-    <span style={{
-      padding: '3px 10px', borderRadius: 6,
-      background: m.bg, color: m.c,
-      fontSize: 11, fontWeight: 600,
-      textTransform: 'uppercase', letterSpacing: .4,
-    }}>{m.label}</span>
-  );
-}
+import { LabelSmall, StatusPill, priorityColor } from './shared';
 
 function TypeIcon({ recordType }) {
   const icons = {
@@ -183,7 +157,7 @@ export default function RecordInspector({ record, domainKey, onClose }) {
 
       {/* ─── 2. Status + detail ─── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '10px 0 8px' }}>
-        <StatusBadge status={record.status} />
+        <StatusPill status={record.status} />
       </div>
       <p style={{
         margin: '6px 0 22px', fontSize: 13.5, lineHeight: 1.55,
@@ -198,7 +172,7 @@ export default function RecordInspector({ record, domainKey, onClose }) {
           borderRadius: 10, overflow: 'hidden', marginBottom: 22,
         }}>
           {relatedDecisions.map((d, i) => {
-            const pc = d.priority === 'critical' ? 'var(--red)' : d.priority === 'high' ? 'var(--amber)' : 'var(--ink-4)';
+            const pc = priorityColor(d.priority);
             return (
               <div key={d.id} style={{
                 display: 'flex', alignItems: 'center', gap: 10,

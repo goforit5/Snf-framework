@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ROLES } from '../data';
+import NotificationPanel from './NotificationPanel';
 
 const BAR_H = 44;
 
@@ -7,6 +9,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
   const navigate = useNavigate();
   const currentRole = ROLES.find((r) => r.id === role);
   const scopeLabel = currentRole?.scope || '';
+  const [notifOpen, setNotifOpen] = useState(false);
 
   return (
     <div style={{
@@ -74,6 +77,33 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
 
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
 
+      {/* Notification bell */}
+      <button onClick={() => setNotifOpen((o) => !o)} style={{
+        all: 'unset', cursor: 'pointer', position: 'relative',
+        padding: '4px 8px', borderRadius: 6,
+        color: notifOpen ? 'var(--accent)' : 'var(--ink-3)',
+        background: notifOpen ? 'var(--accent-weak)' : 'transparent',
+        transition: 'background .15s, color .15s',
+        display: 'flex', alignItems: 'center',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+          <path d="M4 6a4 4 0 018 0c0 4 2 5 2 5H2s2-1 2-5"/>
+          <path d="M6 13a2 2 0 004 0"/>
+        </svg>
+        {/* Unread badge */}
+        <span style={{
+          position: 'absolute', top: 0, right: 2,
+          minWidth: 14, height: 14, borderRadius: 7,
+          background: 'var(--red, #e53e3e)', color: '#fff',
+          fontSize: 9, fontWeight: 700, lineHeight: '14px',
+          textAlign: 'center', padding: '0 3px',
+        }}>
+          3
+        </span>
+      </button>
+
+      <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
+
       {/* Dark mode toggle */}
       <button onClick={() => setDark((d) => !d)} style={{
         all: 'unset', cursor: 'pointer',
@@ -83,6 +113,9 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       }}>
         {dark ? 'Light' : 'Dark'}
       </button>
+
+      {/* Notification slide-over */}
+      <NotificationPanel open={notifOpen} onClose={() => setNotifOpen(false)} />
     </div>
   );
 }

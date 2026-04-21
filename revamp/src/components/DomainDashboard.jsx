@@ -5,69 +5,22 @@ import { useMemo } from 'react';
 import { getDomain } from '../data/domains';
 import { DECISIONS } from '../data';
 import { AGENTS } from '../agents-data';
+import { LabelSmall, AgentDot, TrendArrow, StatusPill, PriorityDot, StatCard } from './shared';
 
-/* ─── Shared small helpers ─── */
+/* ─── Column headers per domain ─── */
 
-const LabelSmall = ({ children, style }) => (
-  <div style={{
-    fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600,
-    textTransform: 'uppercase', letterSpacing: .5, marginBottom: 8, ...style,
-  }}>{children}</div>
-);
-
-function AgentDot({ agent, size = 22 }) {
-  const initials = agent.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
-  return (
-    <div title={agent.name} style={{
-      width: size, height: size, borderRadius: size / 2,
-      background: agent.color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontSize: size * 0.42, fontWeight: 600, letterSpacing: .2, flexShrink: 0,
-    }}>{initials}</div>
-  );
-}
-
-function TrendArrow({ trend }) {
-  if (trend === 'up') return <span style={{ color: 'var(--green)', fontSize: 11, fontWeight: 600 }}>&#x25B2;</span>;
-  if (trend === 'down') return <span style={{ color: 'var(--red)', fontSize: 11, fontWeight: 600 }}>&#x25BC;</span>;
-  return <span style={{ color: 'var(--ink-4)', fontSize: 11 }}>&mdash;</span>;
-}
-
-function StatusPill({ status }) {
-  const map = {
-    critical: { c: 'var(--red)', bg: 'var(--red-bg)', label: 'Critical' },
-    watch:    { c: 'var(--amber)', bg: 'var(--amber-bg)', label: 'Watch' },
-    stable:   { c: 'var(--green)', bg: 'var(--green-bg)', label: 'Stable' },
-    overdue:  { c: 'var(--red)', bg: 'var(--red-bg)', label: 'Overdue' },
-  };
-  const m = map[status] || map.stable;
-  return (
-    <span style={{
-      padding: '2px 8px', borderRadius: 4,
-      background: m.bg, color: m.c,
-      fontSize: 10, fontWeight: 600,
-      textTransform: 'uppercase', letterSpacing: .4,
-    }}>{m.label}</span>
-  );
-}
-
-function PriorityDot({ priority }) {
-  const c = priority === 'critical' ? 'var(--red)' : priority === 'high' ? 'var(--amber)' : 'var(--ink-4)';
-  return <span style={{ width: 6, height: 6, borderRadius: 3, background: c, flexShrink: 0 }} />;
-}
-
-/* ─── Column definitions per record type ─── */
-
-const RECORD_COLUMNS = {
-  resident:    ['ID', 'Name', 'Facility', 'Detail', 'Status'],
-  invoice:     ['ID', 'Type', 'Facility', 'Detail', 'Status'],
-  staff:       ['ID', 'Name', 'Facility', 'Detail', 'Status'],
-  referral:    ['ID', 'Name', 'Facility', 'Detail', 'Status'],
-  incident:    ['ID', 'Description', 'Facility', 'Detail', 'Status'],
-  workorder:   ['ID', 'Description', 'Facility', 'Detail', 'Status'],
-  contract:    ['ID', 'Name', 'Scope', 'Detail', 'Status'],
-  opportunity: ['ID', 'Name', 'Market', 'Detail', 'Status'],
+const DOMAIN_COLUMNS = {
+  clinical:   ['ID', 'Resident', 'Facility', 'Detail', 'Status'],
+  finance:    ['ID', 'Item', 'Facility', 'Detail', 'Status'],
+  workforce:  ['ID', 'Staff', 'Facility', 'Detail', 'Status'],
+  admissions: ['ID', 'Referral', 'Facility', 'Detail', 'Status'],
+  quality:    ['ID', 'Item', 'Facility', 'Detail', 'Status'],
+  operations: ['ID', 'Item', 'Facility', 'Detail', 'Status'],
+  legal:      ['ID', 'Name', 'Scope', 'Detail', 'Status'],
+  strategic:  ['ID', 'Name', 'Market', 'Detail', 'Status'],
 };
+
+const DEFAULT_COLUMNS = ['ID', 'Name', 'Facility', 'Detail', 'Status'];
 
 /* ─── Domain name mapping for decision filtering ─── */
 const DOMAIN_AGENT_MAP = {
@@ -107,8 +60,7 @@ export default function DomainDashboard({ domainKey, onRecordClick }) {
     );
   }
 
-  const firstType = domain.records?.[0]?.type || 'resident';
-  const columns = RECORD_COLUMNS[firstType] || RECORD_COLUMNS.resident;
+  const columns = DOMAIN_COLUMNS[domainKey] || DEFAULT_COLUMNS;
 
   return (
     <div style={{ overflow: 'auto', padding: '22px 32px 40px' }}>
@@ -127,26 +79,7 @@ export default function DomainDashboard({ domainKey, onRecordClick }) {
         display: 'flex', gap: 10, marginBottom: 22, flexWrap: 'wrap',
       }}>
         {domain.stats.map((s) => (
-          <div key={s.label} style={{
-            flex: '1 1 0', minWidth: 120,
-            background: 'var(--surface)', border: '1px solid var(--line)',
-            borderRadius: 10, padding: '12px 14px',
-          }}>
-            <div className="tnum" style={{
-              fontSize: 17, fontWeight: 600, letterSpacing: -0.3,
-              display: 'flex', alignItems: 'center', gap: 6,
-            }}>
-              {s.value}
-              <TrendArrow trend={s.trend} />
-            </div>
-            <div style={{
-              fontSize: 10.5, color: 'var(--ink-3)',
-              textTransform: 'uppercase', letterSpacing: .4, fontWeight: 500, marginTop: 2,
-            }}>
-              {s.label}
-              {s.delta && <span style={{ marginLeft: 4, color: s.trend === 'up' ? 'var(--green)' : s.trend === 'down' ? 'var(--red)' : 'var(--ink-4)' }}>{s.delta}</span>}
-            </div>
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} change={s.change} trend={s.trend} />
         ))}
       </div>
 

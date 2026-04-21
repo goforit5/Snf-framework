@@ -1,8 +1,5 @@
 import { POLICIES } from '../agents-data';
-
-const ALabel = ({ children, style }) => (
-  <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, ...style }}>{children}</div>
-);
+import { LabelSmall } from './shared';
 
 function ActionPill({ kind }) {
   const map = {
@@ -18,7 +15,7 @@ function ActionPill({ kind }) {
 export default function PolicyConsole({ width, height, theme = 'light' }) {
   return (
     <div data-theme={theme} style={{ width, height, background: 'var(--bg)', color: 'var(--ink-1)', fontFamily: 'var(--font-text)', padding: '20px 28px', overflow: 'auto' }}>
-      <ALabel>Governance</ALabel>
+      <LabelSmall>Governance</LabelSmall>
       <h1 style={{ margin: '4px 0 4px', fontSize: 22, fontWeight: 600, letterSpacing: -0.3, fontFamily: 'var(--font-display)' }}>Policy Console</h1>
       <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginBottom: 18 }}>The rules each agent operates under. Versioned, auditable, survey-ready.</div>
 

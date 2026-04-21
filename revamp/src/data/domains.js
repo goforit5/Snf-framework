@@ -15,7 +15,7 @@ export const DOMAINS = [
       { label: 'Infection rate', value: '1.8%', change: '-0.2', trend: 'down' },
       { label: 'Survey risk', value: '2 F-tags', change: '0', trend: 'flat' },
     ],
-    agents: ['clinical-monitor', 'pharmacy-agent', 'infection-control', 'therapy-agent', 'mds-agent', 'wound-care-agent'],
+    agents: ['clin-mon', 'pharm-mon', 'ifc', 'therapy', 'mds', 'wound-care'],
     agentSummary: { actionsToday: 894, exceptionsToday: 17, timeSaved: '14.2h' },
     sections: [
       { label: 'Care', items: ['Infection Control', 'Pharmacy', 'Therapy & Rehab', 'Dietary & Nutrition'] },
@@ -44,7 +44,7 @@ export const DOMAINS = [
       { label: 'Close progress', value: '68%', change: '+22%', trend: 'up' },
       { label: 'Cash position', value: '$4.2M', change: '+$310K', trend: 'up' },
     ],
-    agents: ['billing-claims', 'ap-processing', 'gl-coding', 'close-orchestrator', 'treasury-agent', 'procurement-agent'],
+    agents: ['bill-spec', 'ap-proc', 'gl-coder', 'close-orch', 'treasury', 'pdpm'],
     agentSummary: { actionsToday: 1247, exceptionsToday: 23, timeSaved: '18.6h' },
     sections: [
       { label: 'Revenue', items: ['Billing & Claims', 'Accounts Receivable', 'PDPM Optimization', 'Contract Rates'] },
@@ -73,7 +73,7 @@ export const DOMAINS = [
       { label: 'Credentials due', value: '12', change: '+3', trend: 'up' },
       { label: 'Open reqs', value: '47', change: '-5', trend: 'down' },
     ],
-    agents: ['workforce-orchestrator', 'credentialing-agent', 'workforce-finance', 'scheduling-agent', 'recruiting-agent', 'training-agent'],
+    agents: ['payroll', 'cred', 'sched', 'wf-fin', 'emp-rel', 'recruiting'],
     agentSummary: { actionsToday: 1126, exceptionsToday: 14, timeSaved: '11.3h' },
     sections: [
       { label: 'Staffing', items: ['Recruiting', 'Scheduling', 'Agency Management'] },
@@ -102,7 +102,7 @@ export const DOMAINS = [
       { label: 'Supply alerts', value: '7', change: '+3', trend: 'up' },
       { label: 'Drill compliance', value: '87%', change: '-4%', trend: 'down' },
     ],
-    agents: ['environmental-monitor', 'supply-chain-agent', 'life-safety-agent', 'transportation-agent', 'it-ops-agent', 'dietary-ops-agent'],
+    agents: ['facilities', 'supply', 'procure', 'life-safety', 'transport', 'dietary-ops'],
     agentSummary: { actionsToday: 634, exceptionsToday: 11, timeSaved: '8.7h' },
     sections: [
       { label: 'Facilities', items: ['Environmental Services', 'HVAC & Building Systems', 'Life Safety'] },
@@ -131,7 +131,7 @@ export const DOMAINS = [
       { label: 'Avg LOS', value: '34d', change: '-2d', trend: 'down' },
       { label: 'Payer mix (MA)', value: '18.1%', change: '-1.2%', trend: 'down' },
     ],
-    agents: ['census-agent', 'referral-agent', 'payer-mix-agent', 'marketing-agent', 'pre-admission-agent', 'transition-agent'],
+    agents: ['census', 'referral', 'payer-mix', 'marketing', 'pre-admit', 'transition'],
     agentSummary: { actionsToday: 312, exceptionsToday: 8, timeSaved: '5.4h' },
     sections: [
       { label: 'Census', items: ['Census Management', 'Referral Pipeline', 'Bed Management'] },
@@ -160,7 +160,7 @@ export const DOMAINS = [
       { label: 'Grievances (30d)', value: '18', change: '+4', trend: 'up' },
       { label: 'Readmission rate', value: '16.2%', change: '-0.8%', trend: 'down' },
     ],
-    agents: ['quality-monitor', 'survey-readiness-agent', 'incident-tracking-agent', 'grievance-agent', 'outcomes-agent', 'patient-safety-agent'],
+    agents: ['qual-safety', 'risk-mgmt', 'survey', 'grievance', 'outcomes', 'incident'],
     agentSummary: { actionsToday: 478, exceptionsToday: 21, timeSaved: '9.1h' },
     sections: [
       { label: 'Outcomes', items: ['Quality Measures', 'Patient Safety', 'Readmission Tracking'] },
@@ -189,7 +189,7 @@ export const DOMAINS = [
       { label: 'Compliance items', value: '14', change: '-3', trend: 'down' },
       { label: 'Reserves total', value: '$1.8M', change: '+$125K', trend: 'up' },
     ],
-    agents: ['contract-agent', 'legal-monitor', 'compliance-agent', 'regulatory-agent', 'real-estate-agent', 'risk-agent'],
+    agents: ['contract', 'compliance', 'litigation', 'regulatory', 'real-estate', 'risk-legal'],
     agentSummary: { actionsToday: 156, exceptionsToday: 6, timeSaved: '7.2h' },
     sections: [
       { label: 'Contracts', items: ['Managed Care', 'Vendor Agreements', 'Real Estate Leases'] },
@@ -218,7 +218,7 @@ export const DOMAINS = [
       { label: 'Share price', value: '$142.30', change: '+$3.80', trend: 'up' },
       { label: 'Legislative risk', value: '2 bills', change: '+1', trend: 'up' },
     ],
-    agents: ['ma-agent', 'board-prep-agent', 'govt-affairs-agent', 'market-intel-agent', 'investor-relations-agent', 'strategic-planning-agent'],
+    agents: ['ma', 'mkt-intel', 'board', 'govt', 'ir', 'strat-plan'],
     agentSummary: { actionsToday: 89, exceptionsToday: 4, timeSaved: '6.8h' },
     sections: [
       { label: 'Growth', items: ['M&A Pipeline', 'Market Intelligence', 'Strategic Planning'] },

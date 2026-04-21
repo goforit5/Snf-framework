@@ -1,31 +1,5 @@
 import { AGENTS, AGENT_MESSAGES, ORCHESTRATOR } from '../agents-data';
-
-function AgentDot({ id, size = 22 }) {
-  const a = AGENTS.find((x) => x.id === id);
-  if (!a) return null;
-  const initials = a.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
-  return (
-    <div title={a.name} style={{
-      width: size, height: size, borderRadius: size / 2, background: a.color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.42, fontWeight: 600,
-      letterSpacing: .2, flexShrink: 0,
-    }}>{initials}</div>
-  );
-}
-
-const ALabel = ({ children, style }) => (
-  <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, ...style }}>{children}</div>
-);
-
-function StatusPill({ status }) {
-  const map = {
-    resolved:   { c: 'var(--green)', bg: 'var(--green-bg)', lab: 'Resolved' },
-    pending:    { c: 'var(--amber)', bg: 'var(--amber-bg)', lab: 'Pending' },
-    escalated:  { c: 'var(--red)',   bg: 'var(--red-bg)',   lab: 'Escalated' },
-  };
-  const m = map[status] || map.pending;
-  return <span style={{ padding: '2px 8px', borderRadius: 4, background: m.bg, color: m.c, fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4 }}>{m.lab}</span>;
-}
+import { AgentDot, StatusPill, LabelSmall } from './shared';
 
 export default function AgentInspector({ agentId = 'clin-mon', width, height, theme = 'light' }) {
   const a = AGENTS.find((x) => x.id === agentId);
@@ -36,7 +10,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
   return (
     <div data-theme={theme} style={{ width, height, background: 'var(--bg)', color: 'var(--ink-1)', fontFamily: 'var(--font-text)', overflow: 'auto' }}>
       <div style={{ padding: '18px 28px 8px', borderBottom: '1px solid var(--line)' }}>
-        <ALabel>Agent</ALabel>
+        <LabelSmall>Agent</LabelSmall>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 6 }}>
           <AgentDot id={a.id} size={34} />
           <div>
@@ -62,7 +36,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
 
       {/* activity over the last 24h */}
       <div style={{ padding: '16px 28px' }}>
-        <ALabel style={{ marginBottom: 8 }}>Activity · last 24 h</ALabel>
+        <LabelSmall style={{ marginBottom: 8 }}>Activity · last 24 h</LabelSmall>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '14px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 60 }}>
             {bars.map((h, i) => (
@@ -77,7 +51,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
 
       {/* recent messages sent */}
       <div style={{ padding: '0 28px 24px' }}>
-        <ALabel style={{ marginBottom: 8 }}>Today's outbound messages · {msgs.length}</ALabel>
+        <LabelSmall style={{ marginBottom: 8 }}>Today's outbound messages · {msgs.length}</LabelSmall>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden' }}>
           {msgs.map((t, i) => (
             <div key={t.thread} style={{ padding: '12px 14px', borderTop: i ? '1px solid var(--line-soft)' : 'none' }}>

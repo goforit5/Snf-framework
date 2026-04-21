@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { DECISIONS, ROLES } from '../data';
 import DomainDashboard from './DomainDashboard';
+import { LabelSmall, PriorityDot, priorityColor } from './shared';
 
 const DOMAINS = [
   { id: 'home',       name: 'Home',         icon: 'home',   sections: null },
@@ -179,7 +180,7 @@ function WorklistMid({ role, selDecision, onSel }) {
                 cursor: 'pointer',
               }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'baseline' }}>
-                  <span style={{ width: 6, height: 6, borderRadius: 3, marginTop: 5, background: d.priority === 'critical' ? 'var(--red)' : d.priority === 'high' ? 'var(--amber)' : 'var(--ink-3)', flexShrink: 0 }}/>
+                  <span style={{ marginTop: 5 }}><PriorityDot priority={d.priority} /></span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.title}</div>
                     <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{d.facility} &middot; {d.since}</div>
@@ -284,7 +285,7 @@ function DecisionDetail({ d, onNavTo }) {
     d.impact?.time_days && { k: `${d.impact.time_days}d`, v: 'window' },
     d.impact?.probability && { k: `${Math.round(d.impact.probability * 100)}%`, v: 'probability' },
   ].filter(Boolean);
-  const pc = d.priority === 'critical' ? 'var(--red)' : d.priority === 'high' ? 'var(--amber)' : 'var(--ink-3)';
+  const pc = priorityColor(d.priority);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -353,8 +354,6 @@ function DecisionDetail({ d, onNavTo }) {
     </div>
   );
 }
-
-const LabelSmall = ({ children }) => <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 8 }}>{children}</div>;
 
 /* ─── Level-2 page: Patient Safety (Margaret Chen deep-link) ─── */
 function PatientSafetyPage({ domain }) {

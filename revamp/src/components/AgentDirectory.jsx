@@ -1,22 +1,6 @@
 import { useMemo } from 'react';
 import { AGENTS, ORCHESTRATOR } from '../agents-data';
-
-function AgentDot({ id, size = 22 }) {
-  const a = AGENTS.find((x) => x.id === id);
-  if (!a) return null;
-  const initials = a.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
-  return (
-    <div title={a.name} style={{
-      width: size, height: size, borderRadius: size / 2, background: a.color, color: '#fff',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.42, fontWeight: 600,
-      letterSpacing: .2, flexShrink: 0,
-    }}>{initials}</div>
-  );
-}
-
-const ALabel = ({ children, style }) => (
-  <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, ...style }}>{children}</div>
-);
+import { AgentDot, LabelSmall } from './shared';
 
 const Stat = ({ k, v }) => (
   <div>
@@ -34,9 +18,9 @@ export default function AgentDirectory({ width, height, theme = 'light' }) {
   return (
     <div data-theme={theme} style={{ width, height, background: 'var(--bg)', color: 'var(--ink-1)', fontFamily: 'var(--font-text)', overflow: 'auto', padding: '20px 28px 32px' }}>
       <div style={{ marginBottom: 18 }}>
-        <ALabel>Domain · Agents</ALabel>
+        <LabelSmall>Domain · Agents</LabelSmall>
         <h1 style={{ margin: '4px 0 4px', fontSize: 24, fontWeight: 600, letterSpacing: -0.4, fontFamily: 'var(--font-display)' }}>Agent Directory</h1>
-        <div style={{ fontSize: 12.5, color: 'var(--ink-3)' }}>30 agents · 1 orchestrator · handling 4,208 actions today across 330 facilities</div>
+        <div style={{ fontSize: 12.5, color: 'var(--ink-3)' }}>{AGENTS.length} agents · 1 orchestrator · handling {AGENTS.reduce((n, a) => n + a.load, 0).toLocaleString()} actions today across 330 facilities</div>
       </div>
 
       {/* orchestrator */}
