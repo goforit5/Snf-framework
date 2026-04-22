@@ -1,0 +1,64 @@
+# SNF Feature Registry — Known Feature Gaps vs Competitors
+# Source: Brain node fca841f6 (Feature Gaps Analysis)
+# Last updated: 2026-04-21
+
+gaps:
+  - id: GAP-001
+    name: ED Transfer Intelligence
+    priority: medium
+    competitor_source: PCC ED Optimization
+    description: PCC ships "Reason for Transfer AI Model" for real-time ED intelligence
+    current_state: Care Transitions page exists but no dedicated ED handoff view
+    recommendation: Add Care Transitions → ED Handoff sub-view
+    effort: small
+    pitch_framing: "We can add this in a sprint — PCC took 12 months"
+
+  - id: GAP-002
+    name: Fraud/Anomaly Detection
+    priority: medium
+    competitor_source: Workday Financial Test Agent
+    description: Workday building continuous fraud detection and compliance testing
+    current_state: Audit trail and AP Processing agent catches invoice anomalies but no dedicated fraud engine
+    recommendation: Add anomaly detection scoring to Monthly Close or dedicated sub-feature
+    effort: medium
+    pitch_framing: "Our audit trail already captures the data — adding scoring is incremental"
+
+  - id: GAP-003
+    name: Frontline Worker Self-Service
+    priority: low
+    competitor_source: Workday Frontline Agent
+    description: Text-based absence reporting and shift replacement for floor workers
+    current_state: Revamp serves managers/executives, not frontline staff
+    recommendation: Out of scope for command center
+    effort: n_a
+    pitch_framing: "Workers keep using Workday. Managers use our platform. Clean separation"
+
+  - id: GAP-004
+    name: Employee Sentiment Analysis
+    priority: low
+    competitor_source: Workday Employee Sentiment Agent
+    description: AI analysis of employee feedback at scale
+    current_state: Employee Relations page but no AI sentiment trending
+    recommendation: Could enhance Employee Relations with sentiment scoring
+    effort: medium
+    pitch_framing: "Enhancement to existing page — not a structural gap"
+
+  - id: GAP-005
+    name: Ambient Voice Documentation
+    priority: low
+    competitor_source: PCC + Microsoft Dragon Copilot
+    description: Ambient scribe for nursing documentation at point of care
+    current_state: Not in scope (point-of-care vs command center)
+    recommendation: Position as complementary
+    effort: n_a
+    pitch_framing: "When PCC ships it, our Clinical Monitor agent ingests the documentation it produces"
+
+  - id: GAP-006
+    name: Conversational Query Interface
+    priority: low
+    competitor_source: Workday Sana ($1.1B acquisition)
+    description: Conversational AI across all data
+    current_state: Cmd+K palette for structured search
+    recommendation: Could enhance Cmd+K with natural language query
+    effort: medium
+    pitch_framing: "Nice-to-have enhancement to existing Cmd+K"

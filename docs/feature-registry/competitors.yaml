@@ -1,0 +1,150 @@
+# SNF Feature Registry — Competitive Coverage Tracking
+# Source: Brain node 87eaf646 (Revamp vs PCC vs Workday Coverage Matrix)
+# Last updated: 2026-04-21
+
+pcc_products:
+  - name: Chart Advisor
+    status: GA 2026
+    revamp_coverage: exceeds
+    notes: Revamp adds cross-system context (staffing, financial, CMS trending)
+
+  - name: Referral Advisor
+    status: Jan 2026
+    revamp_coverage: exceeds
+    notes: Revamp adds payer mix optimization, revenue/patient day, conversion forecasting
+
+  - name: ED Optimization
+    status: Sept 2025
+    revamp_coverage: partial
+    notes: Care Transitions page exists but no dedicated ED handoff intelligence
+    gap_ref: GAP-001
+
+  - name: Predictive Readmission
+    status: Shipped
+    revamp_coverage: covered
+    notes: Quality domain Outcomes Tracking + Risk Management agent
+
+  - name: AI Resident Status
+    status: Shipped
+    revamp_coverage: exceeds
+    notes: Clinical Monitor + full HITL decision context
+
+  - name: Dragon Copilot Scribe
+    status: POC only
+    revamp_coverage: n_a
+    notes: Point-of-care voice, not command center. Complementary, not competing
+
+  - name: AIDA Partnership
+    status: Apr 2026
+    revamp_coverage: covered
+    notes: Referral Intake + Care Transition agents
+
+workday_agents:
+  - name: Financial Audit
+    status: GA
+    revamp_coverage: exceeds
+    notes: Healthcare-specific (PDPM, payer mix, managed care)
+
+  - name: Payroll
+    status: GA
+    revamp_coverage: exceeds
+    notes: Adds OT escalation, call-off pattern detection
+
+  - name: Planning
+    status: GA
+    revamp_coverage: exceeds
+    notes: SNF-specific (census-driven revenue, PDPM optimization)
+
+  - name: Contract Intelligence
+    status: GA
+    revamp_coverage: exceeds
+    notes: Healthcare contract tracking (UHC, managed care rates)
+
+  - name: Contract Negotiation
+    status: GA
+    revamp_coverage: covered
+    notes: Rate delta analysis vs. market
+
+  - name: Financial Close
+    status: 2026
+    revamp_coverage: covered
+    notes: Close Orchestrator agent, 68% progress tracking
+
+  - name: Frontline Agent
+    status: GA early 2026
+    revamp_coverage: partial
+    notes: Scheduling optimization yes, text-based absence reporting no
+    gap_ref: GAP-003
+
+  - name: Financial Test (fraud)
+    status: 2026
+    revamp_coverage: partial
+    notes: Audit trail yes, dedicated fraud detection no
+    gap_ref: GAP-002
+
+  - name: Employee Sentiment
+    status: 2026
+    revamp_coverage: partial
+    notes: Employee Relations tracking yes, AI sentiment analysis no
+    gap_ref: GAP-004
+
+  - name: Performance
+    status: 2026
+    revamp_coverage: partial
+    notes: Retention/training yes, cross-app performance synthesis no
+
+  - name: Cost & Profitability
+    status: 2026
+    revamp_coverage: partial
+    notes: Budget & Forecast page covers some allocation
+
+  - name: Self-Service
+    status: GA
+    revamp_coverage: n_a
+    notes: Different persona (frontline vs. executive)
+
+  - name: Job Architecture
+    status: 2026
+    revamp_coverage: n_a
+    notes: Outside SNF operational scope
+
+  - name: Business Process Copilot
+    status: 2026
+    revamp_coverage: n_a
+    notes: Workday internal config tool
+
+platform_exclusives:
+  - name: Cross-system DecisionCards
+    description: Every decision pulls from PCC + Workday + CMS + M365 data in one view
+  - name: Portfolio-wide visibility
+    description: 330 facility heatmap, regional rollups, enterprise KPIs
+  - name: Agent-to-agent collaboration
+    description: Team Chat flows where agents from different domains negotiate
+  - name: M&A pipeline management
+    description: LOI tracking, valuation models, due diligence automation
+  - name: Government affairs
+    description: Legislative bill tracking with financial impact modeling
+  - name: Board governance
+    description: Board presentation automation, investor relations call prep
+  - name: Market intelligence
+    description: Competitive analysis, geographic expansion modeling
+  - name: CMS 5-star rating prediction
+    description: Trending detection, downgrade risk alerts across portfolio
+  - name: Managed care negotiation intelligence
+    description: Contract rate gaps across legal + finance domains
+  - name: PDPM optimization
+    description: RUG recalculation, documentation-driven revenue optimization
+  - name: Real estate & leases
+    description: Legal domain portfolio management
+  - name: Supply chain + dietary operations
+    description: Operations domain logistics AI
+  - name: Life safety & environmental
+    description: HVAC monitoring, fire drill compliance, work order prioritization
+  - name: Executive morning briefing
+    description: CEO-level overnight summary across ALL 8 domains
+  - name: 6-level governance model
+    description: Full Auto through Locked with policy-driven thresholds
+  - name: Unified audit trail
+    description: Every human + agent action across all systems in one timeline
+  - name: Human-in-the-loop decision queues
+    description: Priority-ranked decisions with keyboard shortcuts, <10 second completion

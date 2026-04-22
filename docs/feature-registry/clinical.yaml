@@ -1,0 +1,6 @@
+# SNF Feature Registry — Clinical
+# Nav section: src/pages/clinical/
+# Blueprint departments: CLN (Clinical Operations), THR (Therapy & Rehab), SOC (Social Services), ACT (Activities & Recreation)
+# Last updated: 2026-04-21
+
+pages: {}

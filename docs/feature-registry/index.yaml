@@ -1,0 +1,153 @@
+# SNF Feature Registry — Master Index
+# Auto-generated summary — regenerate with: /registry.status --rebuild-index
+generated: 2026-04-21T00:00:00Z
+version: 1
+
+summary:
+  total_items: 0
+  by_status:
+    spec: 0
+    mock: 0
+    wired: 0
+    live: 0
+  by_priority:
+    P0: 0
+    P1: 0
+    P2: 0
+    P3: 0
+  by_type:
+    DEC: 0
+    MET: 0
+    AGT: 0
+    INT: 0
+    VW: 0
+    RPT: 0
+
+departments:
+  - code: ACF
+    name: Accounting & Finance
+    file: revenue.yaml
+    item_count: 0
+  - code: PAY
+    name: Payroll
+    file: workforce.yaml
+    item_count: 0
+  - code: HRS
+    name: Human Resources
+    file: workforce.yaml
+    item_count: 0
+  - code: BEN
+    name: Benefits & Compensation
+    file: workforce.yaml
+    item_count: 0
+  - code: CLN
+    name: Clinical Operations
+    file: clinical.yaml
+    item_count: 0
+  - code: BRC
+    name: Billing & Revenue Cycle
+    file: revenue.yaml
+    item_count: 0
+  - code: ADM
+    name: Admissions & Marketing
+    file: admissions.yaml
+    item_count: 0
+  - code: DTY
+    name: Dietary & Food Service
+    file: operations.yaml
+    item_count: 0
+  - code: EVS
+    name: Laundry & Housekeeping
+    file: operations.yaml
+    item_count: 0
+  - code: ACT
+    name: Activities & Recreation
+    file: clinical.yaml
+    item_count: 0
+  - code: THR
+    name: Therapy & Rehabilitation
+    file: clinical.yaml
+    item_count: 0
+  - code: SOC
+    name: Social Services
+    file: clinical.yaml
+    item_count: 0
+  - code: MNT
+    name: Facility Maintenance
+    file: operations.yaml
+    item_count: 0
+  - code: LSF
+    name: Life Safety & Emergency
+    file: operations.yaml
+    item_count: 0
+  - code: TRN
+    name: Transportation
+    file: operations.yaml
+    item_count: 0
+  - code: ITS
+    name: IT & Technology
+    file: operations.yaml
+    item_count: 0
+  - code: SCM
+    name: Supply Chain & Procurement
+    file: operations.yaml
+    item_count: 0
+  - code: RSK
+    name: Risk Management & Insurance
+    file: quality.yaml
+    item_count: 0
+  - code: CMP
+    name: Compliance & Regulatory
+    file: quality.yaml
+    item_count: 0
+  - code: MAD
+    name: M&A & Corporate Dev
+    file: strategic.yaml
+    item_count: 0
+  - code: IPR
+    name: Investor Relations & PR
+    file: strategic.yaml
+    item_count: 0
+  - code: RGN
+    name: Regional Team Management
+    file: strategic.yaml
+    item_count: 0
+  - code: PHR
+    name: Pharmacy Services
+    file: clinical.yaml
+    item_count: 0
+  - code: ANC
+    name: Ancillary Services
+    file: clinical.yaml
+    item_count: 0
+  - code: QSR
+    name: Quality / Star Rating Mgmt
+    file: quality.yaml
+    item_count: 0
+  - code: EDU
+    name: Education & People Dev
+    file: workforce.yaml
+    item_count: 0
+  - code: MCC
+    name: Managed Care / Payer Relations
+    file: revenue.yaml
+    item_count: 0
+  - code: CSM
+    name: Case Mgmt / Utilization Review
+    file: clinical.yaml
+    item_count: 0
+  - code: PLT
+    name: Platform
+    file: platform.yaml
+    item_count: 0
+  - code: CMD
+    name: Command (cross-dept)
+    file: command.yaml
+    item_count: 0
+
+page_coverage:
+  covered: []
+  uncovered: []
+  orphaned: []
+
+cross_references: []

@@ -1,0 +1,6 @@
+# SNF Feature Registry — Operations
+# Nav section: src/pages/operations/
+# Blueprint departments: MNT (Facility Maintenance), LSF (Life Safety & Emergency), TRN (Transportation), ITS (IT & Technology), SCM (Supply Chain & Procurement), DTY (Dietary & Food Service), EVS (Laundry & Housekeeping)
+# Last updated: 2026-04-21
+
+pages: {}
