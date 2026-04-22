@@ -1,446 +1,629 @@
-# SNF Command Platform — Next Session: Full Department Coverage + PCC Integration
+# SNF Command — The Only App: Full Prompt for Next Session
 
 ## Context for Claude
 
-You are continuing work on the SNF Command revamp site at `/Users/andrew/Projects/Snf_Framework/revamp/`. This is an agentic enterprise platform for Ensign Group (330+ skilled nursing facilities, ~$4B revenue). The platform is a 3-pane Apple Mail-style shell where AI agents run 99% of business operations and humans only do HITL approvals, research, and meetings.
+You are continuing work on the SNF Command revamp site at `/Users/andrew/Projects/Snf_Framework/revamp/`. This is THE SINGLE APP that every employee at Ensign Group (330+ skilled nursing facilities, 40,000+ employees, ~$4B revenue) uses for their entire work life. No PCC. No Workday. No Outlook. No paper. No other app. Just this one.
 
-**Current state**: 62 pages across 8 domains with unique stats/KPIs/highlights, 24 decisions, ~110 records, 48 agents, working Cmd+K, back navigation, decision queue with approve/escalate/defer. Deployed at https://goforit5.github.io/Snf-framework/revamp/
+**Current state**: 62 pages across 8 domains, 24 decisions, ~110 records, 48 agents, working Cmd+K, back navigation, decision queue. Deployed at https://goforit5.github.io/Snf-framework/revamp/
 
-**Live site for reference**: https://goforit5.github.io/Snf-framework/revamp/
-
-## The Vision: 99% Agentic Operations
-
-Every person at every level — CNA, nurse, administrator, regional director, C-suite — opens this platform instead of PCC, Workday, Outlook, SharePoint, or any other system. Agents have already:
-1. Read all data from source systems (PCC, Workday, M365, CMS)
-2. Analyzed it against SOPs, regulations, benchmarks, and historical patterns
-3. Prepared decisions with full evidence, recommendations, and pre-drafted actions
-4. Queued the actions for human approval (HITL)
-
-Humans approve/reject/modify. Agents execute via API writes. The human never touches the source system directly.
-
-## What's Missing: Complete Department Audit
-
-The current 8 domains (Clinical, Finance, Workforce, Admissions, Quality, Operations, Legal, Strategic) cover executive-level functions. But a real SNF has ~30+ functional departments and hundreds of daily workflows that need coverage. Below is every department and what the platform must handle for each.
+**What's next**: Expand from executive dashboard into the complete operational platform that every employee — from CNA to CEO — uses all day, every day. The app adapts its entire interface based on who you are, what your job is, and where you are standing.
 
 ---
 
-### 1. ACCOUNTING & FINANCE (expand existing Finance domain)
+## The Vision: One App, Every Employee, Every Task
 
-**Missing pages/workflows:**
-- General Ledger — chart of accounts, journal entries, intercompany eliminations
-- Accounts Receivable aging detail — by payer, by facility, by days bucket (0-30, 31-60, 61-90, 90+)
-- Accounts Payable — vendor management, payment runs, early-pay discounts, 1099 tracking
-- Fixed Assets — depreciation schedules, capital expenditure tracking, asset transfers between facilities
-- Cost Accounting — cost per patient day, department cost allocation, variance analysis
-- Tax Compliance — property tax, sales tax on supplies, payroll tax, federal/state returns
-- Financial Reporting — P&L by facility, consolidated statements, board-ready reports, covenant compliance
-- Intercompany — management fees, shared services allocation, transfer pricing
+### First Principles
 
-**Agent actions**: Auto-post standard JEs, flag GL coding errors, generate month-end close checklist, compute depreciation, prepare tax work papers, reconcile intercompany balances, generate covenant compliance reports.
+1. **One app replaces everything** — PCC, Workday, Outlook, SharePoint, ADP, Kronos, paper binders, walkie-talkies, fax machines, whiteboards. Every system is a data source that agents read from and write to. The human only interacts with this app.
 
-**PCC integration**: Read census for revenue recognition, read charges for billing reconciliation, read assessment data for PDPM revenue calculations.
+2. **The app knows who you are** — Role-based adaptive UI. A CNA logging in sees their shift, their residents, their tasks. A DON sees unit-level clinical dashboards. A CEO sees portfolio strategy. Same app, completely different experience.
 
----
+3. **The app knows where you are** — iPhone/iPad location + NFC. Walk up to a medication room, your phone unlocks it. Walk into a resident's room, their care plan appears. Walk into a conference room, the meeting agenda loads.
 
-### 2. PAYROLL (new domain or expand Workforce)
+4. **Agents do 99% of the work** — Agents read all data, analyze against SOPs/regulations/benchmarks, prepare actions, and queue them. Employees approve, modify, or reject. Then agents execute via API writes to source systems.
 
-**Missing pages/workflows:**
-- Payroll Processing — biweekly/semimonthly runs, preview → approve → post cycle
-- Time & Attendance — clock-in/out exceptions, missed punches, overtime alerts, PBJ compliance
-- Payroll Tax — federal/state withholding, FICA, FUTA/SUTA, W-2 preparation
-- Garnishments & Deductions — court orders, child support, tax levies, benefit deductions
-- Payroll Reconciliation — payroll register vs GL, labor distribution, accrual true-up
-- PBJ Staffing Data — CMS Payroll-Based Journal submission, HPRD calculations, staffing star impact
+5. **Voice-first for hands-busy roles** — CNAs, nurses, dietary, housekeeping have their hands full. They talk to the AI voice agent through the app (or AirPods). "Hey SNF, resident in 228A needs PRN Tylenol" → agent verifies order, checks allergies, prepares eMAR entry, nurse confirms with a tap.
 
-**Agent actions**: Flag overtime approaching thresholds, auto-correct missed punches from badge data, calculate PBJ hours, prepare payroll preview, flag garnishment compliance, generate labor cost reports by unit/shift.
-
-**PCC integration**: Read staff schedules and actual hours worked for PBJ calculations, read census for HPRD denominators.
+6. **Every iPhone is a universal key** — NFC badges are replaced by the app. Medication rooms, supply closets, narcotics cabinets, building entry, equipment checkout — all unlocked with the employee's phone. Access is role-based and logged to audit trail.
 
 ---
 
-### 3. HUMAN RESOURCES (expand Workforce)
+## Role-Based App Experiences
 
-**Missing pages/workflows:**
-- Employee Lifecycle — hire, transfer, promote, terminate, rehire workflows
-- Performance Management — annual reviews, PIPs, competency tracking, 90-day check-ins
-- Employee Relations — grievances, investigations, disciplinary actions, union relations
-- Immigration & Visa — H-1B tracking for international nurses, visa expiration alerts
-- Background Checks — ongoing monitoring, exclusion list checks (OIG/SAM/state)
-- Employee Handbook — policy acknowledgments, handbook version tracking
-- Exit Management — offboarding checklists, final pay calculations, COBRA notifications
-- Diversity & Inclusion — EEO reporting, workforce demographics, pay equity analysis
-- ADA Accommodations — interactive process tracking, reasonable accommodation requests
+The app presents a completely different interface based on the employee's role. Below is what every role sees and does.
 
-**Agent actions**: Auto-check OIG/SAM exclusion lists daily for all employees, flag expiring visas 90 days out, generate termination checklists, calculate final pay including PTO payout, prepare EEO-1 reports, monitor pay equity by role/facility.
+### CERTIFIED NURSING ASSISTANT (CNA)
 
-**Workday integration**: Read employee records, job changes, compensation data. Write: initiate transfers, update job codes, trigger onboarding workflows.
+**Primary view**: Shift Dashboard — "Your Residents Today"
 
----
+**What they see on login:**
+- Their assigned residents (photos, names, room numbers, key alerts)
+- Shift tasks checklist (ADLs, vitals, repositioning, ambulation)
+- Urgent alerts (fall risk residents, new orders, behavior watch)
+- Their schedule for the week
+- Unread messages from charge nurse
 
-### 4. BENEFITS & COMPENSATION (new section under Workforce)
+**What they do in the app:**
+- **Document ADLs** — tap resident → tap completed tasks (bath, dress, feed, toilet, ambulation). Voice option: "Hey SNF, documented morning care for Mrs. Chen, room 228A, total assist with bathing, setup assist for feeding"
+- **Record vitals** — manual entry or Bluetooth device sync (BP cuff, thermometer, pulse ox)
+- **Report incidents** — "Report fall" button → guided form → auto-notifies charge nurse + DON
+- **Request supplies** — "Need briefs size L for 228A" → auto-creates supply request
+- **Shift handoff** — structured handoff notes → next shift CNA sees on login
+- **Clock in/out** — NFC tap at facility entrance, or GPS-verified in-app tap
+- **View schedule** — weekly calendar, request shift swaps, pick up open shifts
+- **Request PTO** — submit requests, see balance, track approval status
+- **Call AI voice agent** — "What's Mrs. Chen's diet order?" → agent reads from PCC, answers verbally
+- **Training** — assigned CEU modules, competency checklists, annual training tracker
+- **Benefits** — view coverage, find a doctor, submit claims, see pay stubs
 
-**Missing pages/workflows:**
-- Benefits Enrollment — open enrollment management, life event changes, new hire enrollment
-- Health Insurance — plan comparison, carrier negotiations, claims analysis, stop-loss monitoring
-- 401(k) / Retirement — contribution tracking, employer match, vesting schedules, plan compliance
-- Workers' Compensation — claims management, light duty tracking, experience mod calculation, OSHA 300 log
-- Leave Management — FMLA tracking, state leave laws, intermittent leave, ADA interactive process
-- Compensation Benchmarking — market rate analysis, pay bands, geographic differentials, shift differentials
-
-**Agent actions**: Auto-calculate FMLA entitlement, flag ACA compliance issues (30+ hr employees not offered coverage), prepare workers' comp experience mod projections, identify above-market and below-market pay, generate open enrollment communications.
-
----
-
-### 5. CLINICAL OPERATIONS (expand Clinical — this is the PCC heart)
-
-**Missing pages/workflows:**
-- Resident Census — real-time bed board, admission/discharge/transfer (ADT) tracking
-- Care Plans — individualized care plan management, MDS-triggered updates, interdisciplinary team notes
-- MDS/RAI — assessment scheduling, completion tracking, PDPM classification, QM impact analysis
-- Medication Management — eMAR reconciliation, pharmacy consultant reviews, GDR tracking, psychotropic monitoring
-- Physician Orders — order entry review, verbal order tracking, co-signature compliance
-- Lab & Diagnostic — lab order tracking, critical value alerts, trending, standing order management
-- Wound Care — wound assessment tracking, healing trajectory, product utilization, photo documentation
-- Pain Management — pain assessment compliance, opioid monitoring, non-pharmacological interventions
-- Behavioral Health — antipsychotic reduction (ADOPT), behavioral intervention plans, psych consult tracking
-- Restorative Nursing — ROM programs, ambulation programs, ADL maintenance, documentation compliance
-- Infection Control (expand) — antibiogram management, outbreak investigation tools, hand hygiene audits, PPE compliance
-- Immunization — flu/COVID/pneumonia tracking, consent management, state registry reporting
-- Weight & Nutrition Monitoring — significant weight change alerts (5%/30d, 10%/180d), supplement tracking
-
-**Agent actions**: Auto-schedule MDS assessments per RAI calendar, flag overdue physician co-signatures, identify residents with declining ADLs for restorative referral, calculate PDPM components from MDS data, generate wound healing trajectory reports, flag antipsychotic use for GDR review, auto-detect infection clusters from lab data.
-
-**PCC integration (READ)**: Census, assessments, care plans, medication records, lab results, vitals, incident reports, physician orders, progress notes, MDS data, immunization records.
-
-**PCC integration (WRITE after HITL)**: Update care plans, enter progress notes, initiate assessments, update physician orders, enter incident reports, schedule care conferences, update immunization records, enter restorative nursing documentation.
+**NFC interactions:**
+- Building entry/exit (auto clock in/out)
+- Medication room (if med-tech certified)
+- Supply closet
+- Linen room
+- Resident room (triggers care plan display)
 
 ---
 
-### 6. BILLING & REVENUE CYCLE (expand Finance)
+### LICENSED PRACTICAL NURSE (LPN) / REGISTERED NURSE (RN)
 
-**Missing pages/workflows:**
-- Charge Capture — daily charge review, ancillary charges, therapy minutes, room & board
-- Claims Submission — electronic claims (837), claim scrubbing, payer-specific rules
-- Payment Posting — ERA/EOB processing, contractual adjustments, patient responsibility
-- Denial Management — denial tracking by reason code, appeal workflows, timely filing monitoring
-- Collections — patient collections, Medicaid pending, estate claims, bad debt write-off
-- Managed Care Contracting — rate modeling, per diem vs case rate analysis, quality bonus tracking
-- Medicare Billing — Part A (SNF PPS), Part B (therapy, physician), consolidated billing rules
-- Medicaid Billing — state-specific rate calculations, bed hold policies, Medicaid pending tracking
-- Private Pay — census by payer, rate sheets, liability calculations, family financial counseling
-- PDPM Analytics — case mix analysis, IPA optimization, NTA scoring, SLP/OT/PT component tracking
+**Primary view**: Unit Dashboard — residents by acuity, tasks by priority
 
-**Agent actions**: Auto-scrub claims before submission, flag undercoded PDPM components, generate denial appeal letters, calculate expected reimbursement vs actual, identify timely filing deadlines approaching, prepare managed care rate negotiation data.
+**Everything a CNA sees, plus:**
+- **Medication administration** — eMAR pass view, scan medication barcodes, document administration, hold/refuse tracking, PRN effectiveness follow-up
+- **Assessments** — admission nursing assessment, weekly skin checks, fall risk (Morse), pain (Wong-Baker/numeric), Braden scale, mood (PHQ-9)
+- **Physician orders** — view new orders, acknowledge, transcribe verbal orders, flag co-signature needed
+- **Care plans** — view/update individualized care plans, add interventions, update goals
+- **Lab results** — view with critical value alerts, trending, notify physician
+- **Wound care** — photo documentation, measurement tracking, treatment orders, healing trajectory
+- **Incident investigation** — review CNA-reported incidents, complete investigation, assign follow-up
+- **Charge nurse duties** — unit staffing view, assignment boards, shift resource allocation
+- **Supervisor approvals** — approve CNA shift swaps, PTO requests, overtime
 
-**PCC integration**: Read all billing data, assessment data for PDPM, therapy minutes. Write: update billing codes, enter charge corrections, post adjustments.
+**NFC interactions (adds):**
+- Medication room (full access)
+- Narcotics cabinet (double-tap authentication + witness verification)
+- Treatment cart (unlocks specific resident drawer)
+- Crash cart seal verification
 
----
-
-### 7. ADMISSIONS & MARKETING (expand Admissions)
-
-**Missing pages/workflows:**
-- Referral Source Management — hospital liaison tracking, referral source scorecards, relationship CRM
-- Community Marketing — event planning, outreach tracking, community partnerships, brand management
-- Pre-admission Screening — clinical eligibility assessment, insurance verification, bed availability
-- Admissions Workflow — admission packet completion, consent forms, advance directives, belongings inventory
-- Discharge Planning — discharge date projections, post-discharge follow-up, readmission risk scoring
-- Family Communication — family portal usage, satisfaction surveys, care conference scheduling
-- Census Forecasting — predictive admissions, seasonal patterns, market share analysis
-
-**Agent actions**: Auto-verify insurance eligibility, generate pre-admission clinical screening from hospital records, prepare admission packets, calculate readmission risk scores, schedule 72-hour post-discharge calls, analyze referral source ROI, forecast census by payer mix.
-
-**PCC integration**: Read referral data, census, discharge plans. Write: create new admissions, enter pre-screening data, schedule follow-ups.
+**Voice agent use cases:**
+- "What are Mrs. Chen's allergies?" → reads from PCC
+- "Add a progress note for Mr. Johnson room 204 — tolerating new diet order, no GI distress, continue monitoring" → agent drafts note, nurse approves with tap
+- "When is Dr. Patel's next visit?" → checks physician schedule
 
 ---
 
-### 8. DIETARY & FOOD SERVICE (new domain or under Operations)
+### DIRECTOR OF NURSING (DON)
 
-**Missing pages/workflows:**
-- Menu Management — cycle menu planning, therapeutic diet modifications, preference tracking
-- Diet Orders — diet order tracking, texture modifications, supplement orders, allergy alerts
-- Kitchen Operations — production sheets, inventory management, vendor ordering, HACCP compliance
-- Nutrition Assessment — weight monitoring, calorie counts, supplement effectiveness, MDS nutrition triggers
-- Food Safety — temperature logs, sanitation inspections, pest control, health department compliance
-- Tray Service — tray accuracy tracking, meal delivery timing, missed meal reports
-- Dietary Staffing — cook/aide scheduling, certification tracking, food handler permits
+**Primary view**: Clinical Command Center — facility-level clinical metrics
 
-**Agent actions**: Auto-generate production sheets from census + diet orders, flag weight changes requiring nutrition assessment, monitor food safety temperature logs, generate HACCP compliance reports, alert on diet order changes, track meal satisfaction trends.
-
-**PCC integration**: Read diet orders, nutritional assessments, weight records, allergy data. Write: update diet orders (after HITL), enter nutritional assessments.
-
----
-
-### 9. LAUNDRY & HOUSEKEEPING (under Operations)
-
-**Missing pages/workflows:**
-- Laundry Operations — linen inventory, wash cycle compliance, personal laundry tracking
-- Housekeeping Schedules — room cleaning schedules, deep clean rotations, isolation room protocols
-- Infection Prevention — terminal cleaning verification, chemical dilution logs, PPE stock
-- Pest Control — inspection schedules, treatment tracking, vendor management
-- Waste Management — regulated medical waste tracking, pharmaceutical waste, sharps compliance
-
-**Agent actions**: Generate cleaning schedules from ADT data (new admission = deep clean), flag overdue deep cleans, track linen par levels, monitor regulated waste pickup schedules.
+**Everything nurses see, plus:**
+- **Clinical quality dashboard** — fall rate, infection rate, med error rate, pressure ulcer rate, readmission rate, restraint use — all with benchmarks and trends
+- **Staffing oversight** — PPD by unit, agency usage, call-off rate, overtime, PBJ compliance
+- **Survey readiness** — F-tag risk scores, mock survey results, POC tracking, deficiency trends
+- **MDS oversight** — assessment schedule compliance, PDPM optimization opportunities, QM impact
+- **Infection control** — outbreak dashboard, antibiogram, isolation census, hand hygiene compliance
+- **Staff performance** — nurse competency tracking, incident rates by staff, training compliance
+- **Care conferences** — schedule, attendees, documentation, family communication
+- **Physician relations** — physician rounding schedules, order response times, co-signature compliance
+- **Decision queue** — clinical decisions requiring DON approval (level 3-4 governance)
 
 ---
 
-### 10. ACTIVITIES & RECREATION (new section under Clinical or Operations)
+### THERAPIST (PT / OT / SLP)
 
-**Missing pages/workflows:**
-- Activity Calendar — monthly calendar creation, resident preference matching, participation tracking
-- Individual Activity Plans — MDS-triggered assessments, 1:1 activity tracking, sensory programs
-- Volunteer Management — volunteer hours, background checks, orientation tracking
-- Special Events — event planning, budget tracking, family participation
-- Community Integration — outings, community partnerships, transportation coordination
+**Primary view**: Caseload Dashboard — patients by discipline, minutes, and outcomes
 
-**Agent actions**: Auto-generate activity calendars from resident interest inventories, flag residents with declining participation (depression screening trigger), track MDS F-tag compliance for activities, generate volunteer hour reports.
+**What they see:**
+- Today's treatment schedule with time slots
+- Patient caseload with functional goals, current status, discharge projections
+- Minutes tracking — actual vs required for PDPM classification
+- Group therapy schedule and patient assignments
+- Productivity dashboard (% direct patient care vs documentation vs meetings)
+- Pending evaluations and re-evaluations
 
-**PCC integration**: Read activity assessments, resident preferences. Write: update activity plans, enter participation documentation.
-
----
-
-### 11. THERAPY & REHABILITATION (expand Clinical)
-
-**Missing pages/workflows:**
-- Therapy Dashboard — PT/OT/SLP utilization, minutes tracking, outcomes measurement
-- Treatment Scheduling — therapist caseload management, group vs individual, cancellation tracking
-- Outcomes Tracking — FIM scores, BIMS trends, GG items, discharge functional status
-- Therapy Billing — minute tracking vs billing, productivity standards, Part B billing compliance
-- Rehab Staffing — therapist credentials, PRN management, contract therapy oversight
-
-**Agent actions**: Flag therapy minutes approaching Part A thresholds, identify residents declining in function who need therapy evaluation, calculate therapist productivity, monitor group therapy ratios, generate outcomes reports for managed care contracts.
-
-**PCC integration**: Read therapy schedules, treatment notes, functional assessments. Write: update therapy plans (after HITL).
+**What they do:**
+- **Treatment documentation** — structured note templates, functional outcome measures (GG items, BIMS, FIM)
+- **Minute tracking** — auto-calculated from documentation timestamps
+- **Discharge planning** — functional milestones, discharge recommendations, home exercise programs
+- **Equipment orders** — wheelchair, walker, orthotic, adaptive equipment requests
+- **Student supervision** — clinical fieldwork documentation, competency checklists
+- **Schedule management** — view/modify treatment schedule, cancellation tracking
 
 ---
 
-### 12. SOCIAL SERVICES (under Clinical)
+### DIETARY STAFF (Cook, Dietary Aide, Dietary Manager)
 
-**Missing pages/workflows:**
-- Psychosocial Assessments — admission assessment, quarterly updates, mood screening (PHQ-9)
-- Advance Directives — POLST/MOLST tracking, advance directive completion, decision-maker verification
-- Resident Rights — grievance tracking, abuse/neglect reporting, ombudsman contacts
-- Discharge Planning — community resource referrals, DME coordination, home health setup
-- Family Engagement — family meeting scheduling, social work interventions, behavioral care plans
-- Guardianship & Legal — guardian/conservator tracking, representative payee, court-ordered evaluations
+**Cook/Aide view**: Kitchen Dashboard
+- Today's production sheet (auto-generated from census + diet orders)
+- Meal counts by diet type (regular, pureed, mechanical soft, NDD, tube feed)
+- Temperature logs (cooler, freezer, hot food, cold food — timed alerts)
+- Food safety checklists (sanitization, handwashing, date labeling)
+- Allergy alerts highlighted per meal
 
-**Agent actions**: Flag residents without advance directives, schedule psychosocial assessment updates, track grievance response timelines, generate resident rights compliance reports, identify residents at risk for behavioral issues.
+**Dietary Manager view (adds):**
+- Menu planning — cycle menu with therapeutic modifications
+- Nutrition assessments — significant weight changes, calorie count results, supplement effectiveness
+- Inventory management — ordering, receiving, waste tracking
+- Department staffing — schedule, training, food handler permit tracking
+- Regulatory compliance — health department inspection readiness, HACCP plans
+- Resident satisfaction — meal preference tracking, complaint resolution
+- Budget — food cost per patient day, vendor spend, waste metrics
 
----
+**Voice agent**: "Hey SNF, what's the diet order for room 312?" → agent reads diet order, allergies, preferences, texture modification
 
-### 13. FACILITY MAINTENANCE & ENGINEERING (expand Operations)
-
-**Missing pages/workflows:**
-- Preventive Maintenance — PM schedules, completion tracking, vendor contracts
-- Building Systems — HVAC, plumbing, electrical, generator testing, fire suppression
-- Capital Projects — project tracking, budget vs actual, contractor management
-- Energy Management — utility tracking, energy efficiency projects, sustainability
-- Vehicle Fleet — vehicle maintenance, inspections, insurance, mileage tracking
-- Grounds Keeping — landscaping, snow removal, parking lot maintenance, ADA compliance
-
-**Agent actions**: Auto-generate PM work orders on schedule, flag overdue inspections, monitor energy usage anomalies, track capital project spend vs budget, alert on vehicle inspection expirations.
+**NFC**: Kitchen entry, dry storage, walk-in cooler/freezer
 
 ---
 
-### 14. LIFE SAFETY & EMERGENCY MANAGEMENT (expand Operations)
+### HOUSEKEEPING / LAUNDRY STAFF
 
-**Missing pages/workflows:**
-- Fire Safety — fire drill scheduling, extinguisher inspections, sprinkler testing, K-tag tracking
-- Emergency Preparedness — disaster plans, evacuation routes, emergency supply inventory
-- Security — incident reporting, camera systems, access control, wander management
-- Hazardous Materials — MSDS management, chemical inventory, spill response
-- Environment of Care — safety rounds, hazard surveillance, accident investigation
+**Primary view**: Assignment Board — rooms to clean, priority order
 
-**Agent actions**: Auto-schedule fire drills per shift per quarter, flag overdue equipment inspections, generate emergency preparedness reports for surveys, monitor wander management alerts.
+**What they see:**
+- Room cleaning assignments (routine, discharge, admission, isolation)
+- Cleaning checklists per room type (standard, isolation, terminal)
+- Supply par levels for their cart
+- Laundry machine status and cycle times
+- Work order requests they submitted
 
----
+**What they do:**
+- **Room completion tracking** — mark rooms clean, supervisor verification
+- **Isolation protocol guidance** — app shows exact PPE required, chemical dilutions, bag colors
+- **Supply requests** — "Need more disinfectant wipes, cart 3" → auto-creates supply request
+- **Report maintenance issues** — photograph damage, submit work order
+- **Linen tracking** — par levels by unit, lost/damaged linen reporting
 
-### 15. TRANSPORTATION (under Operations)
-
-**Missing pages/workflows:**
-- Transport Scheduling — medical appointment transport, dialysis runs, discharge transport
-- Vehicle Management — vehicle availability, driver scheduling, route optimization
-- Insurance & Compliance — vehicle insurance tracking, driver license verification, DOT compliance
-
-**Agent actions**: Auto-schedule recurring transports (dialysis), optimize routes, flag driver license expirations, track transport cost per resident.
+**NFC**: Building entry, supply closets, linen room, laundry room, isolation room supply carts
 
 ---
 
-### 16. IT & TECHNOLOGY (under Operations)
+### MAINTENANCE / FACILITIES STAFF
 
-**Missing pages/workflows:**
-- Help Desk — ticket management, resolution tracking, SLA compliance
-- Network & Infrastructure — uptime monitoring, bandwidth usage, device inventory
-- Cybersecurity — threat monitoring, patch management, phishing simulation results
-- EHR Management — PCC system administration, user access management, training needs
-- HIPAA Compliance — access audits, breach risk assessments, BAA tracking
+**Primary view**: Work Order Queue — prioritized by urgency
 
-**Agent actions**: Flag unusual access patterns (HIPAA), auto-assign help desk tickets by category, monitor system uptime, generate HIPAA compliance reports, track training completion.
+**What they see:**
+- Open work orders by priority (emergency, urgent, routine, scheduled PM)
+- PM schedule calendar with due dates
+- Parts/supplies inventory
+- Vendor contact list
+- Building system status (HVAC, electrical, plumbing, fire alarm, generator)
 
----
+**What they do:**
+- **Work order management** — accept, update status, add notes/photos, complete, request parts
+- **PM completion** — guided checklists for each equipment type, photo documentation
+- **Life safety** — fire extinguisher inspections, emergency light tests, generator testing
+- **Temperature monitoring** — hot water, ambient, walk-in cooler/freezer
+- **Contractor management** — check-in/out contractors, verify insurance, escort tracking
 
-### 17. SUPPLY CHAIN & PROCUREMENT (expand Operations)
-
-**Missing pages/workflows:**
-- Purchasing — purchase order management, approval workflows, budget checking
-- Inventory Management — par levels, reorder points, expiration tracking (especially medications/supplies)
-- Vendor Management — vendor scorecards, contract compliance, performance reviews
-- Group Purchasing — GPO contract utilization, off-contract spend analysis
-- Receiving & Distribution — receiving verification, backorder tracking, facility transfers
-
-**Agent actions**: Auto-generate POs at reorder points, flag expiring supplies, identify off-contract spend, negotiate pricing alerts, track backorders, generate vendor performance reports.
+**NFC**: Mechanical rooms, electrical rooms, generator room, roof access, pool/spa equipment rooms, fire alarm panels
 
 ---
 
-### 18. RISK MANAGEMENT & INSURANCE (expand Legal)
+### BUSINESS OFFICE (Billing Clerk, Admissions Coordinator, Business Office Manager)
 
-**Missing pages/workflows:**
-- Claims Management — liability claims, workers' comp claims, property damage
-- Insurance Program — policy tracking, renewal management, coverage analysis, certificate tracking
-- Risk Assessment — facility risk scores, trending analysis, benchmarking
-- Incident Investigation — root cause analysis, corrective action tracking, trend identification
-- Litigation Management — case tracking, legal hold, document preservation, settlement analysis
+**Billing Clerk view**: Claims Dashboard
+- Claims pending submission, claims pending payment, denials to work
+- Daily charge review — verify room & board, ancillaries, therapy
+- Payment posting — match ERA/EOB to claims
+- Patient trust fund management
 
-**Agent actions**: Flag incident clusters suggesting systemic issues, calculate reserve adequacy, track litigation timelines, generate loss runs, identify facilities with deteriorating risk profiles.
+**Admissions Coordinator view**: Referral Pipeline
+- Incoming referrals with clinical screening scores
+- Bed availability board
+- Insurance verification status
+- Admission packet completion tracking
+- Tour scheduling and follow-up
 
----
-
-### 19. COMPLIANCE & REGULATORY (expand Legal)
-
-**Missing pages/workflows:**
-- Federal Compliance — CMS Conditions of Participation, HIPAA, EMTALA, False Claims Act
-- State Compliance — state licensure, certificate of need, state-specific staffing mandates
-- Survey Management — survey readiness, POC tracking, IDR preparation, CMP negotiation
-- QAPI — quality assurance performance improvement program, PIP tracking, root cause analysis
-- Corporate Compliance — compliance hotline, investigation tracking, training, exclusion monitoring
-- Accreditation — Joint Commission, CARF, state accreditation standards
-
-**Agent actions**: Daily OIG/SAM exclusion checks for all employees and vendors, auto-generate survey readiness scores, track POC deadlines, flag regulatory changes affecting operations, generate QAPI reports.
+**Business Office Manager view (adds):**
+- AR aging by payer with collection priority
+- Census and revenue forecasting
+- Managed care rate analysis
+- Medicaid pending tracking
+- Private pay liability calculations
+- Month-end billing reconciliation
 
 ---
 
-### 20. M&A & CORPORATE DEVELOPMENT (expand Strategic)
+### ACTIVITIES DIRECTOR / AIDE
 
-**Missing pages/workflows:**
-- Deal Pipeline — target identification, valuation, LOI tracking, due diligence checklists
-- Due Diligence — financial, clinical, regulatory, environmental, HR due diligence workstreams
-- Integration Management — 100-day integration plans, system migration, staff retention
-- Portfolio Optimization — facility performance ranking, divestiture candidates, turnaround tracking
-- Real Estate — lease management, property tax, capital improvement planning
+**Primary view**: Activity Calendar + Participation
 
-**Agent actions**: Score acquisition targets against criteria, flag integration milestones, track turnaround facility performance, generate board-ready M&A reports, monitor lease expirations.
+**What they see:**
+- Monthly activity calendar with today's schedule highlighted
+- Resident participation tracking (who attended, engagement level)
+- Individual activity plans (MDS-required)
+- Volunteer schedule and hours
+- Budget tracking for supplies and events
 
----
-
-### 21. INVESTOR RELATIONS & PUBLIC RELATIONS (expand Strategic)
-
-**Missing pages/workflows:**
-- Earnings — quarterly earnings preparation, guidance modeling, analyst Q&A preparation
-- SEC Filings — 10-K, 10-Q, 8-K preparation, SOX compliance tracking
-- Media Relations — press release management, media monitoring, crisis communication
-- Government Affairs — legislative tracking, lobbying activities, PAC management
-- Community Relations — facility-level community engagement, volunteer programs, charitable giving
-
-**Agent actions**: Generate earnings talking points from financial data, monitor media mentions, track legislative bills affecting SNFs, prepare SEC filing data packages.
+**What they do:**
+- **Document participation** — check-off attendance, note engagement level
+- **Plan activities** — create calendar events, assign staff, order supplies
+- **Resident preferences** — survey results, interest inventories, sensory programs
+- **1:1 visits** — track for MDS compliance, especially bed-bound or cognitively impaired residents
+- **Community outings** — plan, get permissions, coordinate transport
 
 ---
 
-### 22. REGIONAL TEAM MANAGEMENT (new domain or under Strategic)
+### SOCIAL WORKER / SOCIAL SERVICES DIRECTOR
 
-**Missing pages/workflows:**
-- Regional Dashboard — region-level KPIs, facility comparison, outlier identification
-- Regional Director Workflow — facility visit scheduling, action item tracking, coaching notes
-- Multi-facility Coordination — shared staffing, supply transfers, best practice sharing
-- Performance Improvement — facility turnaround playbooks, performance benchmarking, coaching plans
+**Primary view**: Caseload Dashboard — psychosocial needs, discharge planning
 
-**Agent actions**: Generate regional scorecards, identify underperforming facilities, recommend resource reallocation, schedule facility visits based on risk scores, prepare regional director briefing packets.
+**What they see:**
+- Resident caseload with psychosocial risk flags
+- Advance directive completion status
+- Upcoming care conferences
+- Active discharge plans
+- Grievance/complaint tracker
+- Community resource directory
+
+**What they do:**
+- **Psychosocial assessments** — admission, quarterly, significant change
+- **Advance directive management** — POLST/MOLST completion, decision-maker verification
+- **Discharge planning** — coordinate with family, set up home health, order DME, schedule follow-up
+- **Behavior management** — behavioral care plan development, intervention tracking
+- **Family meetings** — schedule, document, track action items
+- **Abuse/neglect reporting** — mandated reporter workflows, state agency notifications
+- **Resident rights** — grievance investigation, ombudsman communication
+
+---
+
+### ADMINISTRATOR (Facility-Level)
+
+**Primary view**: Facility Command Center — everything in one view
+
+This is the current revamp site's primary audience. They see:
+- All 8+ domains with decision queues
+- Facility-level P&L, census, quality metrics, staffing
+- Regulatory compliance status
+- Open items requiring administrator-level approval
+- Staff communications and announcements
+- Building/grounds status
+- Survey readiness score
+
+**Unique capabilities:**
+- **Announcements** — push notifications to all facility employees
+- **Policy management** — distribute updated policies, track acknowledgments
+- **Budget management** — department budgets, variance analysis, approval workflows
+- **Vendor management** — contract approvals, service evaluations
+- **Community relations** — family council, ombudsman, community events
+- **Regulatory response** — survey POC preparation, complaint investigation, state correspondence
+
+---
+
+### REGIONAL DIRECTOR
+
+**Primary view**: Multi-Facility Dashboard — 15-25 facilities at a glance
+
+**What they see:**
+- Facility scorecard grid (census, quality, staffing, financial, compliance — color-coded)
+- Outlier alerts — which facilities need attention right now
+- Travel/visit schedule
+- Action items from facility visits
+- Cross-facility staffing and resource sharing opportunities
+
+**What they do:**
+- **Facility coaching** — visit notes, improvement plans, follow-up tracking
+- **Resource allocation** — move staff between facilities, approve shared purchases
+- **Performance management** — administrator evaluations, turnaround plans
+- **Best practice sharing** — flag innovations at one facility for portfolio-wide adoption
+- **Escalation handling** — decisions escalated from facility-level administrators
+
+---
+
+### CORPORATE / RESOURCE TEAM (C-Suite, VP, Director level)
+
+**Primary view**: Portfolio Command Center (current CEO view, expanded)
+
+**CFO sees:** Consolidated P&L, cash flow, debt covenants, budget variance, AR trends, managed care rates
+**COO sees:** Operational scorecard, census, staffing, quality, regulatory
+**CMO/CNO sees:** Clinical quality portfolio, infection surveillance, fall rates, staffing adequacy, survey outcomes
+**CHRO sees:** Turnover, recruiting pipeline, benefits utilization, workers' comp, labor costs, DEI metrics
+**CLO sees:** Litigation, contracts, regulatory, compliance program, risk management
+**CEO sees:** Everything above + M&A, investor relations, board prep, government affairs, strategic planning
+
+---
+
+## Employee Self-Service (ALL Employees, Every Role)
+
+Every employee, regardless of role, has access to these self-service features:
+
+### Timekeeping
+- **NFC clock in/out** — tap phone at facility entrance/exit. GPS-verified fallback for off-site.
+- **Missed punch correction** — submit correction request, supervisor approval via decision queue
+- **Break tracking** — meal period waiver, rest break compliance (California-specific)
+- **Overtime alerts** — approaching 40h, approaching daily OT threshold (CA: 8h)
+- **Pay period summary** — hours by type (regular, OT, holiday, PTO, sick), projected gross pay
+
+### Scheduling
+- **View schedule** — 4-week rolling calendar with shift details
+- **Shift swap** — request swap with specific colleague, supervisor auto-approval if same skill level
+- **Open shift pickup** — browse available shifts, one-tap claim, instant confirmation
+- **Availability preferences** — set preferred shifts, blackout dates, max hours
+- **On-call status** — view on-call assignments, respond to call-in requests
+
+### Pay & Compensation
+- **Pay stubs** — current and historical, downloadable PDF
+- **W-2 / Tax documents** — electronic delivery, year-end access
+- **Direct deposit** — set up/modify bank accounts
+- **Pay rate history** — current rate, differential rates, raise history
+- **Earned wage access** — optional same-day pay for worked hours (DailyPay/Payactiv integration)
+
+### Benefits
+- **Benefits dashboard** — current coverage summary (medical, dental, vision, life, disability)
+- **Open enrollment** — plan comparison, cost calculator, dependent management, enrollment confirmation
+- **Life event changes** — marriage, birth, divorce, loss of other coverage → trigger enrollment window
+- **Find a provider** — in-network search by specialty and location
+- **Claims status** — view submitted claims, EOBs, out-of-pocket tracking toward deductible/max
+- **401(k)** — contribution rate, employer match, vesting schedule, balance, investment options
+- **HSA/FSA** — balance, eligible expenses, card transactions, reimbursement requests
+- **Tuition reimbursement** — program details, application, approval tracking, reimbursement status
+
+### Employee Handbook & Policies
+- **Searchable handbook** — full text search across all policies
+- **Policy acknowledgments** — sign electronically, track completion
+- **Version history** — see what changed in policy updates
+- **Quick reference** — frequently accessed: PTO policy, dress code, call-off procedure, HIPAA, abuse reporting
+
+### Leave & PTO
+- **PTO balance** — accrued, used, available, projected year-end
+- **Request PTO** — date picker, auto-checks staffing impact, supervisor approval queue
+- **Sick leave** — separate tracking where state law requires
+- **FMLA** — eligibility calculator, leave request, intermittent tracking, return-to-work
+- **Bereavement, jury duty, military** — request with documentation upload
+- **Leave of absence** — extended leave workflow, benefit continuation, return planning
+
+### Communication
+- **Facility announcements** — administrator broadcasts, policy updates, emergency alerts
+- **Direct messages** — secure messaging to any colleague (HIPAA-compliant, no PHI in notifications)
+- **Team channels** — unit-level chat (2nd floor nursing, dietary team, maintenance)
+- **Recognition** — peer kudos, monthly awards, milestone celebrations
+- **Anonymous reporting** — compliance hotline, safety concerns, workplace issues
+
+### Training & Education
+- **Required training** — annual compliance (HIPAA, abuse, fire safety, infection control), due dates, completion tracking
+- **CEU tracking** — continuing education units for licensed staff, certificate uploads
+- **Competency checklists** — role-specific skills validation, preceptor sign-off
+- **Career pathways** — CNA → LPN → RN progression, tuition support, mentorship
+- **New hire onboarding** — day-by-day checklist, video orientations, department introductions
+
+### Personal Profile
+- **Contact info** — update address, phone, emergency contacts
+- **Tax withholding** — W-4 changes
+- **Credentials** — license numbers, expiration dates, auto-renewal tracking
+- **Certifications** — CPR, first aid, specialty certifications
+- **Photo ID** — digital badge displayed on phone for NFC access
+
+---
+
+## Voice AI Agent
+
+Every employee can tap the microphone icon or say "Hey SNF" to talk to the AI agent. The agent has access to all data the employee is authorized to see.
+
+### Use Cases by Role
+
+**CNA/Aide:**
+- "What's the diet for room 312?" → reads PCC diet order
+- "Mrs. Chen needs to be repositioned at 2pm" → sets reminder, documents in care plan
+- "I need to call off for tomorrow" → initiates call-off procedure, notifies supervisor, triggers shift fill
+- "How much PTO do I have?" → reads Workday balance
+- "When is open enrollment?" → reads HR calendar
+
+**Nurse:**
+- "Add a progress note for Mr. Johnson — vitals stable, no new complaints, continue current care plan" → drafts note, shows for approval
+- "What are the allergies for room 204?" → reads PCC allergy list
+- "Order a CBC and BMP for Mrs. Williams" → prepares lab order, queues for physician co-signature
+- "Call Dr. Patel about the lab results for room 228" → initiates call, displays relevant labs on screen
+
+**Administrator:**
+- "What's our census today?" → reads PCC census
+- "How many agency staff do we have this week?" → reads Workday staffing data
+- "Summarize the top 3 risks for our next survey" → agent analyzes compliance data, presents summary
+- "Schedule a care conference for Margaret Chen on Thursday at 2pm" → creates calendar event, notifies participants
+
+**Corporate:**
+- "What's the portfolio census trend this month?" → generates trendline from PCC data
+- "Summarize Heritage Oaks' financial performance this quarter" → pulls GL data, presents key metrics
+- "Draft a response to the DPH regarding the Heritage Oaks survey findings" → drafts regulatory response from templates + specific findings
+
+---
+
+## NFC & Physical Access System
+
+Every employee's iPhone/iPad is their building access badge, medication room key, and equipment checkout tool.
+
+### Access Zones (role-based)
+
+| Zone | CNA | LPN/RN | DON | Maintenance | Dietary | Admin |
+|---|---|---|---|---|---|---|
+| Building entry/exit | Y | Y | Y | Y | Y | Y |
+| Medication room | Med-tech only | Y | Y | N | N | N |
+| Narcotics cabinet | N | Y (dual-auth) | Y (dual-auth) | N | N | N |
+| Supply closet | Y | Y | Y | Y | Y | Y |
+| Linen room | Y | Y | Y | N | N | Y |
+| Kitchen | N | N | N | N | Y | Y |
+| Walk-in cooler/freezer | N | N | N | Y | Y | Y |
+| Mechanical/electrical rooms | N | N | N | Y | N | Y |
+| Server/IT room | N | N | N | IT only | N | Y |
+| Mailroom/packages | N | N | N | N | N | Y |
+| Admissions office (after hours) | N | N | N | N | N | Y |
+| Generator room | N | N | N | Y | N | N |
+| Roof access | N | N | N | Y | N | N |
+
+### NFC Event Logging
+Every NFC tap creates an audit trail entry:
+- Employee ID, zone, timestamp, granted/denied
+- Agents monitor for anomalies: unusual hours, rapid door cycling, denied access attempts
+- Integration with emergency systems: fire alarm → auto-log who is in building
+
+### Narcotics Cabinet Dual Authentication
+1. Primary nurse taps phone (NFC)
+2. Witness nurse taps phone (NFC)
+3. App shows narcotics count sheet
+4. Nurse selects medication, quantity, resident
+5. Both nurses confirm count
+6. Cabinet unlocks
+7. Full audit trail: who, what, when, which resident, count before/after
+
+---
+
+## Complete Department Coverage
+
+### Departments to Add (new domains or sub-pages)
+
+**Current 8 domains**: Clinical, Finance, Workforce, Admissions, Quality, Operations, Legal, Strategic
+
+**Expand to cover 22+ functional areas:**
+
+1. **Accounting** — GL, AP, AR aging, fixed assets, cost accounting, tax, intercompany, financial reporting, covenant compliance
+2. **Payroll** — processing, time & attendance, PBJ, garnishments, tax compliance, labor distribution
+3. **Human Resources** — lifecycle, performance, employee relations, immigration, background checks, ADA, exit management, DEI
+4. **Benefits** — enrollment, health insurance, 401k, workers' comp, FMLA, compensation benchmarking, earned wage access
+5. **Clinical Operations** — census/ADT, care plans, MDS/RAI, eMAR, physician orders, labs, wound care, pain, behavioral health, restorative, infection control, immunizations, weight monitoring
+6. **Billing & Revenue Cycle** — charge capture, claims, payment posting, denials, collections, managed care, Medicare/Medicaid billing, PDPM analytics
+7. **Admissions & Marketing** — referral CRM, community marketing, pre-admission screening, admission workflow, discharge planning, family communication, census forecasting
+8. **Dietary & Food Service** — menu management, diet orders, kitchen ops, nutrition assessment, food safety (HACCP), tray service, dietary staffing, inventory
+9. **Laundry & Housekeeping** — laundry ops, cleaning schedules, isolation protocols, pest control, waste management, linen tracking
+10. **Activities & Recreation** — calendar, individual plans, volunteer management, community integration, participation tracking
+11. **Therapy & Rehab** — PT/OT/SLP dashboards, treatment scheduling, outcomes, minute tracking, productivity, equipment ordering
+12. **Social Services** — psychosocial assessments, advance directives, resident rights, discharge planning, family engagement, guardianship, abuse reporting
+13. **Facility Maintenance** — PM schedules, building systems, capital projects, energy management, fleet, grounds
+14. **Life Safety & Emergency** — fire drills, emergency preparedness, security, hazmat, wander management, environment of care
+15. **Transportation** — scheduling, vehicle management, route optimization, compliance
+16. **IT & Technology** — help desk, network monitoring, cybersecurity, HIPAA, EHR admin
+17. **Supply Chain & Procurement** — purchasing, inventory, vendor management, GPO, receiving
+18. **Risk Management & Insurance** — claims, policies, risk assessment, incident investigation, litigation
+19. **Compliance & Regulatory** — federal/state compliance, survey management, QAPI, corporate compliance, exclusion monitoring
+20. **M&A & Corporate Development** — deal pipeline, due diligence, integration, portfolio optimization, real estate
+21. **Investor Relations & PR** — earnings, SEC, media, government affairs, community relations
+22. **Regional Management** — multi-facility dashboards, facility coaching, resource sharing, best practices
 
 ---
 
 ## PCC Integration Architecture
 
-### Read Operations (no HITL required — agents read freely)
+### Read Operations (agents read freely, no HITL)
 ```
-PCC API → Agent reads → Analyzes against SOPs/regulations → Prepares decision card
+PCC API → Agent reads → Analyzes against SOPs/regulations/benchmarks → Prepares decision card
 ```
-- Census/ADT data, resident demographics, insurance
-- Assessments (MDS, care plans, progress notes)
-- Medication records (eMAR, orders, administration)
-- Lab results, vitals, weights
+
+**Everything agents can read:**
+- Census/ADT (admissions, discharges, transfers, room assignments)
+- Resident demographics, insurance, contacts, advance directives
+- Assessments (MDS sections, care plans, nursing assessments, wound assessments)
+- Medication records (eMAR, physician orders, pharmacy, allergies)
+- Lab results, radiology, vitals, weights
+- Progress notes, physician notes, therapy notes
 - Incident reports, grievances
-- Therapy data (minutes, goals, outcomes)
-- Billing data (charges, claims, payments)
+- Therapy data (minutes, goals, outcomes, schedules)
+- Billing data (charges, claims, payments, adjustments)
 - Staffing/scheduling data
-- Dietary orders, activity assessments
+- Dietary orders, nutritional assessments
+- Activity assessments, psychosocial assessments
+- Immunization records
+- Survey/compliance data
 
-### Write Operations (HITL required — agent proposes, human approves, agent executes)
+### Write Operations (HITL required — every write needs human approval)
+
 ```
-Agent prepares action → Decision card with exact API payload preview → Human approves → Agent calls PCC API write endpoint
+Agent prepares action → Decision card shows EXACT API payload in plain language →
+Human reviews old value → new value preview → Human approves →
+Agent executes PCC API write → Confirmation displayed → Audit trail logged
 ```
 
-**CRITICAL SAFETY MODEL:**
-1. Agent NEVER writes to PCC without HITL approval
-2. Decision card shows EXACT data that will be written (resident name, field, old value → new value)
-3. Human sees preview of the API call in plain language
-4. Approve button triggers the actual PCC API write
-5. Every write is logged to immutable audit trail with before/after values
-6. Any write can be rolled back within 24h window
+**Write categories:**
+- Care plan updates (new interventions, goal modifications, discontinuations)
+- Progress notes (nursing, social services, dietary, activities)
+- Physician orders (new orders, modifications, discontinuations)
+- eMAR entries (medication administration documentation)
+- Assessment data (MDS sections, screening tools, wound measurements)
+- Incident reports (falls, medication errors, injuries, elopement attempts)
+- ADT transactions (admission, discharge, transfer, room change)
+- Billing corrections (charge adjustments, code modifications)
+- Diet order changes (texture modifications, supplements, allergies)
+- Activity documentation (participation, individual plans)
+- Lab orders (standing orders, new orders)
+- Immunization records (administration, declination)
 
-**Write categories (all require HITL):**
-- Care plan updates (new interventions, goal changes)
-- Progress note entries
-- Order entries (physician orders, diet orders, therapy orders)
-- Assessment data entry (MDS sections, screening tools)
-- Incident report creation
-- Admission/discharge/transfer transactions
-- Billing code corrections
-- Staff schedule modifications
+**Safety model:**
+1. Agent NEVER writes without HITL approval
+2. Decision card shows exact old → new values
+3. Human previews the exact data change in plain language
+4. Approve triggers API write
+5. Every write logged to immutable audit trail (who approved, when, before/after values)
+6. 24-hour rollback window for non-critical changes
+7. Critical changes (medication, orders) require secondary confirmation
 
-### Credential Management
-- PCC OAuth credentials stored in AWS Secrets Manager (`snf/{tenant}/pcc`)
-- Vault-and-proxy pattern: agents never see raw credentials
-- MCP proxy injects credentials at request time
-- 90-day automated rotation with dual-key pattern
-- Emergency revocation in <15 minutes
+### Workday Integration (same pattern)
+- Read: employee records, compensation, benefits, payroll, GL, org structure
+- Write (HITL): job changes, pay adjustments, benefit enrollments, GL journal entries
+
+### M365 Integration
+- Read: email summaries, calendar events, SharePoint documents, Teams transcripts
+- Write (HITL): send emails, create calendar events, upload documents
+
+### CMS / OIG / SAM Integration
+- Read: Five Star ratings, QM data, survey history, exclusion lists, regulatory updates
+- Agents auto-check daily: all employees against OIG/SAM exclusion lists, all vendors against debarment lists
 
 ---
 
-## Implementation Plan
+## Implementation Plan for Next Session
 
-### Phase 1: Domain Expansion (data + pages)
-1. Add new domains to ShellV2 DOMAINS array: Dietary, Activities, Therapy, Social Services, Regional
-2. Create page data entries in pages.js for every new page (~40 new pages)
-3. Create domain data entries in domains.js for new domains (stats, agents, records)
-4. Add new agents to agents-data.js for new departments
-5. Add new decisions to decisions.js covering new departments
-6. Add new records to domains.js for new departments
+### Phase 1: Expand Domains & Roles
+1. Add role selector beyond CEO/Admin/DON/Billing/Accounting — add CNA, RN, Therapist, Dietary, Housekeeping, Maintenance, Social Worker, Activities, Regional Director
+2. For each role, build the primary view they see on login
+3. Expand DOMAINS array in ShellV2 to cover all 22 departments
+4. Create page data for ~100 new pages across new departments
+5. Add ~100 new agents to agents-data.js covering every department
+6. Add ~150 new decisions covering all departments
+7. Add ~200 new records covering all departments
 
-### Phase 2: PCC Read Integration Mock
-1. Create PCC data models (resident, assessment, medication, lab, order schemas)
-2. Build mock PCC API responses for demo
-3. Create PCC-connected decision cards that show "Source: PCC API" with real-looking data
-4. Build resident 360 view pulling from PCC data model
+### Phase 2: Employee Self-Service Hub
+1. Build timeclock view (NFC mock + manual clock in/out)
+2. Build schedule view (weekly calendar, shift swap, open shifts)
+3. Build pay stubs view
+4. Build benefits dashboard
+5. Build PTO request flow
+6. Build training/education tracker
+7. Build communication center (messages, announcements, channels)
+8. Build employee profile (credentials, certifications, contact info)
 
-### Phase 3: PCC Write HITL Flow
-1. Build WritePreview component showing exact API payload in plain language
-2. Build approval flow: Preview → Approve → Execute → Confirm → Audit log
-3. Build rollback capability (show "Undo" for 24h after write)
-4. Wire into decision cards: "Approve recommendation" triggers write preview
+### Phase 3: Voice Agent UI
+1. Build voice agent button/overlay (microphone icon, always accessible)
+2. Build conversation transcript view
+3. Build voice → action pipeline UI (voice input → agent interprets → shows proposed action → approve)
+4. Mock speech-to-text and text-to-speech for demo
 
-### Phase 4: Workday + M365 Integration Mock
-1. Workday: employee records, payroll, GL, benefits
-2. M365: email summaries, calendar, SharePoint documents, Teams meeting notes
-3. Cross-system decisions: e.g., PCC clinical data + Workday staffing data → staffing recommendation
+### Phase 4: NFC & Access Control
+1. Build access zone configuration view (admin-only)
+2. Build NFC tap simulation for demo (button that simulates tap)
+3. Build access log viewer with anomaly detection
+4. Build narcotics cabinet dual-auth flow mock
+
+### Phase 5: PCC Read Integration
+1. Create detailed PCC data models (resident 360, eMAR, assessments)
+2. Build resident detail view pulling from PCC mock data
+3. Build eMAR view for nurses
+4. Build MDS dashboard for DON
+
+### Phase 6: PCC Write HITL Flow
+1. Build WritePreview component (old → new value diff)
+2. Build approval → execute → confirm → audit pipeline
+3. Build rollback UI (24h undo window)
+4. Wire into care plan, progress note, and order entry workflows
 
 ---
 
 ## Technical Notes
 
-- All styling is inline `style={{}}` objects using CSS variables from tokens.css
-- No Tailwind classes — pure inline styles
-- Design system: var(--bg), var(--surface), var(--line), var(--ink-1/2/3/4), var(--accent), var(--red), var(--amber), var(--green), var(--violet)
+- All styling: inline `style={{}}` with CSS variables from tokens.css
+- No Tailwind — pure inline styles
+- Design tokens: var(--bg), var(--surface), var(--line), var(--ink-1/2/3/4), var(--accent), var(--red/amber/green/violet)
 - Fonts: var(--font-text), var(--font-display), var(--font-mono)
-- Components: StatCard, StatusPill, AgentDot, PriorityDot, LabelSmall, TrendArrow from shared.jsx
-- DomainDashboard renders page-specific content from pages.js when pageName is set
-- All pages use the same template: breadcrumb, title, description, stats, agent card, highlight, KPIs, decisions, records
-- Build with `npm run build` in `/revamp/`, copy dist to `public/revamp/`, push to main for GitHub Pages deploy
+- Shared components: StatCard, StatusPill, AgentDot, PriorityDot, LabelSmall, TrendArrow
+- DomainDashboard reads page-specific content from data/pages.js
+- Template: breadcrumb → title → description → stats → agent card → highlight → KPIs → decisions → records
+- Build: `npm run build` in `/revamp/`, copy dist to `public/revamp/`, push to main
 - NEVER build/preview locally — always push to remote, verify at GitHub Pages URL
+- Native iOS app at SNF_iOS/ and macOS app at SNF_macOS/ share SNFKit package
