@@ -93,7 +93,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           <path d="M4 6a4 4 0 018 0c0 4 2 5 2 5H2s2-1 2-5"/>
           <path d="M6 13a2 2 0 004 0"/>
         </svg>
-        {/* Unread badge */}
+        {/* Unread badge — count from NotificationPanel */}
         <span style={{
           position: 'absolute', top: 0, right: 2,
           minWidth: 14, height: 14, borderRadius: 7,
@@ -101,7 +101,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           fontSize: 9, fontWeight: 700, lineHeight: '14px',
           textAlign: 'center', padding: '0 3px',
         }}>
-          3
+          4
         </span>
       </button>
 

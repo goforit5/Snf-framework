@@ -91,7 +91,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const [page, setPage] = useState(initialPage);
   const [selDecision, setSelDecision] = useState(initialDecision);
   const [paletteOpen, setPaletteOpen] = useState(showPalette);
-  const [scope, setScope] = useState(ROLES.find((r) => r.id === role)?.scope || '');
+  const scope = ROLES.find((r) => r.id === role)?.scope || '';
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [selectedRecordDomain, setSelectedRecordDomain] = useState(null);
 
@@ -174,6 +174,15 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
     const k = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); setPaletteOpen(true); }
       if (e.key === 'Escape') setPaletteOpen(false);
+      // Decision keyboard shortcuts (only when home + decision selected + not in palette)
+      if (!paletteOpen && domain === 'home' && selDecision) {
+        const dec = queue.items.find((x) => x.id === selDecision);
+        if (dec && dec._status === 'pending') {
+          if (e.key === 'Enter') { e.preventDefault(); queue.approve(selDecision); }
+          if (e.key === 'e' || e.key === 'E') { queue.escalate(selDecision); }
+          if (e.key === 'd' || e.key === 'D') { queue.defer(selDecision); }
+        }
+      }
     };
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
@@ -185,7 +194,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
       fontFamily: 'var(--font-text)', fontSize: 13, display: 'grid',
       gridTemplateColumns: '52px 260px 1fr', overflow: 'hidden', position: 'relative',
     }}>
-      <CommandRail rail={rail} active={domain} onPick={(id) => { pushHistory(); setDomain(id); setPage(null); setSelectedRecord(null); setSelectedRecordDomain(null); setSelDecision(null); }} role={role} />
+      <CommandRail rail={rail} active={domain} onPick={(id) => { pushHistory(); setDomain(id); setPage(null); setSelectedRecord(null); setSelectedRecordDomain(null); setSelDecision(null); }} role={role} onSearch={() => setPaletteOpen(true)} />
       <MidColumn domain={currentDomain} role={role} page={page} onPick={(p) => { pushHistory(); setPage(p); setSelectedRecord(null); setSelectedRecordDomain(null); }} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} />
       <RightPane
         domain={currentDomain} page={page} decision={selDecision}
@@ -208,7 +217,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
 }
 
 /* ─── Rail ─── */
-function CommandRail({ rail, active, onPick, role }) {
+function CommandRail({ rail, active, onPick, role, onSearch }) {
   const user = ROLES.find((r) => r.id === role) || ROLES[0];
   const initial = user.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
   return (
@@ -238,7 +247,7 @@ function CommandRail({ rail, active, onPick, role }) {
         ))}
       </div>
 
-      <button title="\u2318K \u2014 Search"
+      <button onClick={onSearch} title="\u2318K \u2014 Search"
         style={{ all: 'unset', cursor: 'pointer', width: 36, height: 36, borderRadius: 9,
           display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-3)',
         }}>
@@ -394,6 +403,8 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     domainKey: domain.id,
     onRecordClick: (r) => onRecordClick(r, domain.id),
     onDecisionClick,
+    onClearPage: () => goBack(),
+    onAgentClick: (agentId) => { window.location.hash = `/agents/inspect/${agentId}`; },
   };
 
   if (page === 'Patient Safety') {
@@ -401,7 +412,7 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
       <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
         <div style={{ flex: 1, overflow: 'auto' }}>
-          <PatientSafetyPage domain={domain} />
+          <PatientSafetyPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
         </div>
       </div>
     );
@@ -417,37 +428,14 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
   );
 }
 
-function DomainHero({ domain }) {
-  return (
-    <div style={{ padding: '24px 32px', overflow: 'auto' }}>
-      <Breadcrumbs items={[domain.name]} />
-      <h1 style={{ margin: '6px 0 6px', fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>{domain.name}</h1>
-      <div style={{ fontSize: 13.5, color: 'var(--ink-3)', marginBottom: 22 }}>
-        {domain.sections.reduce((n, s) => n + s.pages.length, 0)} pages &middot; agents handled 247 items overnight
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 12 }}>
-        {domain.sections.flatMap((s) => s.pages).map((p) => (
-          <div key={p} style={{
-            background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10,
-            padding: '14px 16px', cursor: 'pointer',
-          }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{p}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.45 }}>Decision queue, live metrics, agent feed</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Breadcrumbs({ items }) {
+function Breadcrumbs({ items, onNavigate }) {
   return (
     <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center' }}>
       {items.map((s, i) => (
         <span key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           {i > 0 && <span style={{ opacity: .5 }}>&rsaquo;</span>}
-          <span style={{ cursor: 'pointer' }}>{s}</span>
+          <span onClick={onNavigate && i < items.length - 1 ? () => onNavigate(i) : undefined}
+            style={{ cursor: i < items.length - 1 && onNavigate ? 'pointer' : 'default', ...(i < items.length - 1 && onNavigate ? { borderBottom: '1px dotted var(--ink-4)' } : {}) }}>{s}</span>
         </span>
       ))}
     </div>
@@ -477,7 +465,7 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
     <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* toolbar */}
       <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
-        <Breadcrumbs items={['Home', 'Decisions', d.id]} />
+        <Breadcrumbs items={['Home', 'Decisions', d.id]} onNavigate={(i) => { if (i === 0) onNavTo('home', null); }} />
         <span style={{ flex: 1 }} />
         {deepLink && (
           <>
@@ -574,7 +562,7 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
 }
 
 /* ─── Level-2 page: Patient Safety (Margaret Chen deep-link) ─── */
-function PatientSafetyPage({ domain }) {
+function PatientSafetyPage({ domain, queue, onDecisionClick }) {
   const falls = [
     ['IR-2026-089', 'Apr 18 08:14', 'Bathroom', 'Witnessed \u00b7 no injury'],
     ['IR-2026-067', 'Mar 31 22:40', 'Bedside',  'Bruise \u00b7 no fracture'],
@@ -582,7 +570,7 @@ function PatientSafetyPage({ domain }) {
   ];
   return (
     <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
-      <Breadcrumbs items={[domain.name, 'Patient Safety', 'Margaret Chen']} />
+      <Breadcrumbs items={[domain.name, 'Patient Safety', 'Margaret Chen']} onNavigate={(i) => { if (i === 0 && onDecisionClick) onDecisionClick(null); }} />
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '8px 0 4px' }}>
         <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Margaret Chen</h1>
         <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>R-214 &middot; Heritage Oaks &middot; Rm 228A</span>
@@ -618,8 +606,18 @@ function PatientSafetyPage({ domain }) {
           Agent recommends scheduling a care conference for 2pm, notifying Jennifer Chen (POA), and physician review of 3 fall-risk meds (Lorazepam &middot; Zolpidem &middot; Oxybutynin).
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>Approve recommendation</button>
-          <button style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate</button>
+          {(() => {
+            const dec = queue?.items.find((x) => x.id === 'D-4822');
+            const isPending = dec && dec._status === 'pending';
+            if (!isPending) return <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--green)' }}>✓ {dec?._status || 'Resolved'}</span>;
+            return (
+              <>
+                <button onClick={() => queue?.approve('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>Approve recommendation</button>
+                <button onClick={() => queue?.escalate('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate</button>
+                <button onClick={() => onDecisionClick?.('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
+              </>
+            );
+          })()}
         </div>
       </div>
 

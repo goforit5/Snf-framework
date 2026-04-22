@@ -46,7 +46,7 @@ const HIGHLIGHT_STYLES = {
 
 /* ─── Main component ─── */
 
-export default function DomainDashboard({ domainKey, pageName, onRecordClick, onDecisionClick }) {
+export default function DomainDashboard({ domainKey, pageName, onRecordClick, onDecisionClick, onClearPage, onAgentClick }) {
   const domain = getDomain(domainKey);
   const pageData = useMemo(() => pageName ? getPageData(pageName) : null, [pageName]);
 
@@ -93,7 +93,7 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
 
         {/* ─── 1. Breadcrumb ─── */}
         <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 6 }}>
-          <span style={{ cursor: 'pointer' }}>{domain.name}</span>
+          <span onClick={onClearPage} style={{ cursor: 'pointer', borderBottom: '1px dotted var(--ink-4)' }}>{domain.name}</span>
           <span style={{ opacity: .5 }}>&rsaquo;</span>
           <span>{pageName}</span>
         </div>
@@ -121,11 +121,15 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
         {primaryAgent && (
           <>
             <LabelSmall>Primary agent</LabelSmall>
-            <div style={{
+            <div onClick={() => onAgentClick?.(primaryAgent.id)} style={{
               background: 'var(--surface)', border: '1px solid var(--line)',
               borderRadius: 10, padding: '14px 16px', marginBottom: 22,
               display: 'flex', alignItems: 'center', gap: 12,
-            }}>
+              cursor: onAgentClick ? 'pointer' : 'default', transition: 'border-color .15s',
+            }}
+              onMouseEnter={onAgentClick ? (e) => { e.currentTarget.style.borderColor = 'var(--accent)'; } : undefined}
+              onMouseLeave={onAgentClick ? (e) => { e.currentTarget.style.borderColor = 'var(--line)'; } : undefined}
+            >
               <AgentDot agent={primaryAgent} size={32} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-1)' }}>{primaryAgent.name}</div>
@@ -266,7 +270,11 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
           {agents.map((a) => (
-            <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div key={a.id} onClick={() => onAgentClick?.(a.id)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: onAgentClick ? 'pointer' : 'default', padding: '2px 6px', borderRadius: 6, transition: 'background .12s' }}
+              onMouseEnter={onAgentClick ? (e) => { e.currentTarget.style.background = 'var(--accent-weak)'; } : undefined}
+              onMouseLeave={onAgentClick ? (e) => { e.currentTarget.style.background = 'transparent'; } : undefined}
+            >
               <AgentDot agent={a} size={22} />
               <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink-1)' }}>{a.name}</span>
             </div>
