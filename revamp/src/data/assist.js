@@ -302,26 +302,145 @@ export const ASSIST_ITEMS = [
       { actor: 'agent', name: 'Assist Agent', t: '2026-04-22T06:00:00Z', body: 'PDF export is now live on all domain dashboards. Look for the download icon on any stat card or chart — it generates a print-ready PDF formatted for letter-size paper.\n\nThis was one of your most requested features (thanks Annika!). Works in both light and dark mode, and includes the current date and your role/scope in the header.', type: 'ack' },
     ],
   },
+
+  // ── Employee Services (user → HR/Payroll agents) ────────────────────────────
+
+  {
+    id: 'AS-017', direction: 'inbound',
+    message: 'I need to request PTO for May 5-9. How do I submit that?',
+    submittedAt: '2026-04-22T09:10:00Z',
+    submittedBy: { name: 'Priya Shah, RN', role: 'DON', facility: 'Heritage Oaks' },
+    status: 'auto-resolved',
+    category: 'PTO Request', priority: 'low', triageConfidence: 0.96,
+    agentSummary: 'PTO request — 5 days, May 5-9. Balance verified, manager coverage confirmed.',
+    duplicateOf: null,
+    resolution: 'PTO submitted for May 5-9 (5 days). Current balance: 14 days remaining. DON coverage assigned to charge nurse Maria Santos. Added to HR personnel file.',
+    resolvedAt: '2026-04-22T09:10:42Z',
+    sourceView: null, sourceDomain: 'workforce',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'DON', t: '2026-04-22T09:10:00Z', body: 'I need to request PTO for May 5-9. How do I submit that?' },
+      { actor: 'agent', name: 'HR Agent', t: '2026-04-22T09:10:42Z', body: 'Done — I\'ve submitted your PTO request for May 5-9 (5 business days). Your current PTO balance is 14 days, so you\'ll have 9 remaining after this. I\'ve confirmed DON coverage with charge nurse Maria Santos for those dates. Your administrator Danielle Ortiz has been notified. This has been added to your HR personnel file. Anything else?', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-018', direction: 'inbound',
+    message: 'My last paycheck was short — I worked 4 hours of overtime on April 12 that didn\'t show up.',
+    submittedAt: '2026-04-21T11:45:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'in-progress',
+    category: 'Payroll', priority: 'high', triageConfidence: 0.94,
+    agentSummary: 'Payroll discrepancy — 4 hours OT missing from April 12. Verified against timecard, routing to payroll correction.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: 'workforce',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-21T11:45:00Z', body: 'My last paycheck was short — I worked 4 hours of overtime on April 12 that didn\'t show up.' },
+      { actor: 'agent', name: 'Payroll Agent', t: '2026-04-21T11:45:38Z', body: 'I\'ve pulled your timecard for April 12 from Workday. You clocked in at 6:58 AM and out at 7:12 PM — that\'s 12.2 hours, confirming 4.2 hours of overtime. Your paycheck only shows 8 hours for that date. I\'m routing a correction to payroll — the $187.60 adjustment (4.2 hrs × $44.67 OT rate) will appear on your next check. Logged in your HR file for audit trail.', type: 'triage' },
+      { actor: 'user', role: 'Admin', t: '2026-04-21T11:47:15Z', body: 'Thank you. Will it be on the April 25 check or the next one?' },
+      { actor: 'agent', name: 'Payroll Agent', t: '2026-04-21T11:47:45Z', body: 'The April 25 payroll has already been submitted to ADP, so the correction will be on the May 9 check. I\'ve flagged it as priority and will confirm once processed.', type: 'status' },
+    ],
+  },
+
+  {
+    id: 'AS-019', direction: 'inbound',
+    message: 'Where can I find the employee handbook? I need to look up the bereavement leave policy.',
+    submittedAt: '2026-04-20T08:30:00Z',
+    submittedBy: { name: 'Annika Liu', role: 'Accounting', facility: 'Portfolio' },
+    status: 'auto-resolved',
+    category: 'Handbook', priority: 'low', triageConfidence: 0.98,
+    agentSummary: 'Employee handbook lookup — bereavement leave policy.',
+    duplicateOf: null,
+    resolution: 'Bereavement policy provided with direct handbook reference. 3-5 days paid leave depending on relation.',
+    resolvedAt: '2026-04-20T08:30:28Z',
+    sourceView: null, sourceDomain: 'workforce',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Accounting', t: '2026-04-20T08:30:00Z', body: 'Where can I find the employee handbook? I need to look up the bereavement leave policy.' },
+      { actor: 'agent', name: 'HR Agent', t: '2026-04-20T08:30:28Z', body: 'Here\'s the bereavement leave policy (Employee Handbook §7.4):\n\n• Immediate family (spouse, child, parent, sibling): 5 paid days\n• Extended family (grandparent, in-law, aunt/uncle): 3 paid days\n• Additional unpaid leave available with manager approval\n• Must notify your supervisor within 24 hours\n• Documentation may be requested for extended leave\n\nThe full handbook is always available in the Settings > Documents section. Is there anything else you need regarding leave policies?', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-020', direction: 'inbound',
+    message: 'I need to update my direct deposit — switching banks. What\'s the process?',
+    submittedAt: '2026-04-19T14:20:00Z',
+    submittedBy: { name: 'Priya Shah, RN', role: 'DON', facility: 'Heritage Oaks' },
+    status: 'auto-resolved',
+    category: 'Payroll', priority: 'low', triageConfidence: 0.95,
+    agentSummary: 'Direct deposit change request — routing/account number update.',
+    duplicateOf: null,
+    resolution: 'Secure direct deposit form initiated in Workday. Takes 1-2 pay cycles to update.',
+    resolvedAt: '2026-04-19T14:20:35Z',
+    sourceView: null, sourceDomain: 'workforce',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'DON', t: '2026-04-19T14:20:00Z', body: 'I need to update my direct deposit — switching banks. What\'s the process?' },
+      { actor: 'agent', name: 'Payroll Agent', t: '2026-04-19T14:20:35Z', body: 'I\'ve initiated a secure direct deposit change form in Workday for you. You\'ll receive a verification email within the next 5 minutes with a secure link to enter your new routing and account numbers. Changes take 1-2 pay cycles to take effect, and you\'ll get a paper check for any transition period. This change will be documented in your HR personnel file. Need help with anything else?', type: 'resolution' },
+    ],
+  },
+
+  // ── Corporate Communications (agent → all employees) ────────────────────────
+
+  {
+    id: 'AS-021', direction: 'outbound',
+    message: 'REQUIRED: Updated HIPAA training due by May 15. All clinical staff must complete the 2026 annual HIPAA privacy and security refresher.',
+    submittedAt: '2026-04-22T06:00:00Z',
+    submittedBy: { name: 'Compliance Agent', role: 'Agent', facility: 'Corporate' },
+    status: 'unread',
+    category: null, priority: 'high', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: 'legal',
+    outboundType: 'task', targetRole: 'all',
+    actionRequired: true, actionLabel: 'Acknowledge & Start Training',
+    mediaUrl: null, expiresAt: '2026-05-15T23:59:00Z',
+    thread: [
+      { actor: 'agent', name: 'Compliance Agent', t: '2026-04-22T06:00:00Z', body: 'Annual HIPAA training is due by May 15, 2026. This is a mandatory requirement for all clinical and administrative staff.\n\nThe 45-minute course covers:\n• Updated PHI handling procedures\n• Breach notification requirements (2026 rule changes)\n• Social engineering awareness\n• Mobile device security\n\nClick "Acknowledge & Start Training" to confirm receipt and access the training module. Your completion will be documented in your HR personnel file and reported to the Compliance team.\n\nDeadline: May 15, 2026. Late completions trigger automatic escalation to your facility administrator.', type: 'task' },
+    ],
+  },
+
+  {
+    id: 'AS-022', direction: 'outbound',
+    message: 'Open enrollment for 2026 benefits begins May 1. Review your current elections and make changes by May 31.',
+    submittedAt: '2026-04-21T07:00:00Z',
+    submittedBy: { name: 'Benefits Agent', role: 'Agent', facility: 'Corporate' },
+    status: 'unread',
+    category: null, priority: 'medium', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: 'workforce',
+    outboundType: 'announcement', targetRole: 'all',
+    actionRequired: true, actionLabel: 'Review My Benefits',
+    mediaUrl: null, expiresAt: '2026-05-31T23:59:00Z',
+    thread: [
+      { actor: 'agent', name: 'Benefits Agent', t: '2026-04-21T07:00:00Z', body: 'Open enrollment for the 2026-2027 benefits year begins May 1.\n\nKey changes this year:\n• New PPO option with lower deductible ($1,500 individual)\n• HSA employer contribution increased to $500/year\n• Vision plan now covers contact lens fittings\n• 401(k) match increased to 5%\n\nYour current elections will auto-renew if no changes are made. Click "Review My Benefits" to see your current plan, compare options, and make changes. All elections documented in your personnel file.\n\nDeadline: May 31, 2026.', type: 'announcement' },
+    ],
+  },
 ];
 
 // Compose presets — quick-action chips above the textarea.
-// Role-aware: some presets only appear for certain roles.
+// Role-aware: grouped by function (platform, employee, operations).
 export const ASSIST_PRESETS = [
+  // Operations
   { label: 'What happened overnight?',        fill: 'What happened overnight? Summarize any alerts, agent actions, and decisions that need my attention.',               roles: ['CEO', 'Admin', 'DON'] },
+  { label: 'Prep for standup',                 fill: 'Help me prep for standup — top 3 things I need to know for my morning meeting.',                                     roles: ['Admin', 'DON', 'CEO'] },
+  { label: 'Show my pending decisions',         fill: 'Show me my pending decisions — how many are waiting, what\'s critical, and which ones can I batch approve?',          roles: null },
   { label: 'Get me updated on census',         fill: 'Get me updated on census — current occupancy, any admits/discharges today, and referrals in the pipeline.',          roles: ['Admin', 'DON', 'CEO'] },
+  // Employee services
+  { label: 'Request PTO',                      fill: '',                                                                                                                   roles: null },
+  { label: 'Payroll question',                 fill: '',                                                                                                                   roles: null },
+  { label: 'Employee handbook',                fill: 'I need help finding something in the employee handbook.',                                                            roles: null },
+  { label: 'Benefits question',                fill: '',                                                                                                                   roles: null },
+  { label: 'Leave request',                    fill: '',                                                                                                                   roles: null },
+  // Platform support
   { label: 'Report a bug',                     fill: '',                                                                                                                   roles: null },
   { label: 'Request a feature',                fill: '',                                                                                                                   roles: null },
-  { label: 'Start month-end close',            fill: 'Start working on month-end close — show me what\'s done, what\'s outstanding, and what I need to sign off on.',      roles: ['Accounting', 'CEO'] },
-  { label: 'Show my pending decisions',         fill: 'Show me my pending decisions — how many are waiting, what\'s critical, and which ones can I batch approve?',          roles: null },
-  { label: 'Prep for standup',                 fill: 'Help me prep for standup — top 3 things I need to know for my morning meeting.',                                     roles: ['Admin', 'DON', 'CEO'] },
   { label: 'Explain a decision',               fill: 'I want to understand why an agent made a specific recommendation. Help me review the reasoning.',                    roles: null },
-  { label: 'Staffing gaps this week',          fill: 'Show me staffing gaps for this week — open shifts, call-off trends, and agency spend.',                              roles: ['Admin', 'DON'] },
-  { label: 'Submit to dev team',               fill: '',                                                                                                                   roles: null },
 ];
 
 export const ASSIST_SUMMARY = {
-  total: 16,
-  inbound: { total: 12, agentResolved: 3, humanResolved: 2, awaitingReview: 2, inProgress: 3, newSubmissions: 2 },
-  outbound: { total: 4, unread: 2, read: 1, acted: 1 },
+  total: 22,
+  inbound: { total: 16, agentResolved: 6, humanResolved: 2, awaitingReview: 2, inProgress: 4, newSubmissions: 2 },
+  outbound: { total: 6, unread: 2, read: 2, acted: 2 },
   avgTriageSeconds: 34,
 };

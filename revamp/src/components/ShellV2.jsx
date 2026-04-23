@@ -3,15 +3,19 @@
 // Adapted from wireframe shell2.jsx — window globals replaced with ES module imports.
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { DECISIONS, ROLES } from '../data';
+import { DECISIONS, ROLES, ASSIST_ITEMS } from '../data';
 import { DOMAINS as DOMAIN_DATA } from '../data/domains';
 import DomainDashboard from './DomainDashboard';
 import RecordInspector from './RecordInspector';
+import AssistMid from './AssistMid';
+import { AssistItemDetail, AssistEmpty } from './AssistDetail';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
+import { useAssistQueue } from '../hooks/useAssistQueue';
 import { LabelSmall, PriorityDot, priorityColor } from './shared';
 
 const DOMAINS = [
   { id: 'home',       name: 'Home',         icon: 'home',   sections: null },
+  { id: 'assist',     name: 'Assist',       icon: 'assist', sections: null },
   { id: 'clinical',   name: 'Clinical',     icon: 'heart',  sections: [
     { label: 'Command',       pages: ['Clinical Command', 'Survey Readiness', 'Clinical Compliance', 'Audit Library'] },
     { label: 'Care',          pages: ['Infection Control', 'Pharmacy Management', 'Therapy & Rehab', 'Dietary & Nutrition', 'Social Services'] },
@@ -51,11 +55,11 @@ const DOMAINS = [
 
 // role-driven rail order (nothing hidden — just ordering)
 const RAIL_ORDER = {
-  CEO:        ['home','strategic','finance','workforce','quality','clinical','operations','admissions','legal'],
-  Admin:      ['home','workforce','clinical','operations','admissions','quality','finance','legal','strategic'],
-  DON:        ['home','clinical','quality','workforce','operations','admissions','legal','finance','strategic'],
-  Billing:    ['home','finance','admissions','legal','workforce','operations','clinical','quality','strategic'],
-  Accounting: ['home','finance','workforce','operations','admissions','clinical','quality','legal','strategic'],
+  CEO:        ['home','assist','strategic','finance','workforce','quality','clinical','operations','admissions','legal'],
+  Admin:      ['home','assist','workforce','clinical','operations','admissions','quality','finance','legal','strategic'],
+  DON:        ['home','assist','clinical','quality','workforce','operations','admissions','legal','finance','strategic'],
+  Billing:    ['home','assist','finance','admissions','legal','workforce','operations','clinical','quality','strategic'],
+  Accounting: ['home','assist','finance','workforce','operations','admissions','clinical','quality','legal','strategic'],
 };
 
 /* ─── Deep-link map: decision domain → best page ─── */
@@ -81,6 +85,7 @@ function RailIcon({ name, size = 16 }) {
     tools:  <><path d="M3 13l4-4M6 2l3 3-3 3-3-3zM13 9l-4 4-2-2 4-4z"/></>,
     gavel:  <><path d="M4 11l5-5M7 4l4 4M2 14h7"/></>,
     chart:  <><path d="M2 13h12M4 11V7M7 11V4M10 11V8M13 11V6"/></>,
+    assist: <><path d="M3 4h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2.5V11H3a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M5.5 7h5" strokeLinecap="round"/></>,
   }[name] || <circle cx="8" cy="8" r="3"/>;
   return <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{p}</svg>;
 }
@@ -99,8 +104,8 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const [history, setHistory] = useState([]);
 
   const pushHistory = useCallback(() => {
-    setHistory((prev) => [...prev.slice(-19), { domain, page, selDecision, selectedRecord, selectedRecordDomain }]);
-  }, [domain, page, selDecision, selectedRecord, selectedRecordDomain]);
+    setHistory((prev) => [...prev.slice(-19), { domain, page, selDecision, selectedRecord, selectedRecordDomain, assistSelected: assistQueue.selected }]);
+  }, [domain, page, selDecision, selectedRecord, selectedRecordDomain, assistQueue.selected]);
 
   const canGoBack = history.length > 0;
 
@@ -113,12 +118,14 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
       setSelDecision(last.selDecision);
       setSelectedRecord(last.selectedRecord);
       setSelectedRecordDomain(last.selectedRecordDomain);
+      if (last.assistSelected !== undefined) assistQueue.setSelected(last.assistSelected);
       return prev.slice(0, -1);
     });
-  }, []);
+  }, [assistQueue]);
 
   // Ticket 1: decision queue
   const queue = useDecisionQueue(DECISIONS);
+  const assistQueue = useAssistQueue(ASSIST_ITEMS);
 
   const order = RAIL_ORDER[role] || RAIL_ORDER.CEO;
   const rail = order.map((id) => DOMAINS.find((d) => d.id === id)).filter(Boolean);
@@ -194,8 +201,8 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
       fontFamily: 'var(--font-text)', fontSize: 13, display: 'grid',
       gridTemplateColumns: '52px 260px 1fr', overflow: 'hidden', position: 'relative',
     }}>
-      <CommandRail rail={rail} active={domain} onPick={(id) => { pushHistory(); setDomain(id); setPage(null); setSelectedRecord(null); setSelectedRecordDomain(null); setSelDecision(null); }} role={role} onSearch={() => setPaletteOpen(true)} />
-      <MidColumn domain={currentDomain} role={role} page={page} onPick={(p) => { pushHistory(); setPage(p); setSelectedRecord(null); setSelectedRecordDomain(null); }} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} />
+      <CommandRail rail={rail} active={domain} onPick={(id) => { pushHistory(); setDomain(id); setPage(null); setSelectedRecord(null); setSelectedRecordDomain(null); setSelDecision(null); assistQueue.setSelected(null); }} role={role} onSearch={() => setPaletteOpen(true)} />
+      <MidColumn domain={currentDomain} role={role} page={page} onPick={(p) => { pushHistory(); setPage(p); setSelectedRecord(null); setSelectedRecordDomain(null); }} selDecision={selDecision} onSelDecision={setSelDecision} scope={scope} queue={queue} assistQueue={assistQueue} />
       <RightPane
         domain={currentDomain} page={page} decision={selDecision}
         onNavTo={handleNavTo} onNavToRecord={handleNavToRecord} queue={queue}
@@ -203,6 +210,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
         onRecordClick={handleRecordClick} onCloseRecord={handleCloseRecord}
         onDecisionClick={handleDecisionClick}
         canGoBack={canGoBack} goBack={goBack}
+        assistQueue={assistQueue} role={role}
       />
       {paletteOpen && (
         <Palette
@@ -258,9 +266,12 @@ function CommandRail({ rail, active, onPick, role, onSearch }) {
 }
 
 /* ─── Middle column: worklist OR domain index ─── */
-function MidColumn({ domain, role, page, onPick, selDecision, onSelDecision, scope, queue }) {
+function MidColumn({ domain, role, page, onPick, selDecision, onSelDecision, scope, queue, assistQueue }) {
   if (domain.id === 'home') {
     return <WorklistMid role={role} selDecision={selDecision} onSel={onSelDecision} queue={queue} />;
+  }
+  if (domain.id === 'assist') {
+    return <AssistMid assistQueue={assistQueue} />;
   }
   return <DomainIndex domain={domain} page={page} onPick={onPick} scope={scope} />;
 }
@@ -373,7 +384,7 @@ function BackBar({ canGoBack, goBack, label }) {
 }
 
 /* ─── Right pane: decision detail OR page content OR record inspector ─── */
-function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack }) {
+function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack, assistQueue, role }) {
   // Record inspector takes priority
   if (selectedRecord) {
     return (
@@ -382,6 +393,19 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
         <div style={{ flex: 1, overflow: 'auto' }}>
           <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />
         </div>
+      </div>
+    );
+  }
+
+  if (domain.id === 'assist') {
+    const item = assistQueue.filtered.find((x) => x.id === assistQueue.selected);
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} />
+        {item
+          ? <AssistItemDetail item={item} assistQueue={assistQueue} role={role} />
+          : <AssistEmpty assistQueue={assistQueue} role={role} />
+        }
       </div>
     );
   }
