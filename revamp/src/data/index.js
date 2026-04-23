@@ -5,6 +5,7 @@ export { ROLES } from './roles';
 export { DOMAINS, getDomain } from './domains';
 export { FACILITIES } from './facilities';
 export { HANDLED } from './handled';
+export { ASSIST_ITEMS, ASSIST_SUMMARY, ASSIST_PRESETS } from './assist';
 
 // Legacy data kept for backward compat
 export const WHAT_CHANGED = [

@@ -1,0 +1,327 @@
+// Assist — bidirectional agentic communication channel.
+// Inbound: user feedback, bugs, questions. Outbound: agent tasks, education, tips.
+
+export const ASSIST_ITEMS = [
+  // ── Inbound (user → platform) ─────────────────────────────────────────────
+
+  {
+    id: 'AS-001', direction: 'inbound',
+    message: 'The census chart on Clinical Command takes about 8 seconds to render when I switch between facilities. Makes it hard to compare during standup.',
+    submittedAt: '2026-04-21T08:14:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'in-progress',
+    category: 'Bug', priority: 'high', triageConfidence: 0.91,
+    agentSummary: 'Performance regression in census chart re-render on facility switch.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Clinical Command', sourceDomain: 'clinical',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-21T08:14:00Z', body: 'The census chart on Clinical Command takes about 8 seconds to render when I switch between facilities. Makes it hard to compare during standup.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-21T08:14:34Z', body: 'Got it — performance issue with the census chart. I\'m seeing the same pattern in our telemetry: the recharts re-mount is triggered on every facility switch instead of updating in place. Routing to engineering as high priority. Can you tell me which browser you\'re using and roughly how many facilities you switch between in a session?', type: 'triage' },
+      { actor: 'user', role: 'Admin', t: '2026-04-21T08:16:12Z', body: 'Chrome, latest version. Usually switching between Heritage Oaks and Pacific Gardens — just two facilities during our 8am standup.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-21T08:16:45Z', body: 'Confirmed — two-facility switch with Chrome. The fix is straightforward (memoize the chart data). Engineering has this queued. You\'ll see the improvement in the next deployment.', type: 'status' },
+    ],
+  },
+
+  {
+    id: 'AS-002', direction: 'inbound',
+    message: 'Can we get PDF export on the domain dashboards? I need to print the finance stat cards for our board packet.',
+    submittedAt: '2026-04-20T14:32:00Z',
+    submittedBy: { name: 'Annika Liu', role: 'Accounting', facility: 'Portfolio' },
+    status: 'in-progress',
+    category: 'Feature Request', priority: 'medium', triageConfidence: 0.88,
+    agentSummary: 'PDF export requested for domain dashboard stat cards — board reporting use case.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Billing & Claims', sourceDomain: 'finance',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Accounting', t: '2026-04-20T14:32:00Z', body: 'Can we get PDF export on the domain dashboards? I need to print the finance stat cards for our board packet.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T14:32:28Z', body: 'Great request. PDF export is on the roadmap — I\'ve bumped it to the next sprint based on your board reporting need. In the meantime, you can use Cmd+P → "Save as PDF" in your browser, which captures the current dashboard view with proper formatting.', type: 'triage' },
+      { actor: 'user', role: 'Accounting', t: '2026-04-20T14:34:15Z', body: 'The browser print works but cuts off the stat cards on the right side. Any way to fix that?' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T14:34:48Z', body: 'Try setting the print orientation to landscape in the print dialog — that should capture all 4 stat cards. I\'m adding a print-optimized CSS media query to the dashboard as a quick fix, which will ship before the full PDF export feature.', type: 'workaround' },
+    ],
+  },
+
+  {
+    id: 'AS-003', direction: 'inbound',
+    message: 'The overtime calculation on Payroll Command is showing wrong numbers for the night CNAs. It\'s counting their shift differential as overtime hours.',
+    submittedAt: '2026-04-19T09:22:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'resolved',
+    category: 'Bug', priority: 'high', triageConfidence: 0.94,
+    agentSummary: 'Overtime calc incorrectly includes shift differential as OT hours.',
+    duplicateOf: null,
+    resolution: 'Fixed — shift differential is now excluded from overtime hour calculation. Deployed in v2.3.8.',
+    resolvedAt: '2026-04-19T16:45:00Z',
+    sourceView: 'Workforce Command', sourceDomain: 'workforce',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-19T09:22:00Z', body: 'The overtime calculation on Payroll Command is showing wrong numbers for the night CNAs. It\'s counting their shift differential as overtime hours.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T09:22:31Z', body: 'Critical payroll bug — I can reproduce this. The OT calculation is incorrectly summing shift differential pay into the overtime hours column. This affects all employees with differential pay. Flagging as high priority. Which pay period are you looking at?', type: 'triage' },
+      { actor: 'user', role: 'Admin', t: '2026-04-19T09:24:08Z', body: 'Current pay period, April 7-20. The night CNA team at Heritage Oaks — about 12 people.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T09:24:40Z', body: 'Confirmed — I see the issue across all 12 night CNAs. The differential ($6/hr) is being treated as hours worked instead of a pay modifier. Fix is in progress. I\'ll notify you the moment it deploys.', type: 'status' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T16:45:00Z', body: 'Fix deployed in v2.3.8. Shift differential is now correctly excluded from overtime hour calculations. The Payroll Command dashboard should show accurate OT numbers for all staff with differentials. Please verify when you get a chance.', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-004', direction: 'inbound',
+    message: 'Where can I find the payroll report? I used to see it on the main dashboard.',
+    submittedAt: '2026-04-21T07:45:00Z',
+    submittedBy: { name: 'Marcus Hale', role: 'Billing', facility: 'West region' },
+    status: 'auto-resolved',
+    category: 'Question', priority: 'low', triageConfidence: 0.96,
+    agentSummary: 'Navigation question — payroll report location after redesign.',
+    duplicateOf: null,
+    resolution: 'Directed user to Workforce domain → Workforce Command page where payroll metrics are displayed.',
+    resolvedAt: '2026-04-21T07:45:42Z',
+    sourceView: 'Home', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Billing', t: '2026-04-21T07:45:00Z', body: 'Where can I find the payroll report? I used to see it on the main dashboard.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-21T07:45:42Z', body: 'The payroll report moved to the Workforce domain in the new layout. Click the people icon in the left rail (or press Cmd+K and type "payroll"), then select Workforce Command. Your payroll metrics, OT analysis, and differential breakdowns are all there. Let me know if you need help finding anything else.', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-005', direction: 'inbound',
+    message: 'How do I switch to the DON view? I\'m logged in as Admin but want to see what Priya sees.',
+    submittedAt: '2026-04-20T11:10:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'auto-resolved',
+    category: 'Question', priority: 'low', triageConfidence: 0.98,
+    agentSummary: 'Role switching question — how to change role view in ControlBar.',
+    duplicateOf: null,
+    resolution: 'Explained role chip switching in the ControlBar.',
+    resolvedAt: '2026-04-20T11:10:38Z',
+    sourceView: 'Home', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-20T11:10:00Z', body: 'How do I switch to the DON view? I\'m logged in as Admin but want to see what Priya sees.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T11:10:38Z', body: 'Look at the top bar — you\'ll see role chips: CEO, Admin, DON, Billing, Accounting. Click "DON" and the entire platform reshuffles to Priya\'s view — her domains move to the top of the rail, her decisions appear first, and the scope narrows to Heritage Oaks clinical. Click back to "Admin" anytime to return.', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-006', direction: 'inbound',
+    message: 'The decision queue would be so much faster if I could use keyboard shortcuts. Like Enter to approve, E to escalate, arrow keys to move between cards.',
+    submittedAt: '2026-04-20T09:55:00Z',
+    submittedBy: { name: 'Barry Port', role: 'CEO', facility: 'Portfolio' },
+    status: 'triaged',
+    category: 'Improvement', priority: 'medium', triageConfidence: 0.89,
+    agentSummary: 'CEO requests keyboard shortcuts for decision queue — Enter/E/arrows for faster triage.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Home', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'CEO', t: '2026-04-20T09:55:00Z', body: 'The decision queue would be so much faster if I could use keyboard shortcuts. Like Enter to approve, E to escalate, arrow keys to move between cards.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T09:55:32Z', body: 'Great suggestion — and actually, Enter to approve, E to escalate, and D to defer already work when a decision is selected. Arrow keys for moving between decisions aren\'t wired yet. I\'m adding that to the next sprint. Are there other shortcuts you\'d find useful?', type: 'triage' },
+      { actor: 'user', role: 'CEO', t: '2026-04-20T09:57:14Z', body: 'Oh, I didn\'t know Enter/E/D already worked! That helps. How about Tab to expand the evidence panel? And maybe a shortcut to jump to the next critical decision.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T09:57:48Z', body: 'Noted — Tab for evidence expansion and a "jump to next critical" shortcut. Both are clean UX improvements. I\'ll include them with the arrow key navigation. Would you like me to add a keyboard shortcut overlay (like Cmd+/ to show all shortcuts)?', type: 'clarify' },
+    ],
+  },
+
+  {
+    id: 'AS-007', direction: 'inbound',
+    message: 'Survey Readiness page crashes when I select Heritage Oaks. White screen, have to refresh. Started happening today.',
+    submittedAt: '2026-04-18T13:40:00Z',
+    submittedBy: { name: 'Priya Shah, RN', role: 'DON', facility: 'Heritage Oaks' },
+    status: 'resolved',
+    category: 'Bug', priority: 'critical', triageConfidence: 0.97,
+    agentSummary: 'Critical crash — Survey Readiness white-screens on Heritage Oaks facility selection.',
+    duplicateOf: null,
+    resolution: 'Root cause: null survey date field caused unhandled exception. Fixed and deployed in 2h.',
+    resolvedAt: '2026-04-18T15:52:00Z',
+    sourceView: 'Survey Readiness', sourceDomain: 'quality',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'DON', t: '2026-04-18T13:40:00Z', body: 'Survey Readiness page crashes when I select Heritage Oaks. White screen, have to refresh. Started happening today.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-18T13:40:22Z', body: 'Critical bug — I can reproduce the crash. The error is in the survey date formatter: Heritage Oaks has a null next-survey-date after the March survey was completed, and the formatter doesn\'t handle null. Fast-tracking a fix right now.', type: 'triage' },
+      { actor: 'user', role: 'DON', t: '2026-04-18T13:42:05Z', body: 'Thanks. I have a surveyor prep meeting at 3pm and need this page. Is there a workaround?' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-18T13:42:30Z', body: 'Fix will deploy before your 3pm meeting. In the meantime, other facilities load fine — only Heritage Oaks is affected because it\'s the only one with a completed survey and no next date scheduled yet.', type: 'workaround' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-18T15:52:00Z', body: 'Fixed and deployed. The Survey Readiness page now handles null survey dates gracefully — shows "Not yet scheduled" instead of crashing. Heritage Oaks loads correctly. Verified across all 15 demo facilities.', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-008', direction: 'inbound',
+    message: 'Any plans for a mobile-friendly version of Morning Standup? I do my 7am review on my phone in the car.',
+    submittedAt: '2026-04-19T15:20:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'triaged',
+    category: 'Feature Request', priority: 'medium', triageConfidence: 0.85,
+    agentSummary: 'Mobile-friendly Morning Standup requested for on-the-go review.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Briefing', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-19T15:20:00Z', body: 'Any plans for a mobile-friendly version of Morning Standup? I do my 7am review on my phone in the car.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T15:20:35Z', body: 'Mobile-responsive views are on the roadmap. The current 3-column layout doesn\'t work below 768px. For now, the Briefing view (which has the standup data) is the most mobile-friendly — it\'s a single scrollable column. I\'ll tag this as a mobile priority for the next design sprint.', type: 'triage' },
+    ],
+  },
+
+  {
+    id: 'AS-009', direction: 'inbound',
+    message: 'Can I customize which stat cards show on my Command Center? I\'d love to pin the ones I care about most.',
+    submittedAt: '2026-04-20T16:05:00Z',
+    submittedBy: { name: 'Barry Port', role: 'CEO', facility: 'Portfolio' },
+    status: 'auto-resolved',
+    category: 'Question', priority: 'low', triageConfidence: 0.92,
+    agentSummary: 'Widget customization inquiry — stat card pinning not yet available.',
+    duplicateOf: null,
+    resolution: 'Explained that stat cards are role-adaptive (CEO sees portfolio metrics) but user customization is planned.',
+    resolvedAt: '2026-04-20T16:05:44Z',
+    sourceView: 'Home', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'CEO', t: '2026-04-20T16:05:00Z', body: 'Can I customize which stat cards show on my Command Center? I\'d love to pin the ones I care about most.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-20T16:05:44Z', body: 'Not yet — but the stat cards are already role-adaptive. As CEO, you see portfolio-level metrics (revenue, occupancy, staffing, quality scores). Customizable card pinning is planned for v2.5. For now, the Cmd+K palette is the fastest way to jump to any specific metric or domain.', type: 'resolution' },
+    ],
+  },
+
+  {
+    id: 'AS-010', direction: 'inbound',
+    message: 'The AP aging chart colors are really hard to distinguish in dark mode. The 60-day and 90-day buckets look almost the same shade of blue.',
+    submittedAt: '2026-04-22T06:30:00Z',
+    submittedBy: { name: 'Annika Liu', role: 'Accounting', facility: 'Portfolio' },
+    status: 'submitted',
+    category: 'Bug', priority: 'medium', triageConfidence: null,
+    agentSummary: null,
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Billing & Claims', sourceDomain: 'finance',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Accounting', t: '2026-04-22T06:30:00Z', body: 'The AP aging chart colors are really hard to distinguish in dark mode. The 60-day and 90-day buckets look almost the same shade of blue.' },
+    ],
+  },
+
+  {
+    id: 'AS-011', direction: 'inbound',
+    message: 'The decision queue needs a batch approve option for low-risk items. I have 8 supply reorders every morning that are all auto-approved anyway — let me check a box and approve them all at once.',
+    submittedAt: '2026-04-19T08:05:00Z',
+    submittedBy: { name: 'Danielle Ortiz', role: 'Admin', facility: 'Heritage Oaks' },
+    status: 'in-progress',
+    category: 'Improvement', priority: 'high', triageConfidence: 0.93,
+    agentSummary: 'Batch approve for low-risk decisions — reduces daily decision queue time from 12 min to 3 min.',
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Home', sourceDomain: null,
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'Admin', t: '2026-04-19T08:05:00Z', body: 'The decision queue needs a batch approve option for low-risk items. I have 8 supply reorders every morning that are all auto-approved anyway — let me check a box and approve them all at once.' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T08:05:38Z', body: 'Excellent workflow improvement. I\'m proposing: a "Select all low-risk" checkbox at the top of the queue that pre-selects all decisions with confidence ≥95% and governance level 1-2. Then a single "Approve Selected" button. This would cut your morning queue from ~12 min to ~3 min based on your typical volume. Does that match what you\'re imagining?', type: 'triage' },
+      { actor: 'user', role: 'Admin', t: '2026-04-19T08:07:22Z', body: 'Exactly. And maybe show a summary count before I hit approve — like "Approving 8 items: 6 supply reorders, 2 credential renewals"' },
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-19T08:07:55Z', body: 'Perfect — batch approve with a summary breakdown by category before confirmation. Moving this to in-progress. Engineering is picking it up this sprint.', type: 'status' },
+    ],
+  },
+
+  {
+    id: 'AS-012', direction: 'inbound',
+    message: 'When will PCC integration be live? I want the real census data instead of demo numbers.',
+    submittedAt: '2026-04-22T07:15:00Z',
+    submittedBy: { name: 'Priya Shah, RN', role: 'DON', facility: 'Heritage Oaks' },
+    status: 'submitted',
+    category: 'Feature Request', priority: 'low', triageConfidence: null,
+    agentSummary: null,
+    duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: 'Clinical Command', sourceDomain: 'clinical',
+    outboundType: null, targetRole: null, actionRequired: false, actionLabel: null, mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'user', role: 'DON', t: '2026-04-22T07:15:00Z', body: 'When will PCC integration be live? I want the real census data instead of demo numbers.' },
+    ],
+  },
+
+  // ── Outbound (agent → user) ───────────────────────────────────────────────
+
+  {
+    id: 'AS-013', direction: 'outbound',
+    message: 'Clinical Monitor flagged 3 fall-risk assessments that need your review. Margaret Chen (3rd fall in 30d), Robert Yamada (new fall-risk med), and Eleanor Brooks (BIMS decline). All are Heritage Oaks residents.',
+    submittedAt: '2026-04-22T07:30:00Z',
+    submittedBy: { name: 'Clinical Monitor', role: 'Agent', facility: 'Heritage Oaks' },
+    status: 'unread',
+    category: null, priority: 'high', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: 'clinical',
+    outboundType: 'task', targetRole: 'DON',
+    actionRequired: true, actionLabel: 'Review Assessments',
+    mediaUrl: null, expiresAt: '2026-04-22T17:00:00Z',
+    thread: [
+      { actor: 'agent', name: 'Clinical Monitor', t: '2026-04-22T07:30:00Z', body: 'I flagged 3 fall-risk assessments that need your review before end of shift:\n\n1. Margaret Chen — 3rd fall in 30 days, care conference recommended\n2. Robert Yamada — started lorazepam yesterday, Beers List flag\n3. Eleanor Brooks — BIMS dropped from 12 to 8, reassessment due\n\nAll three are in the Clinical domain decision queue. You can review them there or click "Review Assessments" to go directly.', type: 'task' },
+    ],
+  },
+
+  {
+    id: 'AS-014', direction: 'outbound',
+    message: 'New feature: Batch approve is now available for low-risk decisions. Watch this 2-minute walkthrough to see how it cuts your morning queue time by 75%.',
+    submittedAt: '2026-04-21T10:00:00Z',
+    submittedBy: { name: 'Assist Agent', role: 'Agent', facility: 'Platform' },
+    status: 'read',
+    category: null, priority: 'low', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: null,
+    outboundType: 'education', targetRole: 'all',
+    actionRequired: false, actionLabel: 'Watch Video',
+    mediaUrl: 'https://platform.snf.ai/learn/batch-approve',
+    expiresAt: null,
+    thread: [
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-21T10:00:00Z', body: 'Batch approve is now available for low-risk decisions. Instead of approving supply reorders, credential renewals, and routine compliance items one by one, you can select all low-risk items and approve them in a single action.\n\nWatch the 2-minute walkthrough to see how it works — most users cut their morning queue from 12 minutes to 3.', type: 'education' },
+    ],
+  },
+
+  {
+    id: 'AS-015', direction: 'outbound',
+    message: 'Heritage Oaks census dropped 4.1% this week (98 → 94 residents). The Admissions agent identified 3 pending referrals from Regional Medical that could fill the gap — want me to show you the referral details?',
+    submittedAt: '2026-04-21T08:00:00Z',
+    submittedBy: { name: 'Census Agent', role: 'Agent', facility: 'Heritage Oaks' },
+    status: 'acted',
+    category: null, priority: 'medium', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: 'admissions',
+    outboundType: 'tip', targetRole: 'Admin',
+    actionRequired: true, actionLabel: 'View Referrals',
+    mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'agent', name: 'Census Agent', t: '2026-04-21T08:00:00Z', body: 'Heritage Oaks census dropped 4.1% this week (98 → 94 residents). I identified 3 pending referrals from Regional Medical Center:\n\n1. Hip replacement, 72yo, Medicare A — $38,500 estimated\n2. Knee revision, 68yo, UHC — $29,200 estimated\n3. Stroke rehab, 81yo, Medicare A — $44,100 estimated\n\nAll three have beds available and pre-auth confirmed. Want to review the full referral details?', type: 'tip' },
+      { actor: 'user', role: 'Admin', t: '2026-04-21T08:02:15Z', body: 'Yes, show me the referrals. Let\'s accept the Medicare A ones at minimum.' },
+      { actor: 'agent', name: 'Census Agent', t: '2026-04-21T08:02:45Z', body: 'Done — I\'ve moved both Medicare A referrals to your Admissions decision queue as high priority. The UHC referral is there too but lower priority since their rate is below our target. You\'ll see all three when you navigate to Admissions.', type: 'ack' },
+    ],
+  },
+
+  {
+    id: 'AS-016', direction: 'outbound',
+    message: 'PDF export is now live on all domain dashboards. Click the download icon on any stat card or chart to save a print-ready PDF. Works in both light and dark mode.',
+    submittedAt: '2026-04-22T06:00:00Z',
+    submittedBy: { name: 'Assist Agent', role: 'Agent', facility: 'Platform' },
+    status: 'unread',
+    category: null, priority: 'low', triageConfidence: null,
+    agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,
+    sourceView: null, sourceDomain: null,
+    outboundType: 'announcement', targetRole: 'all',
+    actionRequired: false, actionLabel: null,
+    mediaUrl: null, expiresAt: null,
+    thread: [
+      { actor: 'agent', name: 'Assist Agent', t: '2026-04-22T06:00:00Z', body: 'PDF export is now live on all domain dashboards. Look for the download icon on any stat card or chart — it generates a print-ready PDF formatted for letter-size paper.\n\nThis was one of your most requested features (thanks Annika!). Works in both light and dark mode, and includes the current date and your role/scope in the header.', type: 'ack' },
+    ],
+  },
+];
+
+// Compose presets — quick-action chips above the textarea.
+// Role-aware: some presets only appear for certain roles.
+export const ASSIST_PRESETS = [
+  { label: 'What happened overnight?',        fill: 'What happened overnight? Summarize any alerts, agent actions, and decisions that need my attention.',               roles: ['CEO', 'Admin', 'DON'] },
+  { label: 'Get me updated on census',         fill: 'Get me updated on census — current occupancy, any admits/discharges today, and referrals in the pipeline.',          roles: ['Admin', 'DON', 'CEO'] },
+  { label: 'Report a bug',                     fill: '',                                                                                                                   roles: null },
+  { label: 'Request a feature',                fill: '',                                                                                                                   roles: null },
+  { label: 'Start month-end close',            fill: 'Start working on month-end close — show me what\'s done, what\'s outstanding, and what I need to sign off on.',      roles: ['Accounting', 'CEO'] },
+  { label: 'Show my pending decisions',         fill: 'Show me my pending decisions — how many are waiting, what\'s critical, and which ones can I batch approve?',          roles: null },
+  { label: 'Prep for standup',                 fill: 'Help me prep for standup — top 3 things I need to know for my morning meeting.',                                     roles: ['Admin', 'DON', 'CEO'] },
+  { label: 'Explain a decision',               fill: 'I want to understand why an agent made a specific recommendation. Help me review the reasoning.',                    roles: null },
+  { label: 'Staffing gaps this week',          fill: 'Show me staffing gaps for this week — open shifts, call-off trends, and agency spend.',                              roles: ['Admin', 'DON'] },
+  { label: 'Submit to dev team',               fill: '',                                                                                                                   roles: null },
+];
+
+export const ASSIST_SUMMARY = {
+  total: 16,
+  inbound: { total: 12, agentResolved: 3, humanResolved: 2, awaitingReview: 2, inProgress: 3, newSubmissions: 2 },
+  outbound: { total: 4, unread: 2, read: 1, acted: 1 },
+  avgTriageSeconds: 34,
+};

@@ -63,6 +63,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           { key: 'agents', label: 'Agents', path: '/agents' },
           { key: 'briefing', label: 'Briefing', path: '/briefing' },
           { key: 'audit', label: 'Audit', path: '/audit' },
+          { key: 'assist', label: 'Assist', path: '/assist' },
           { key: 'settings', label: 'Settings', path: '/settings' },
         ].map(({ key, label, path }) => (
           <button key={key} onClick={() => navigate(path)} style={{

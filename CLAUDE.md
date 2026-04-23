@@ -15,6 +15,15 @@ A production-ready agentic enterprise platform for skilled nursing facility (SNF
 
 The platform is a full agentic command center where AI agents monitor, analyze, and act across every business function — clinical, financial, HR, compliance, M&A — with human-in-the-loop governance at every level. When Ensign provides system credentials, this framework connects directly to their production APIs and starts running.
 
+## Active Development — revamp/ Only
+
+All active development is in the `revamp/` directory. The root `src/` directory is the legacy codebase. The revamp uses a completely different design system:
+- **Styling:** Inline styles with CSS custom properties from `revamp/src/tokens.css` — NO Tailwind
+- **Navigation:** `ControlBar.jsx` chip nav (not `Layout.jsx` sidebar)
+- **Components:** `shared.jsx` primitives (StatusPill, AgentDot, StatCard, LabelSmall)
+- **Layout:** 3-column ShellV2 for domain views; standalone full-page views (`*View.jsx`) for platform pages
+- **Routing:** HashRouter, lazy-loaded routes in `App.jsx`
+
 ## The Ensign Group
 
 **Ensign Group (ENSG)** is a publicly traded healthcare holding company operating 330+ skilled nursing facilities and 47+ senior living communities across 17 states. CEO is **Barry Port**. ~$4B annual revenue. They use PCC for clinical/EHR, Workday for HR/finance, Microsoft 365 for communications, and numerous other enterprise systems.

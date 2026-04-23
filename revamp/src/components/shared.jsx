@@ -14,6 +14,16 @@ const STATUS_STYLES = {
   watch:     { c: 'var(--amber)', bg: 'var(--amber-bg)', label: 'Watch' },
   stable:    { c: 'var(--green)', bg: 'var(--green-bg)', label: 'Stable' },
   overdue:   { c: 'var(--red)',   bg: 'var(--red-bg)',   label: 'Overdue' },
+  // Assist — inbound (feedback)
+  submitted:       { c: 'var(--amber)',  bg: 'var(--amber-bg)',  label: 'Submitted' },
+  triaging:        { c: 'var(--violet)', bg: 'var(--violet-bg)', label: 'Triaging' },
+  triaged:         { c: 'var(--amber)',  bg: 'var(--amber-bg)',  label: 'Triaged' },
+  'in-progress':   { c: 'var(--accent)', bg: 'var(--accent-weak)', label: 'In Progress' },
+  'auto-resolved': { c: 'var(--green)',  bg: 'var(--green-bg)',  label: 'Auto-Resolved' },
+  // Assist — outbound (agent→user)
+  unread:          { c: 'var(--accent)', bg: 'var(--accent-weak)', label: 'New' },
+  read:            { c: 'var(--ink-3)',  bg: 'var(--surface-2)',  label: 'Read' },
+  acted:           { c: 'var(--green)',  bg: 'var(--green-bg)',  label: 'Done' },
 };
 
 export function StatusPill({ status }) {

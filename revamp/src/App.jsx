@@ -7,6 +7,7 @@ const AgentView = lazy(() => import('./components/AgentView'));
 const AuditTrail = lazy(() => import('./components/AuditTrail'));
 const BriefingView = lazy(() => import('./components/BriefingView'));
 const SettingsView = lazy(() => import('./components/SettingsView'));
+const AssistView = lazy(() => import('./components/AssistView'));
 
 // Eager-load ControlBar (always visible, tiny)
 import ControlBar from './components/ControlBar';
@@ -33,6 +34,7 @@ function AppInner() {
   const activeView = location.pathname.startsWith('/agents') ? 'agents'
     : location.pathname.startsWith('/audit') ? 'audit'
     : location.pathname.startsWith('/briefing') ? 'briefing'
+    : location.pathname.startsWith('/assist') ? 'assist'
     : location.pathname.startsWith('/settings') ? 'settings'
     : 'home';
 
@@ -78,6 +80,7 @@ function AppInner() {
 
             {/* Audit / Briefing / Settings */}
             <Route path="/audit" element={<AuditTrail theme={theme} />} />
+            <Route path="/assist" element={<AssistView theme={theme} />} />
             <Route path="/briefing" element={<BriefingView />} />
             <Route path="/settings" element={<SettingsView role={role} />} />
           </Routes>
