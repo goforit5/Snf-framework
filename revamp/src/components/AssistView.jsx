@@ -581,7 +581,7 @@ export default function AssistView({ theme = 'light' }) {
                         rows={1}
                         onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleReply(item.id); } }}
                         style={{
-                          flex: 1, resize: 'none', border: 'none', outline: 'none',
+                          flex: 1, resize: 'none', outline: 'none',
                           background: 'var(--surface)', borderRadius: 'var(--r-1)',
                           padding: '7px 10px', fontSize: 12, lineHeight: 1.5,
                           color: 'var(--ink-1)', fontFamily: 'var(--font-text)',
