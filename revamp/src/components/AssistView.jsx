@@ -1,6 +1,5 @@
 // AssistView — bidirectional agentic communication channel.
-// Inbound: user feedback, bugs, questions. Outbound: agent tasks, education, tips.
-// Standalone top-level view (not inside ShellV2).
+// 2-column layout matching ShellV2: message list (260px) | detail pane (1fr).
 
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { ASSIST_ITEMS, ASSIST_SUMMARY, ASSIST_PRESETS } from '../data';
@@ -48,16 +47,13 @@ function timeAgo(iso) {
 
 let nextId = 17;
 
-/* ─── Pill subcomponents ─── */
-
 function CategoryPill({ category }) {
   const s = CATEGORY_STYLE[category] || CATEGORY_STYLE.Question;
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4,
-      padding: '2px 7px', borderRadius: 4, background: s.bg, color: s.c,
-      flexShrink: 0,
-    }}>{category}</span>
+      fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
+      padding: '1px 6px', borderRadius: 4, background: s.bg, color: s.c, flexShrink: 0,
+    }}>{category === 'Feature Request' ? 'Feature' : category}</span>
   );
 }
 
@@ -65,9 +61,8 @@ function TypeBadge({ outboundType }) {
   const s = TYPE_STYLE[outboundType] || TYPE_STYLE.tip;
   return (
     <span style={{
-      fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4,
-      padding: '2px 7px', borderRadius: 4, background: s.bg, color: s.c,
-      flexShrink: 0,
+      fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
+      padding: '1px 6px', borderRadius: 4, background: s.bg, color: s.c, flexShrink: 0,
     }}>{s.label}</span>
   );
 }
@@ -76,9 +71,8 @@ function ThreadTypeBadge({ type }) {
   const label = THREAD_TYPE_LABELS[type] || type;
   return (
     <span style={{
-      fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
-      padding: '1px 5px', borderRadius: 3,
-      border: '1px solid var(--violet)33', color: 'var(--violet)',
+      fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
+      padding: '1px 5px', borderRadius: 3, border: '1px solid var(--violet)33', color: 'var(--violet)',
     }}>{label}</span>
   );
 }
@@ -91,16 +85,16 @@ function Bubble({ msg }) {
     <div style={{
       display: 'flex', flexDirection: 'column',
       alignItems: isUser ? 'flex-end' : 'flex-start',
-      marginBottom: 10,
+      marginBottom: 12,
     }}>
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
+        display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3,
         flexDirection: isUser ? 'row-reverse' : 'row',
       }}>
         {isUser
           ? <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--accent)' }}>{msg.role}</span>
           : <>
-              <AgentDot name={msg.name} color="var(--violet)" size={18} />
+              <AgentDot name={msg.name} color="var(--violet)" size={16} />
               <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--violet)' }}>{msg.name}</span>
               {msg.type && <ThreadTypeBadge type={msg.type} />}
             </>
@@ -108,8 +102,8 @@ function Bubble({ msg }) {
         <span style={{ fontSize: 10, color: 'var(--ink-4)' }}>{timeAgo(msg.t)}</span>
       </div>
       <div style={{
-        maxWidth: '85%', padding: '9px 12px', borderRadius: 10,
-        fontSize: 12.5, lineHeight: 1.55, whiteSpace: 'pre-wrap',
+        maxWidth: '88%', padding: '8px 12px', borderRadius: 10,
+        fontSize: 13, lineHeight: 1.55, whiteSpace: 'pre-wrap',
         background: isUser ? 'var(--accent-weak)' : 'var(--violet-bg)',
         color: 'var(--ink-1)',
       }}>{msg.body}</div>
@@ -117,16 +111,12 @@ function Bubble({ msg }) {
   );
 }
 
-/* ─── Typing indicator ─── */
-
 function TypingDots() {
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: 10 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-        <AgentDot name="Assist Agent" color="var(--violet)" size={18} />
-      </div>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+      <AgentDot name="Assist Agent" color="var(--violet)" size={16} />
       <div style={{
-        marginLeft: 6, padding: '10px 14px', borderRadius: 10,
+        padding: '8px 14px', borderRadius: 10,
         background: 'var(--violet-bg)', display: 'flex', gap: 4, alignItems: 'center',
       }}>
         {[0, 1, 2].map((i) => (
@@ -145,53 +135,32 @@ function TypingDots() {
 
 export default function AssistView({ theme = 'light' }) {
   const [items, setItems] = useState(ASSIST_ITEMS);
-  const [dirTab, setDirTab] = useState('All');
-  const [catFilter, setCatFilter] = useState('All');
-  const [expandedId, setExpandedId] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [filter, setFilter] = useState('All');
   const [composeText, setComposeText] = useState('');
-  const [typing, setTyping] = useState(null); // item id currently "typing"
-  const textareaRef = useRef(null);
-  const replyRefs = useRef({});
+  const [typing, setTyping] = useState(null);
+  const composeRef = useRef(null);
+  const replyRef = useRef(null);
 
   /* ─── Filtering ─── */
 
   const filtered = useMemo(() => {
-    let list = items;
-    if (dirTab === 'From You') list = list.filter((x) => x.direction === 'inbound');
-    if (dirTab === 'From Agents') list = list.filter((x) => x.direction === 'outbound');
+    if (filter === 'All') return items;
+    if (filter === 'From You') return items.filter((x) => x.direction === 'inbound');
+    if (filter === 'From Agents') return items.filter((x) => x.direction === 'outbound');
+    if (filter === 'Open') return items.filter((x) => !['resolved', 'auto-resolved', 'acted'].includes(x.status));
+    return items;
+  }, [items, filter]);
 
-    if (catFilter !== 'All') {
-      if (catFilter === 'Bugs') list = list.filter((x) => x.category === 'Bug');
-      else if (catFilter === 'Features') list = list.filter((x) => x.category === 'Feature Request');
-      else if (catFilter === 'Open') list = list.filter((x) => !['resolved', 'auto-resolved', 'acted'].includes(x.status));
-      else if (catFilter === 'Resolved') list = list.filter((x) => ['resolved', 'auto-resolved'].includes(x.status));
-      else if (catFilter === 'Tasks') list = list.filter((x) => x.outboundType === 'task');
-      else if (catFilter === 'Updates') list = list.filter((x) => x.outboundType === 'announcement');
-      else if (catFilter === 'Education') list = list.filter((x) => x.outboundType === 'education');
-      else if (catFilter === 'Tips') list = list.filter((x) => x.outboundType === 'tip');
-    }
-    return list;
-  }, [items, dirTab, catFilter]);
-
-  const catChips = (dirTab === 'From Agents')
-    ? ['All', 'Tasks', 'Updates', 'Education', 'Tips']
-    : ['All', 'Bugs', 'Features', 'Open', 'Resolved'];
+  const cur = selected ? items.find((x) => x.id === selected) : null;
 
   /* ─── Stats ─── */
 
-  const stats = useMemo(() => {
-    const inbound = items.filter((x) => x.direction === 'inbound');
-    const outUnread = items.filter((x) => x.direction === 'outbound' && x.status === 'unread').length;
-    const autoRes = inbound.filter((x) => x.status === 'auto-resolved').length;
-    return [
-      { label: 'Your messages', value: inbound.length, trend: 'up', change: '+2' },
-      { label: 'Agent resolved', value: autoRes, trend: 'up', change: `${Math.round(autoRes / Math.max(inbound.length, 1) * 100)}%` },
-      { label: 'For you', value: outUnread, trend: 'flat' },
-      { label: 'Avg triage', value: ASSIST_SUMMARY.avgTriageSeconds + 's', trend: 'down', change: '-12s' },
-    ];
-  }, [items]);
+  const inboundCount = items.filter((x) => x.direction === 'inbound').length;
+  const outUnread = items.filter((x) => x.direction === 'outbound' && x.status === 'unread').length;
+  const autoRes = items.filter((x) => x.status === 'auto-resolved').length;
 
-  /* ─── Presets (role-filtered — use CEO as default for demo) ─── */
+  /* ─── Presets ─── */
 
   const role = 'CEO';
   const visiblePresets = useMemo(
@@ -201,14 +170,22 @@ export default function AssistView({ theme = 'light' }) {
 
   /* ─── Handlers ─── */
 
+  const handleSelect = useCallback((id) => {
+    setSelected(id);
+    // Mark outbound as read
+    setItems((prev) => prev.map((x) =>
+      x.id === id && x.direction === 'outbound' && x.status === 'unread'
+        ? { ...x, status: 'read' } : x
+    ));
+  }, []);
+
   const handleSubmit = useCallback(() => {
     const text = composeText.trim();
     if (!text) return;
     const now = new Date().toISOString();
     const newItem = {
       id: `AS-${String(++nextId).padStart(3, '0')}`,
-      direction: 'inbound',
-      message: text,
+      direction: 'inbound', message: text,
       submittedAt: now,
       submittedBy: { name: 'Barry Port', role: 'CEO', facility: 'Portfolio' },
       status: 'submitted',
@@ -220,60 +197,50 @@ export default function AssistView({ theme = 'light' }) {
     };
     setItems((prev) => [newItem, ...prev]);
     setComposeText('');
-    setExpandedId(newItem.id);
-    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+    setSelected(newItem.id);
+    if (composeRef.current) composeRef.current.style.height = 'auto';
 
-    // Simulate agent triage
     setTimeout(() => setItems((prev) => prev.map((x) => x.id === newItem.id ? { ...x, status: 'triaging' } : x)), 1500);
     setTimeout(() => {
-      const triageTime = new Date().toISOString();
+      const t = new Date().toISOString();
       setItems((prev) => prev.map((x) => x.id === newItem.id ? {
         ...x, status: 'triaged', category: 'Improvement', priority: 'medium',
         triageConfidence: 0.87,
         agentSummary: 'User feedback received — categorized and prioritized for review.',
         thread: [...x.thread, {
-          actor: 'agent', name: 'Assist Agent', t: triageTime,
-          body: `Got it. I've categorized this as an Improvement with medium priority. I'll route it to the right team and keep you posted on progress. Is there anything else you'd like to add?`,
+          actor: 'agent', name: 'Assist Agent', t,
+          body: 'Got it. I\'ve categorized this as an Improvement with medium priority. I\'ll route it to the right team and keep you posted on progress. Is there anything else you\'d like to add?',
           type: 'triage',
         }],
       } : x));
     }, 3500);
   }, [composeText]);
 
-  const handleReply = useCallback((itemId) => {
-    const ref = replyRefs.current[itemId];
-    const text = ref?.value?.trim();
+  const handleReply = useCallback(() => {
+    if (!cur || !replyRef.current) return;
+    const text = replyRef.current.value.trim();
     if (!text) return;
     const now = new Date().toISOString();
+    const itemId = cur.id;
 
     setItems((prev) => prev.map((x) => x.id === itemId ? {
       ...x, thread: [...x.thread, { actor: 'user', role: 'CEO', t: now, body: text }],
     } : x));
-    ref.value = '';
+    replyRef.current.value = '';
     setTyping(itemId);
 
-    // Simulate agent reply
     setTimeout(() => {
-      const replyTime = new Date().toISOString();
+      const t = new Date().toISOString();
       setItems((prev) => prev.map((x) => x.id === itemId ? {
         ...x, thread: [...x.thread, {
-          actor: 'agent', name: 'Assist Agent', t: replyTime,
+          actor: 'agent', name: 'Assist Agent', t,
           body: SIMULATED_REPLIES[Math.floor(Math.random() * SIMULATED_REPLIES.length)],
           type: 'ack',
         }],
       } : x));
       setTyping(null);
     }, 2500);
-  }, []);
-
-  const handleExpand = useCallback((id) => {
-    setExpandedId((prev) => prev === id ? null : id);
-    // Mark outbound as read
-    setItems((prev) => prev.map((x) =>
-      x.id === id && x.direction === 'outbound' && x.status === 'unread'
-        ? { ...x, status: 'read' } : x
-    ));
-  }, []);
+  }, [cur]);
 
   const handleAction = useCallback((id) => {
     setItems((prev) => prev.map((x) => x.id === id ? { ...x, status: 'acted' } : x));
@@ -282,328 +249,299 @@ export default function AssistView({ theme = 'light' }) {
   const handlePreset = useCallback((preset) => {
     if (preset.fill) {
       setComposeText(preset.fill);
-      setTimeout(() => textareaRef.current?.focus(), 50);
-    } else {
-      setComposeText('');
-      setTimeout(() => {
-        textareaRef.current?.focus();
-        textareaRef.current?.setAttribute('placeholder', preset.label + '...');
-      }, 50);
     }
+    setTimeout(() => composeRef.current?.focus(), 50);
   }, []);
 
-  /* ─── Auto-grow textarea ─── */
-
-  const handleTextareaInput = useCallback((e) => {
+  const handleComposeInput = useCallback((e) => {
     setComposeText(e.target.value);
     e.target.style.height = 'auto';
-    e.target.style.height = Math.min(e.target.scrollHeight, 150) + 'px';
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
   }, []);
 
   /* ─── Render ─── */
 
   return (
     <div data-theme={theme} style={{
-      fontFamily: 'var(--font-text)', color: 'var(--ink-1)',
-      padding: '24px 32px', overflow: 'auto', height: '100%',
-      maxWidth: 720,
+      width: '100%', height: '100%', background: 'var(--bg)', color: 'var(--ink-1)',
+      fontFamily: 'var(--font-text)', fontSize: 13, display: 'grid',
+      gridTemplateColumns: '260px 1fr', overflow: 'hidden',
     }}>
 
-      {/* Header */}
-      <LabelSmall>PLATFORM</LabelSmall>
-      <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: -0.3, fontFamily: 'var(--font-display)' }}>
-        Assist
-      </h1>
-      <div style={{ fontSize: 12.5, color: 'var(--ink-3)', marginTop: 4, marginBottom: 20 }}>
-        Your AI team, always on.
-      </div>
+      {/* ═══ LEFT: Message list (matches WorklistMid) ═══ */}
+      <div style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-      {/* Agent summary bar */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '10px 14px', marginBottom: 16,
-        background: 'var(--violet-bg)', border: '1px solid var(--violet)',
-        borderRadius: 'var(--r-2)',
-      }}>
-        <AgentDot name="Assist Agent" color="var(--violet)" size={24} />
-        <div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--violet)' }}>Assist Agent</div>
-          <div className="tnum" style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 1 }}>
-            {items.length} items · {items.filter((x) => x.status === 'auto-resolved').length} auto-resolved · {items.filter((x) => x.direction === 'outbound' && x.status === 'unread').length} new for you · avg {ASSIST_SUMMARY.avgTriageSeconds}s triage
+        {/* Header */}
+        <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--line)' }}>
+          <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 3 }}>Platform</div>
+          <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: -0.2 }}>Assist</div>
+          <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 3 }} className="tnum">
+            {inboundCount} sent &middot; {autoRes} auto-resolved &middot; {outUnread} new
           </div>
         </div>
-      </div>
 
-      {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
-        {stats.map((s) => <StatCard key={s.label} {...s} />)}
-      </div>
-
-      {/* Compose area */}
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--line)',
-        borderRadius: 'var(--r-2)', padding: 14, marginBottom: 20,
-      }}>
-        {/* Presets */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-          {visiblePresets.map((p) => (
-            <button key={p.label} onClick={() => handlePreset(p)} style={{
+        {/* Filter chips */}
+        <div style={{ display: 'flex', gap: 3, padding: '8px 12px', borderBottom: '1px solid var(--line-soft)' }}>
+          {['All', 'From You', 'From Agents', 'Open'].map((f) => (
+            <button key={f} onClick={() => setFilter(f)} style={{
               all: 'unset', cursor: 'pointer',
-              fontSize: 11, fontWeight: 500, color: 'var(--ink-2)',
-              padding: '4px 10px', borderRadius: 'var(--r-pill)',
-              background: 'var(--bg-sunk)', border: '1px solid var(--line)',
-              transition: 'background .15s, border-color .15s',
-            }}
-              onMouseEnter={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.color = 'var(--accent)'; }}
-              onMouseLeave={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.color = 'var(--ink-2)'; }}
-            >
-              {p.label}
+              padding: '3px 8px', borderRadius: 'var(--r-pill)',
+              fontSize: 10.5, fontWeight: filter === f ? 600 : 400,
+              color: filter === f ? 'var(--accent)' : 'var(--ink-3)',
+              background: filter === f ? 'var(--accent-weak)' : 'transparent',
+            }}>
+              {f}
             </button>
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
-          <textarea
-            ref={textareaRef}
-            value={composeText}
-            onChange={handleTextareaInput}
-            onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSubmit(); } }}
-            placeholder="Tell us anything — bugs, ideas, questions..."
-            rows={1}
-            style={{
-              flex: 1, resize: 'none', border: 'none', outline: 'none',
-              background: 'var(--bg-sunk)', borderRadius: 'var(--r-1)',
-              padding: '10px 12px', fontSize: 13, lineHeight: 1.5,
-              color: 'var(--ink-1)', fontFamily: 'var(--font-text)',
-              maxHeight: 150, overflow: 'auto',
-            }}
-          />
-          <button onClick={handleSubmit} disabled={!composeText.trim()} style={{
-            all: 'unset', cursor: composeText.trim() ? 'pointer' : 'default',
-            padding: '8px 16px', borderRadius: 'var(--r-1)',
-            fontSize: 12, fontWeight: 600,
-            background: composeText.trim() ? 'var(--accent)' : 'var(--line)',
-            color: composeText.trim() ? '#fff' : 'var(--ink-4)',
-            transition: 'background .15s, color .15s',
-            flexShrink: 0,
-          }}>
-            Send
-          </button>
-        </div>
-        <div style={{ fontSize: 10.5, color: 'var(--ink-4)', marginTop: 8 }}>
-          Our agent triages in under 60 seconds. Press ⌘+Enter to send.
-        </div>
-      </div>
-
-      {/* Direction tabs */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: 8, borderBottom: '1px solid var(--line)' }}>
-        {['All', 'From You', 'From Agents'].map((tab) => (
-          <button key={tab} onClick={() => { setDirTab(tab); setCatFilter('All'); }} style={{
-            all: 'unset', cursor: 'pointer',
-            padding: '8px 16px', fontSize: 12, fontWeight: dirTab === tab ? 600 : 400,
-            color: dirTab === tab ? 'var(--accent)' : 'var(--ink-3)',
-            borderBottom: dirTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
-            transition: 'color .15s',
-          }}>
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Category chips */}
-      <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
-        {catChips.map((f) => (
-          <button key={f} onClick={() => setCatFilter(f)} style={{
-            all: 'unset', cursor: 'pointer',
-            padding: '4px 10px', borderRadius: 'var(--r-pill)',
-            fontSize: 11, fontWeight: catFilter === f ? 600 : 400,
-            color: catFilter === f ? 'var(--accent)' : 'var(--ink-3)',
-            background: catFilter === f ? 'var(--accent-weak)' : 'transparent',
-            border: catFilter === f ? 'none' : '1px solid var(--line)',
-            transition: 'background .15s, color .15s',
-          }}>
-            {f}
-          </button>
-        ))}
-      </div>
-
-      {/* Message list */}
-      {filtered.length === 0 ? (
-        <div style={{ padding: '48px 0', textAlign: 'center', fontSize: 13, color: 'var(--ink-3)' }}>
-          No items match this filter.
-        </div>
-      ) : (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--r-2)', overflow: 'hidden' }}>
-          {filtered.map((item, i) => {
-            const expanded = expandedId === item.id;
+        {/* Message list */}
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          {filtered.map((item) => {
+            const isActive = selected === item.id;
             const isOutbound = item.direction === 'outbound';
             const isUnread = isOutbound && item.status === 'unread';
 
             return (
-              <div key={item.id} style={{ borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none' }}>
-                {/* Collapsed row */}
-                <div
-                  onClick={() => handleExpand(item.id)}
-                  style={{
-                    padding: '11px 14px', cursor: 'pointer',
-                    borderLeft: isUnread ? '3px solid var(--accent)' : '3px solid transparent',
-                    transition: 'background .1s',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--surface-2)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                >
-                  {/* Row 1: badge + message + status + time */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    {isOutbound
-                      ? <TypeBadge outboundType={item.outboundType} />
-                      : item.category && <CategoryPill category={item.category} />
-                    }
-                    <span style={{
-                      flex: 1, fontSize: 12.5, fontWeight: isUnread ? 600 : 500,
-                      color: 'var(--ink-1)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {item.message}
-                    </span>
-                    <StatusPill status={item.status} />
-                    <span className="tnum" style={{ fontSize: 10.5, color: 'var(--ink-4)', flexShrink: 0 }}>
-                      {timeAgo(item.submittedAt)}
-                    </span>
-                  </div>
-
-                  {/* Row 2: agent dot + summary or action */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {isOutbound ? (
-                      <>
-                        <AgentDot name={item.submittedBy.name} color="var(--violet)" size={16} />
-                        <span style={{ fontSize: 11, color: 'var(--ink-3)', flex: 1 }}>{item.submittedBy.name}</span>
-                        {item.actionRequired && item.status !== 'acted' && (
-                          <button onClick={(e) => { e.stopPropagation(); handleAction(item.id); }} style={{
-                            all: 'unset', cursor: 'pointer',
-                            fontSize: 10.5, fontWeight: 600, color: 'var(--accent)',
-                            padding: '3px 10px', borderRadius: 'var(--r-1)',
-                            background: 'var(--accent-weak)',
-                          }}>
-                            {item.actionLabel}
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <AgentDot name="Assist Agent" color="var(--violet)" size={16} />
-                        <span style={{ fontSize: 11, color: 'var(--ink-3)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {item.agentSummary || 'Awaiting triage...'}
-                        </span>
-                        {item.triageConfidence && (
-                          <span className="tnum" style={{ fontSize: 10.5, color: 'var(--ink-3)', flexShrink: 0 }}>
-                            {Math.round(item.triageConfidence * 100)}%
-                          </span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Expanded: conversation thread */}
-                {expanded && (
-                  <div style={{
-                    padding: '12px 14px 14px',
-                    background: 'var(--bg-sunk)',
-                    borderTop: '1px solid var(--line-soft)',
+              <div key={item.id} onClick={() => handleSelect(item.id)} style={{
+                padding: '10px 16px 11px', borderBottom: '1px solid var(--line-soft)',
+                borderLeft: `3px solid ${isActive ? 'var(--accent)' : isUnread ? 'var(--violet)' : 'transparent'}`,
+                background: isActive ? 'var(--accent-weak)' : 'transparent',
+                cursor: 'pointer', opacity: ['resolved', 'auto-resolved', 'acted'].includes(item.status) && !isActive ? 0.6 : 1,
+              }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 3 }}>
+                  {isOutbound
+                    ? <TypeBadge outboundType={item.outboundType} />
+                    : item.category && <CategoryPill category={item.category} />
+                  }
+                  <span style={{
+                    flex: 1, fontSize: 12.5, fontWeight: isUnread ? 600 : 500,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
-                    {/* Triage card (inbound only) */}
-                    {!isOutbound && item.category && (
-                      <div style={{
-                        display: 'flex', alignItems: 'center', gap: 8,
-                        padding: '8px 12px', marginBottom: 12,
-                        background: 'var(--violet-bg)', borderRadius: 'var(--r-1)',
-                        border: '1px solid var(--violet)33',
-                      }}>
-                        <CategoryPill category={item.category} />
-                        {item.priority && <PriorityDot priority={item.priority} />}
-                        {item.priority && <span style={{ fontSize: 10.5, color: priorityColor(item.priority), fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3 }}>{item.priority}</span>}
-                        {item.triageConfidence && <span className="tnum" style={{ fontSize: 10.5, color: 'var(--ink-3)' }}>{Math.round(item.triageConfidence * 100)}% confidence</span>}
-                        <span style={{ flex: 1 }} />
-                        {item.sourceView && <span style={{ fontSize: 10, color: 'var(--ink-4)', padding: '2px 6px', borderRadius: 3, background: 'var(--surface)', border: '1px solid var(--line)' }}>{item.sourceView}</span>}
-                      </div>
-                    )}
-
-                    {/* Thread messages */}
-                    <div style={{ marginBottom: 10 }}>
-                      {item.thread.map((msg, j) => <Bubble key={j} msg={msg} />)}
-                      {typing === item.id && <TypingDots />}
-                    </div>
-
-                    {/* Resolution card */}
-                    {item.resolution && (
-                      <div style={{
-                        padding: '8px 12px', marginBottom: 10,
-                        background: 'var(--green-bg)', borderRadius: 'var(--r-1)',
-                        border: '1px solid var(--green)33',
-                        fontSize: 12, color: 'var(--green)',
-                      }}>
-                        <span style={{ fontWeight: 600 }}>✓ Resolved</span>
-                        <span style={{ color: 'var(--ink-2)', marginLeft: 8 }}>{item.resolution}</span>
-                      </div>
-                    )}
-
-                    {/* Media link (outbound education) */}
-                    {item.mediaUrl && (
-                      <div style={{
-                        padding: '8px 12px', marginBottom: 10,
-                        background: 'var(--accent-weak)', borderRadius: 'var(--r-1)',
-                        border: '1px solid var(--accent)33',
-                        fontSize: 12,
-                      }}>
-                        <span style={{ fontWeight: 600, color: 'var(--accent)' }}>▶ </span>
-                        <span style={{ color: 'var(--ink-2)' }}>{item.mediaUrl}</span>
-                      </div>
-                    )}
-
-                    {/* Action button (outbound, not yet acted) */}
-                    {isOutbound && item.actionRequired && item.status !== 'acted' && (
-                      <button onClick={() => handleAction(item.id)} style={{
-                        all: 'unset', cursor: 'pointer',
-                        display: 'block', width: '100%', textAlign: 'center',
-                        padding: '10px 0', borderRadius: 'var(--r-1)',
-                        fontSize: 13, fontWeight: 600, color: '#fff',
-                        background: 'var(--accent)', marginBottom: 10,
-                      }}>
-                        {item.actionLabel}
-                      </button>
-                    )}
-
-                    {/* Reply compose */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'flex-end' }}>
-                      <textarea
-                        ref={(el) => { replyRefs.current[item.id] = el; }}
-                        placeholder="Reply..."
-                        rows={1}
-                        onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleReply(item.id); } }}
-                        style={{
-                          flex: 1, resize: 'none', outline: 'none',
-                          background: 'var(--surface)', borderRadius: 'var(--r-1)',
-                          padding: '7px 10px', fontSize: 12, lineHeight: 1.5,
-                          color: 'var(--ink-1)', fontFamily: 'var(--font-text)',
-                          maxHeight: 80, overflow: 'auto',
-                          border: '1px solid var(--line)',
-                        }}
-                      />
-                      <button onClick={() => handleReply(item.id)} style={{
-                        all: 'unset', cursor: 'pointer',
-                        padding: '6px 12px', borderRadius: 'var(--r-1)',
-                        fontSize: 11, fontWeight: 600,
-                        background: 'var(--accent)', color: '#fff',
-                        flexShrink: 0,
-                      }}>
-                        Send
-                      </button>
-                    </div>
-                  </div>
-                )}
+                    {item.message?.slice(0, 60) || 'New message'}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--ink-3)' }}>
+                  <StatusPill status={item.status} />
+                  <span style={{ flex: 1 }} />
+                  <span className="tnum">{timeAgo(item.submittedAt)}</span>
+                </div>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      {/* ═══ RIGHT: Detail pane (matches DecisionDetail / empty state) ═══ */}
+      {cur ? (
+        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
+          {/* Toolbar */}
+          <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
+            <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>Assist</span>
+            <span style={{ color: 'var(--ink-4)' }}>/</span>
+            <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>{cur.id}</span>
+            <span style={{ flex: 1 }} />
+            <StatusPill status={cur.status} />
+            {cur.direction === 'outbound' && cur.actionRequired && cur.status !== 'acted' && (
+              <button onClick={() => handleAction(cur.id)} style={{
+                all: 'unset', cursor: 'pointer',
+                padding: '5px 10px', borderRadius: 6, background: 'var(--accent)', color: '#fff',
+                fontSize: 11.5, fontWeight: 600,
+              }}>
+                {cur.actionLabel}
+              </button>
+            )}
+          </div>
+
+          {/* Content */}
+          <div style={{ overflow: 'auto', flex: 1, padding: '22px 32px 0' }}>
+
+            {/* Header */}
+            {cur.direction === 'inbound' && (
+              <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginBottom: 6 }}>
+                {cur.submittedBy.name} &middot; {cur.submittedBy.role} &middot; {cur.submittedBy.facility}
+              </div>
+            )}
+            {cur.direction === 'outbound' && (
+              <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginBottom: 6 }}>
+                From {cur.submittedBy.name} &middot; to {cur.targetRole}
+              </div>
+            )}
+
+            {/* Triage meta (inbound) */}
+            {cur.direction === 'inbound' && cur.category && (
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
+                <CategoryPill category={cur.category} />
+                {cur.priority && (
+                  <span style={{ fontSize: 10.5, fontWeight: 600, color: priorityColor(cur.priority), textTransform: 'uppercase', letterSpacing: .4 }}>{cur.priority}</span>
+                )}
+                {cur.triageConfidence && (
+                  <span className="tnum" style={{ fontSize: 11, color: 'var(--ink-3)' }}>{Math.round(cur.triageConfidence * 100)}% confidence</span>
+                )}
+                {cur.sourceView && (
+                  <span style={{ fontSize: 10.5, color: 'var(--ink-4)', padding: '2px 6px', borderRadius: 4, background: 'var(--surface)', border: '1px solid var(--line)' }}>
+                    {cur.sourceView}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600, letterSpacing: -0.4, fontFamily: 'var(--font-display)', lineHeight: 1.3, marginBottom: 6 }}>
+              {cur.message?.slice(0, 80)}{cur.message?.length > 80 ? '...' : ''}
+            </h1>
+            {cur.agentSummary && (
+              <p style={{ margin: '0 0 18px', fontSize: 13.5, lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 640 }}>
+                {cur.agentSummary}
+              </p>
+            )}
+
+            {/* Resolution card */}
+            {cur.resolution && (
+              <div style={{
+                padding: '10px 14px', marginBottom: 18,
+                background: 'var(--green-bg)', borderRadius: 8,
+                border: '1px solid var(--green)33',
+                fontSize: 12.5, color: 'var(--ink-1)',
+              }}>
+                <div style={{ fontWeight: 600, color: 'var(--green)', marginBottom: 4 }}>&#x2713; Resolved</div>
+                {cur.resolution}
+              </div>
+            )}
+
+            {/* Media link */}
+            {cur.mediaUrl && (
+              <div style={{
+                padding: '10px 14px', marginBottom: 18,
+                background: 'var(--accent-weak)', borderRadius: 8,
+                border: '1px solid var(--accent)33',
+                fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontWeight: 600, color: 'var(--accent)' }}>&#x25B6;</span>
+                <span style={{ color: 'var(--ink-2)' }}>{cur.mediaUrl}</span>
+              </div>
+            )}
+
+            {/* Conversation thread */}
+            <LabelSmall>Conversation</LabelSmall>
+            <div style={{ marginBottom: 24 }}>
+              {cur.thread.map((msg, i) => <Bubble key={i} msg={msg} />)}
+              {typing === cur.id && <TypingDots />}
+            </div>
+          </div>
+
+          {/* Bottom compose bar */}
+          <div style={{ padding: '10px 24px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+            <textarea
+              ref={replyRef}
+              placeholder="Reply..."
+              rows={1}
+              onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleReply(); } }}
+              style={{
+                flex: 1, resize: 'none', outline: 'none',
+                background: 'var(--bg-sunk)', borderRadius: 'var(--r-1)',
+                padding: '8px 12px', fontSize: 13, lineHeight: 1.5,
+                color: 'var(--ink-1)', fontFamily: 'var(--font-text)',
+                maxHeight: 100, overflow: 'auto',
+                border: '1px solid var(--line)',
+              }}
+            />
+            <button onClick={handleReply} style={{
+              all: 'unset', cursor: 'pointer',
+              padding: '8px 14px', borderRadius: 'var(--r-1)',
+              fontSize: 12, fontWeight: 600,
+              background: 'var(--accent)', color: '#fff',
+              flexShrink: 0,
+            }}>
+              Send &#x21B5;
+            </button>
+          </div>
+        </div>
+      ) : (
+        /* ═══ EMPTY STATE: compose + presets + stats ═══ */
+        <div style={{ display: 'flex', flexDirection: 'column', overflow: 'auto', padding: '32px 40px' }}>
+
+          {/* Agent bar */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 14px', marginBottom: 20,
+            background: 'var(--violet-bg)', border: '1px solid var(--violet)',
+            borderRadius: 'var(--r-2)',
+          }}>
+            <AgentDot name="Assist Agent" color="var(--violet)" size={24} />
+            <div>
+              <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--violet)' }}>Assist Agent</div>
+              <div className="tnum" style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 1 }}>
+                {items.length} items &middot; {autoRes} auto-resolved &middot; avg {ASSIST_SUMMARY.avgTriageSeconds}s triage
+              </div>
+            </div>
+          </div>
+
+          {/* Stat cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 24 }}>
+            <StatCard label="Your messages" value={inboundCount} trend="up" change="+2" />
+            <StatCard label="Agent resolved" value={autoRes} trend="up" change={`${Math.round(autoRes / Math.max(inboundCount, 1) * 100)}%`} />
+            <StatCard label="For you" value={outUnread} trend="flat" />
+            <StatCard label="Avg triage" value={ASSIST_SUMMARY.avgTriageSeconds + 's'} trend="down" change="-12s" />
+          </div>
+
+          {/* Compose hero */}
+          <LabelSmall>Send a message</LabelSmall>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--line)',
+            borderRadius: 'var(--r-2)', padding: 16, marginBottom: 24,
+          }}>
+            {/* Presets */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
+              {visiblePresets.map((p) => (
+                <button key={p.label} onClick={() => handlePreset(p)} style={{
+                  all: 'unset', cursor: 'pointer',
+                  fontSize: 11, fontWeight: 500, color: 'var(--ink-2)',
+                  padding: '4px 10px', borderRadius: 'var(--r-pill)',
+                  background: 'var(--bg-sunk)', border: '1px solid var(--line)',
+                  transition: 'border-color .15s, color .15s',
+                }}
+                  onMouseEnter={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.color = 'var(--accent)'; }}
+                  onMouseLeave={(e) => { e.target.style.borderColor = 'var(--line)'; e.target.style.color = 'var(--ink-2)'; }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <textarea
+                ref={composeRef}
+                value={composeText}
+                onChange={handleComposeInput}
+                onKeyDown={(e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSubmit(); } }}
+                placeholder="Tell us anything — bugs, ideas, questions..."
+                rows={2}
+                style={{
+                  flex: 1, resize: 'none', outline: 'none',
+                  background: 'var(--bg-sunk)', borderRadius: 'var(--r-1)',
+                  padding: '10px 12px', fontSize: 13, lineHeight: 1.5,
+                  color: 'var(--ink-1)', fontFamily: 'var(--font-text)',
+                  maxHeight: 150, overflow: 'auto',
+                  border: '1px solid var(--line)',
+                }}
+              />
+              <button onClick={handleSubmit} disabled={!composeText.trim()} style={{
+                all: 'unset', cursor: composeText.trim() ? 'pointer' : 'default',
+                padding: '8px 16px', borderRadius: 'var(--r-1)',
+                fontSize: 12, fontWeight: 600,
+                background: composeText.trim() ? 'var(--accent)' : 'var(--line)',
+                color: composeText.trim() ? '#fff' : 'var(--ink-4)',
+                transition: 'background .15s, color .15s',
+                flexShrink: 0,
+              }}>
+                Send
+              </button>
+            </div>
+            <div style={{ fontSize: 10.5, color: 'var(--ink-4)', marginTop: 8 }}>
+              Our agent triages in under 60 seconds. Press &#x2318;+Enter to send.
+            </div>
+          </div>
         </div>
       )}
     </div>
