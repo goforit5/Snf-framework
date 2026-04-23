@@ -35,8 +35,12 @@ jobs:
           node-version: 20
       - name: Install dependencies
         run: npm ci
-      - name: Build
+      - name: Build root app
         run: npm run build
+      - name: Build revamp app
+        run: cd revamp && npm ci && npm run build
+      - name: Copy revamp into dist
+        run: cp -r revamp/dist dist/revamp
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
