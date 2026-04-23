@@ -10,6 +10,7 @@ export default function ShellView({ role, theme }) {
   return (
     <div style={{ width: '100%', height: '100%' }}>
       <ShellV2
+        key={initialDomain}
         role={role}
         theme={theme}
         width="100%"
