@@ -125,60 +125,75 @@ export default function AuditTrail({ actionLog, theme }) {
           No actions recorded yet.
         </div>
       ) : (
-        <div style={{
+        <table style={{
           background: 'var(--surface)', border: '1px solid var(--line)',
           borderRadius: 'var(--r-2)', overflow: 'hidden',
+          display: 'grid', gridTemplateColumns: '120px 96px 1fr 50px',
+          width: '100%', borderCollapse: 'collapse', borderSpacing: 0,
         }}>
-          {filtered.map((entry, i) => {
-            const badge = BADGE_STYLES[entry.action] || BADGE_STYLES.agent;
-            return (
-              <div key={entry.id} style={{
-                padding: '12px 16px',
-                borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none',
-                display: 'flex', alignItems: 'center', gap: 14,
-              }}>
-                {/* Timestamp */}
-                <span className="mono" style={{
-                  fontSize: 11.5, color: 'var(--ink-3)', width: 120,
-                  flexShrink: 0, whiteSpace: 'nowrap',
+          <thead style={{ display: 'contents' }}>
+            <tr style={{ display: 'contents' }}>
+              <th scope="col" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Timestamp</th>
+              <th scope="col" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Action</th>
+              <th scope="col" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Description</th>
+              <th scope="col" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Role</th>
+            </tr>
+          </thead>
+          <tbody style={{ display: 'contents' }}>
+            {filtered.map((entry, i) => {
+              const badge = BADGE_STYLES[entry.action] || BADGE_STYLES.agent;
+              return (
+                <tr key={entry.id} style={{
+                  display: 'contents',
                 }}>
-                  {entry.ts}
-                </span>
-
-                {/* Action badge */}
-                <span style={{
-                  fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase',
-                  letterSpacing: 0.4, padding: '3px 8px', borderRadius: 'var(--r-1)',
-                  background: badge.bg, color: badge.color,
-                  width: 80, textAlign: 'center', flexShrink: 0,
-                }}>
-                  {badge.label}
-                </span>
-
-                {/* Title + facility */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontSize: 12.5, fontWeight: 500, color: 'var(--ink-1)',
-                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  <td className="mono" style={{
+                    padding: '12px 0 12px 16px',
+                    fontSize: 11.5, color: 'var(--ink-3)',
+                    whiteSpace: 'nowrap', display: 'flex', alignItems: 'center',
+                    borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none',
                   }}>
-                    {entry.title}
-                  </div>
-                  <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 1 }}>
-                    {entry.facility}
-                  </div>
-                </div>
-
-                {/* Role */}
-                <span style={{
-                  fontSize: 11, color: 'var(--ink-3)', flexShrink: 0,
-                  width: 50, textAlign: 'right',
-                }}>
-                  {entry.role}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+                    {entry.ts}
+                  </td>
+                  <td style={{
+                    padding: '12px 0', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none',
+                  }}>
+                    <span style={{
+                      fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase',
+                      letterSpacing: 0.4, padding: '3px 8px', borderRadius: 'var(--r-1)',
+                      background: badge.bg, color: badge.color,
+                      textAlign: 'center',
+                    }}>
+                      {badge.label}
+                    </span>
+                  </td>
+                  <td style={{
+                    padding: '12px 0', minWidth: 0,
+                    borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none',
+                  }}>
+                    <div style={{
+                      fontSize: 12.5, fontWeight: 500, color: 'var(--ink-1)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {entry.title}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 1 }}>
+                      {entry.facility}
+                    </div>
+                  </td>
+                  <td style={{
+                    padding: '12px 16px 12px 0',
+                    fontSize: 11, color: 'var(--ink-3)',
+                    textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
+                    borderTop: i > 0 ? '1px solid var(--line-soft)' : 'none',
+                  }}>
+                    {entry.role}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       )}
     </div>
   );

@@ -9,11 +9,11 @@ import { FACILITIES } from '../data/facilities';
 function SettingsSection({ title, children }) {
   return (
     <div style={{ marginBottom: 32 }}>
-      <div style={{
+      <h2 style={{
         fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600,
         textTransform: 'uppercase', letterSpacing: 0.5,
-        marginBottom: 10,
-      }}>{title}</div>
+        marginBottom: 10, margin: '0 0 10px 0',
+      }}>{title}</h2>
       <div style={{
         background: 'var(--surface)', border: '1px solid var(--line)',
         borderRadius: 'var(--r-2)', overflow: 'hidden',
@@ -49,17 +49,24 @@ function Toggle({ on, onToggle, label }) {
       fontSize: 12.5,
     }}>
       <span style={{ color: 'var(--ink-1)', fontWeight: 500 }}>{label}</span>
-      <button onClick={onToggle} style={{
-        all: 'unset', cursor: 'pointer',
-        width: 40, height: 22, borderRadius: 'var(--r-pill)',
-        background: on ? 'var(--accent)' : 'var(--line)',
-        position: 'relative',
-        transition: 'background .2s',
-      }}>
+      <button
+        onClick={onToggle}
+        role="switch"
+        aria-checked={on}
+        aria-label={label}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle(); } }}
+        style={{
+          all: 'unset', cursor: 'pointer',
+          width: 40, height: 22, borderRadius: 'var(--r-pill)',
+          background: on ? 'var(--accent)' : 'var(--line)',
+          position: 'relative',
+          transition: 'background .2s',
+        }}
+      >
         <span style={{
           position: 'absolute', top: 2, left: on ? 20 : 2,
           width: 18, height: 18, borderRadius: 9,
-          background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,.2)',
+          background: 'var(--surface)', boxShadow: '0 1px 3px rgba(0,0,0,.2)',
           transition: 'left .2s',
         }} />
       </button>
@@ -211,7 +218,7 @@ export default function SettingsView({ role }) {
         <button style={{
           all: 'unset', cursor: 'pointer',
           padding: '8px 16px', borderRadius: 8,
-          background: 'var(--accent)', color: '#fff',
+          background: 'var(--accent)', color: 'var(--ink-on-accent)',
           fontSize: 13, fontWeight: 600,
         }}>
           Schedule credential onboarding
@@ -223,7 +230,7 @@ export default function SettingsView({ role }) {
         <Row label="Version" value="2.0.0" />
         <Row label="Build date" value="2026-04-21" />
         <Row label="Active agents" value={String(AGENTS.length)} />
-        <Row label="Facilities" value={String(FACILITIES.length) + ' (demo) / 330 facilities'} last />
+        <Row label="Facilities" value={String(FACILITIES.length) + ' facilities'} last />
       </SettingsSection>
     </div>
   );

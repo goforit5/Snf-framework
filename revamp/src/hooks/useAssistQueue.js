@@ -1,7 +1,7 @@
 // useAssistQueue — manages assist channel state (select, submit, reply, action)
 // Modeled after useDecisionQueue.js — encapsulates all assist lifecycle.
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { ROLES } from '../data';
 
 const SIMULATED_REPLIES = [
@@ -16,6 +16,9 @@ export function useAssistQueue(initialItems, role) {
   const [filter, setFilter] = useState('All');
   const [typing, setTyping] = useState(null);
   const nextIdRef = useRef(initialItems.length + 1);
+  const timeoutIds = useRef([]);
+
+  useEffect(() => () => timeoutIds.current.forEach(clearTimeout), []);
 
   const filtered = useMemo(() => {
     if (filter === 'All') return items;
@@ -59,8 +62,8 @@ export function useAssistQueue(initialItems, role) {
     setItems((prev) => [newItem, ...prev]);
     setSelected(id);
 
-    setTimeout(() => setItems((prev) => prev.map((x) => x.id === id ? { ...x, status: 'triaging' } : x)), 1500);
-    setTimeout(() => {
+    timeoutIds.current.push(setTimeout(() => setItems((prev) => prev.map((x) => x.id === id ? { ...x, status: 'triaging' } : x)), 1500));
+    timeoutIds.current.push(setTimeout(() => {
       const t = new Date().toISOString();
       setItems((prev) => prev.map((x) => x.id === id ? {
         ...x, status: 'triaged', category: 'Improvement', priority: 'medium',
@@ -72,7 +75,7 @@ export function useAssistQueue(initialItems, role) {
           type: 'triage',
         }],
       } : x));
-    }, 3500);
+    }, 3500));
   }, []);
 
   const handleReply = useCallback((itemId, text, role) => {
@@ -83,7 +86,7 @@ export function useAssistQueue(initialItems, role) {
     } : x));
     setTyping(itemId);
 
-    setTimeout(() => {
+    timeoutIds.current.push(setTimeout(() => {
       const t = new Date().toISOString();
       setItems((prev) => prev.map((x) => x.id === itemId ? {
         ...x, thread: [...x.thread, {
@@ -93,7 +96,7 @@ export function useAssistQueue(initialItems, role) {
         }],
       } : x));
       setTyping(null);
-    }, 2500);
+    }, 2500));
   }, []);
 
   const handleAction = useCallback((id) => {

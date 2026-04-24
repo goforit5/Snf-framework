@@ -37,9 +37,9 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
 
       {/* Role switcher chips */}
-      <div className="controlbar-roles" style={{ display: 'flex', gap: 2 }}>
+      <div className="controlbar-roles" role="tablist" aria-label="Role selector" style={{ display: 'flex', gap: 2 }}>
         {ROLES.map((r) => (
-          <button key={r.id} onClick={() => setRole(r.id)} style={{
+          <button key={r.id} onClick={() => setRole(r.id)} role="tab" aria-selected={role === r.id} style={{
             all: 'unset', cursor: 'pointer',
             padding: '4px 10px', borderRadius: 6,
             fontSize: 12, fontWeight: role === r.id ? 600 : 400,
@@ -65,9 +65,9 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       <span style={{ flex: 1 }} />
 
       {/* View section */}
-      <div style={{ display: 'flex', gap: 2 }}>
+      <div role="tablist" aria-label="View navigation" style={{ display: 'flex', gap: 2 }}>
         {VIEW_TABS.map(({ key, label, path }) => (
-          <button key={key} onClick={() => navigate(path)} style={{
+          <button key={key} onClick={() => navigate(path)} role="tab" aria-selected={activeView === key} style={{
             all: 'unset', cursor: 'pointer',
             padding: '4px 12px', borderRadius: 6,
             fontSize: 12, fontWeight: activeView === key ? 600 : 400,
@@ -83,7 +83,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
 
       {/* Notification bell */}
-      <button onClick={() => setNotifOpen((o) => !o)} style={{
+      <button onClick={() => setNotifOpen((o) => !o)} aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'} style={{
         all: 'unset', cursor: 'pointer', position: 'relative',
         padding: '4px 8px', borderRadius: 6,
         color: notifOpen ? 'var(--accent)' : 'var(--ink-3)',
@@ -100,7 +100,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           <span style={{
             position: 'absolute', top: 0, right: 2,
             minWidth: 14, height: 14, borderRadius: 7,
-            background: 'var(--red, #e53e3e)', color: '#fff',
+            background: 'var(--red, #e53e3e)', color: 'var(--ink-on-accent)',
             fontSize: 9, fontWeight: 700, lineHeight: '14px',
             textAlign: 'center', padding: '0 3px',
           }}>
@@ -112,7 +112,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
 
       {/* Dark mode toggle */}
-      <button onClick={() => setDark((d) => !d)} style={{
+      <button onClick={() => setDark((d) => !d)} role="switch" aria-checked={dark} aria-label="Dark mode" style={{
         all: 'unset', cursor: 'pointer',
         padding: '4px 10px', borderRadius: 6,
         fontSize: 12, color: 'var(--ink-3)',

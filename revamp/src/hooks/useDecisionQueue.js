@@ -7,16 +7,13 @@ export function useDecisionQueue(decisions) {
   const [items, setItems] = useState(() =>
     decisions.map((d) => ({ ...d, _status: 'pending' }))
   );
-  const [actionLog, setActionLog] = useState([]);
+  const [actionLog, setActionLog] = useState({});
 
   const act = useCallback((id, status) => {
     setItems((prev) =>
       prev.map((item) => (item.id === id ? { ...item, _status: status } : item))
     );
-    setActionLog((prev) => [
-      ...prev,
-      { id, action: status, timestamp: new Date().toISOString() },
-    ]);
+    setActionLog((prev) => ({ ...prev, [id]: { action: status, at: new Date().toISOString() } }));
   }, []);
 
   const approve = useCallback((id) => act(id, 'approved'), [act]);
@@ -30,12 +27,11 @@ export function useDecisionQueue(decisions) {
 
   const stats = useMemo(() => {
     const total = items.length;
-    const pendingCount = items.filter((i) => i._status === 'pending').length;
     const approved = items.filter((i) => i._status === 'approved').length;
     const escalated = items.filter((i) => i._status === 'escalated').length;
     const deferred = items.filter((i) => i._status === 'deferred').length;
-    return { total, pending: pendingCount, approved, escalated, deferred };
-  }, [items]);
+    return { total, pending: pending.length, approved, escalated, deferred };
+  }, [items, pending]);
 
   return { items, pending, approve, escalate, defer, stats, actionLog };
 }

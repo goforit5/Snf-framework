@@ -52,7 +52,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
         {item.direction === 'outbound' && item.actionRequired && item.status !== 'acted' && (
           <button onClick={() => assistQueue.handleAction(item.id)} style={{
             all: 'unset', cursor: 'pointer',
-            padding: '5px 10px', borderRadius: 6, background: 'var(--accent)', color: '#fff',
+            padding: '5px 10px', borderRadius: 6, background: 'var(--accent)', color: 'var(--ink-on-accent)',
             fontSize: 11.5, fontWeight: 600,
           }}>
             {item.actionLabel}
@@ -158,7 +158,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
                   {isUser
                     ? <div style={{
                         width: 18, height: 18, borderRadius: 9, background: 'var(--accent)',
-                        color: '#fff', fontSize: 8, fontWeight: 700, display: 'flex',
+                        color: 'var(--ink-on-accent)', fontSize: 8, fontWeight: 700, display: 'flex',
                         alignItems: 'center', justifyContent: 'center',
                       }}>{(msg.role || 'U')[0]}</div>
                     : <AgentDot name={msg.name || 'Assist Agent'} color="var(--violet)" size={18} />
@@ -212,8 +212,10 @@ export function AssistItemDetail({ item, assistQueue, role }) {
       </div>
 
       {/* Action bar — matches DecisionDetail action bar */}
-      <div style={{ padding: '10px 24px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+      <div style={{ padding: '10px 24px', borderTop: '1px solid var(--line)', display: 'flex', gap: 8, alignItems: 'flex-end', position: 'relative' }}>
+        <label htmlFor="reply-input" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Reply to thread</label>
         <textarea
+          id="reply-input"
           ref={replyRef}
           placeholder="Reply..."
           rows={1}
@@ -231,7 +233,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
           all: 'unset', cursor: 'pointer',
           padding: '8px 14px', borderRadius: 'var(--r-1)',
           fontSize: 12, fontWeight: 600,
-          background: 'var(--accent)', color: '#fff',
+          background: 'var(--accent)', color: 'var(--ink-on-accent)',
           flexShrink: 0,
         }}>
           Send &#x21B5;
@@ -358,8 +360,10 @@ export function AssistEmpty({ assistQueue, role }) {
         background: 'var(--surface)', border: '1px solid var(--line)',
         borderRadius: 10, padding: 16, marginBottom: 24,
       }}>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end', position: 'relative' }}>
+          <label htmlFor="compose-input" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>Compose message</label>
           <textarea
+            id="compose-input"
             ref={composeRef}
             value={composeText}
             onChange={handleInput}
@@ -380,7 +384,7 @@ export function AssistEmpty({ assistQueue, role }) {
             padding: '8px 16px', borderRadius: 'var(--r-1)',
             fontSize: 12, fontWeight: 600,
             background: composeText.trim() ? 'var(--accent)' : 'var(--line)',
-            color: composeText.trim() ? '#fff' : 'var(--ink-4)',
+            color: composeText.trim() ? 'var(--ink-on-accent)' : 'var(--ink-4)',
             flexShrink: 0,
           }}>
             Send

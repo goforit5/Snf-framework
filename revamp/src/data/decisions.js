@@ -20,6 +20,11 @@ export const DECISIONS = [
       ['IR-2026-042', 'Mar 10 · hallway', 'Minor laceration'],
       ['Cognitive assessment', 'BIMS 8 (moderate)', 'PCC · Feb 28'],
     ],
+    nextSteps: [
+      'Schedule care conference within 4 hours',
+      'Notify POA Jennifer Chen via secure message',
+      'Flag 3 fall-risk meds for physician review',
+    ],
     domain: 'clinical',
   },
   {
@@ -39,6 +44,11 @@ export const DECISIONS = [
       ['Onset clustering', '4 cases in 72h window', 'PCC · infection log'],
       ['Facility baseline', 'UTI rate was 1.2% → now 3.8%', 'PCC · 90d trend'],
     ],
+    nextSteps: [
+      'Isolate affected residents and quarantine catheter lot #KT-2026-0441',
+      'Initiate 14-day surveillance protocol across both facilities',
+      'File state health department notification within 24 hours',
+    ],
     domain: 'clinical',
   },
   {
@@ -57,6 +67,11 @@ export const DECISIONS = [
       ['High-risk subset', '8 on 2+ Beers meds', 'Pharmacy analysis'],
       ['Last GDR review', 'Apr 8 (12 days overdue)', 'PCC · care plan'],
       ['Antipsychotic PRN trend', '2.3× increase 30d', 'PCC MAR'],
+    ],
+    nextSteps: [
+      'Schedule consulting pharmacist review for all 23 residents by Apr 25',
+      'Prioritize 8 residents on 2+ Beers meds for immediate physician consult',
+      'Generate GDR compliance report for state survey readiness',
     ],
     domain: 'clinical',
   },
@@ -79,6 +94,11 @@ export const DECISIONS = [
       ['Current denial rate', '14 of 14 (100%)', 'Pattern confirmed'],
       ['Average days to payment', '18 days after refile', 'AR history'],
     ],
+    nextSteps: [
+      'Refile all 14 claims with mod-25 appended to CPT 99214',
+      'Expected recovery $62,400 within 21 business days',
+      'Flag Aetna bundling pattern for proactive mod-25 on future batches',
+    ],
     domain: 'finance',
   },
   {
@@ -97,6 +117,11 @@ export const DECISIONS = [
       ['March invoice delta', '+18.2% weighted', 'AP ledger'],
       ['12-mo pricing', 'CPI +6.1% same period', 'BLS'],
     ],
+    nextSteps: [
+      'File formal dispute citing Section 4.2 (5% annual cap)',
+      'Hold next delivery cycle pending vendor response',
+      'Projected annual savings: $49,200 if contract terms enforced',
+    ],
     domain: 'finance',
   },
   {
@@ -114,6 +139,11 @@ export const DECISIONS = [
       ['JE batch 2026-04-R1', '$2.14M · 47 entries', 'GL pending'],
       ['Bank recs', '8 of 8 complete', 'Treasury'],
       ['AP subledger', 'Reconciled · variance $0', 'Workday'],
+    ],
+    nextSteps: [
+      'Post rev-rec entries ($2.14M, 47 journal entries) to GL',
+      'Payroll accruals auto-post at 6pm today',
+      'Target close completion by end of day tomorrow',
     ],
     domain: 'finance',
   },
@@ -136,6 +166,11 @@ export const DECISIONS = [
       ['F-725 citation risk', '48% probability', 'CMS history · 10yr'],
       ['Delgado assessment', '94/100', 'Internal · 2026-04-11'],
     ],
+    nextSteps: [
+      'Generate offer letter for Maria Delgado at $142K + signing bonus',
+      'File DPH Form 602 (DON change notification) with state',
+      'Schedule 2-week overlap with acting DON Taylor Reed for transition',
+    ],
     domain: 'workforce',
   },
   {
@@ -153,6 +188,11 @@ export const DECISIONS = [
       ['License RN-2019-45678', 'Expires Apr 24', 'State board API'],
       ['Scheduled shifts Apr 22–28', '12 shifts, 96h', 'PCC'],
       ['Agency rate', '$62/h · 1.6x', 'AP history'],
+    ],
+    nextSteps: [
+      'Submit board expedite renewal application ($75 fee)',
+      'Activate backup coverage schedule for 12 affected shifts',
+      'Monitor renewal status daily until confirmed',
     ],
     domain: 'workforce',
   },
@@ -172,6 +212,11 @@ export const DECISIONS = [
       ['Agency premium', '$24/h over base', 'AP ledger'],
       ['Differential model', 'break-even 38%', 'Finance'],
       ['Competitor benchmark', '$4-8/h differential standard', 'Market survey'],
+    ],
+    nextSteps: [
+      'Implement $6/hr night-shift CNA differential at 3 facilities',
+      'Notify agency contracts of 60-day wind-down timeline',
+      'Break-even target: reduce call-offs by 38% within 30 days',
     ],
     domain: 'workforce',
   },
@@ -194,6 +239,11 @@ export const DECISIONS = [
       ['Resident risk', '3 O2-dependent residents', 'PCC · clinical'],
       ['Vendor ETA', 'Comfort HVAC · 2pm today', 'Vendor portal'],
     ],
+    nextSteps: [
+      'Deploy 6 portable AC units to west wing rooms immediately',
+      'Relocate 3 oxygen-dependent residents to east wing rooms 204, 206, 208',
+      'Vendor Comfort HVAC confirmed for 2pm — estimated repair cost $8,400',
+    ],
     domain: 'operations',
   },
   {
@@ -213,6 +263,11 @@ export const DECISIONS = [
       ['Wound dressings', '5.8 days supply remaining', 'McKesson'],
       ['PO total', '$12,640 · within budget', 'AP system'],
     ],
+    nextSteps: [
+      'Submit PO #PO-2026-1847 to Sysco and McKesson ($12,640 total)',
+      'Delivery confirmed by Apr 23 for all 5 facilities',
+      'Set reorder threshold alerts to 10-day buffer going forward',
+    ],
     domain: 'operations',
   },
   {
@@ -231,6 +286,11 @@ export const DECISIONS = [
       ['Sunrise Senior last drill', 'Jan 10 · 100 days ago', 'Compliance log'],
       ['State requirement', 'Every 90 days per shift', 'Regulation'],
       ['Surveyor visits', 'Bayview due May 1 (est.)', 'Survey tracker'],
+    ],
+    nextSteps: [
+      'Schedule Bayview fire drill Apr 22 (night shift)',
+      'Schedule Sunrise Senior fire drill Apr 23 (day shift)',
+      'Distribute pre-generated sign-off sheets to charge nurses',
     ],
     domain: 'operations',
   },
@@ -253,6 +313,11 @@ export const DECISIONS = [
       ['Estimated revenue', '$38,500 · 22d LOS · RUG-IV ES2', 'PDPM calc'],
       ['Bed availability', 'Room 112 · private · rehab wing', 'PCC census'],
     ],
+    nextSteps: [
+      'Accept referral and confirm Room 112 assignment in PCC',
+      'Arrange transport from Regional Medical Center for 2pm arrival',
+      'Expected revenue: $38,500 over 22-day Medicare A stay',
+    ],
     domain: 'admissions',
   },
   {
@@ -272,6 +337,11 @@ export const DECISIONS = [
       ['Revenue per patient day', '$287 vs $312 target', 'GL analysis'],
       ['Top Medicaid-heavy sites', 'Valley View 74%, Lakeside 71%', 'PCC'],
     ],
+    nextSteps: [
+      'Increase hospital liaison visits to Regional Medical and St. Mary',
+      'Target 4 additional Medicare A admits per week to close payer gap',
+      'Initiate managed care contract renegotiation at Valley View and Lakeside',
+    ],
     domain: 'admissions',
   },
   {
@@ -290,6 +360,11 @@ export const DECISIONS = [
       ['Lakeside Manor census', '82/100 beds · 82.0%', 'PCC'],
       ['3-week trend', 'Down 2.1%, 1.8%, 1.4%', 'Census tracker'],
       ['Referral pipeline', '8 pending · 4 likely', 'Marketing CRM'],
+    ],
+    nextSteps: [
+      'Launch marketing blitz: outreach to 12 physician practices',
+      'Schedule hospital case manager visits at 3 referral hospitals',
+      'Community open house event Apr 28 — goal: 6 admissions in 14 days',
     ],
     domain: 'admissions',
   },
@@ -312,6 +387,11 @@ export const DECISIONS = [
       ['Quality measures', '3 of 14 below benchmark', 'CMS QM report'],
       ['Survey deficiencies', '4 open POC items', 'State survey · Mar 8'],
     ],
+    nextSteps: [
+      'Increase RN staffing hours to 3.8/resident/day immediately',
+      'Close 4 open POC items from March survey by Apr 28',
+      'Submit staffing correction data to CMS before May 1 refresh',
+    ],
     domain: 'quality',
   },
   {
@@ -331,6 +411,11 @@ export const DECISIONS = [
       ['Evening shift correlation', '68% of falls between 6pm-10pm', 'Incident reports'],
       ['Bed alarm compliance', '74% vs 95% target', 'Nursing audit'],
     ],
+    nextSteps: [
+      'Deploy updated fall prevention protocol at top 3 facilities',
+      'Add evening CNA rounding checks every hour (6pm-10pm)',
+      'Audit bed alarm compliance — target 95% by May 31',
+    ],
     domain: 'quality',
   },
   {
@@ -349,6 +434,11 @@ export const DECISIONS = [
       ['GR-2026-043', 'Filed Apr 17 · dietary restriction ignored', 'Grievance log'],
       ['GR-2026-044', 'Filed Apr 17 · portion size', 'Grievance log'],
       ['Response deadline', '72h · all 3 exceeded', 'CMS requirement'],
+    ],
+    nextSteps: [
+      'Call all 3 families today and document resolution in PCC',
+      'Schedule family council meeting Apr 25 to address dietary concerns',
+      'Review new dietary vendor SLA compliance for corrective action',
     ],
     domain: 'quality',
   },
@@ -371,6 +461,11 @@ export const DECISIONS = [
       ['Our counter position', '4.8% · $327/day', 'Finance model'],
       ['Affected residents', '340 across 8 facilities', 'PCC payer report'],
     ],
+    nextSteps: [
+      'Submit counter-proposal at 3.9% ($324.17/day) by Apr 28 deadline',
+      'Include CPI-Medical +5.2% and labor +8.1% data in negotiation packet',
+      'Annual rate differential: $890K across 340 residents at 8 facilities',
+    ],
     domain: 'legal',
   },
   {
@@ -390,6 +485,11 @@ export const DECISIONS = [
       ['Outside counsel estimate', 'Settlement $200-300K', 'Wilson & Associates'],
       ['Insurance coverage', '60% above $100K deductible', 'Policy #GL-2025-4422'],
     ],
+    nextSteps: [
+      'Increase litigation reserve from $150K to $275K in GL',
+      'Prepare mediation brief for May 12 session',
+      'Insurance covers 60% above $100K deductible — net exposure ~$110K',
+    ],
     domain: 'legal',
   },
   {
@@ -408,6 +508,11 @@ export const DECISIONS = [
       ['F-725 (staffing)', 'POC drafted · implemented Apr 8', 'Compliance'],
       ['F-758 (pharmacy)', 'POC drafted · implemented Apr 12', 'Compliance'],
       ['F-880 (infection)', 'POC drafted · implemented Apr 14', 'Compliance'],
+    ],
+    nextSteps: [
+      'Sign and submit POC responses for F-689, F-725, F-758, F-880',
+      'Upload signed documents to DPH portal by Apr 28 deadline',
+      'All corrective actions already implemented — documentation only',
     ],
     domain: 'legal',
   },
@@ -430,6 +535,11 @@ export const DECISIONS = [
       ['Census', '91% avg · above market 86%', 'Facility data'],
       ['Deferred maintenance', '$4.2M est. · HVAC, roofing', 'Engineering assessment'],
     ],
+    nextSteps: [
+      'Submit LOI at $37.5M with $2M capital improvement escrow',
+      'Schedule on-site engineering assessment for deferred maintenance',
+      'Verify transferability of 3 Medicare Advantage contracts with legal',
+    ],
     domain: 'strategic',
   },
   {
@@ -449,6 +559,11 @@ export const DECISIONS = [
       ['Occupancy', '87.3% portfolio avg', 'PCC'],
       ['Deck status', '42 slides · draft complete', 'Board prep system'],
     ],
+    nextSteps: [
+      'Review 42-slide deck and approve final talking points',
+      'Highlight revenue growth +6.2% vs industry +3.1%',
+      'Board meeting May 8 — deck due to board secretary by May 5',
+    ],
     domain: 'strategic',
   },
   {
@@ -467,6 +582,11 @@ export const DECISIONS = [
       ['Proposed minimum', '4.1 RN hrs/resident/day', 'Bill text'],
       ['Current Ensign avg (CA)', '3.6 RN hrs/resident/day', 'PBJ data'],
       ['Cost impact', '$18M/yr · 47 CA facilities', 'Finance model'],
+    ],
+    nextSteps: [
+      'Join AHCA coalition and submit written testimony by May 5',
+      'Prepare fiscal impact analysis showing rural facility closure risk',
+      'Committee vote May 15 — monitor and brief government affairs team',
     ],
     domain: 'strategic',
   },

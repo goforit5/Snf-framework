@@ -155,7 +155,7 @@ export default function EscalationCard({ escalationId, width, height, theme = 'l
               cursor: isDecided ? 'default' : 'pointer',
               padding: '9px 14px', borderRadius: 8,
               background: i === 0 && !isDecided ? 'var(--accent)' : 'var(--surface)',
-              color: i === 0 && !isDecided ? '#fff' : 'var(--ink-1)',
+              color: i === 0 && !isDecided ? 'var(--ink-on-accent)' : 'var(--ink-1)',
               border: i === 0 && !isDecided ? 'none' : '1px solid var(--line)',
               fontSize: 13, fontWeight: i === 0 ? 600 : 500,
               opacity: isDecided ? 0.5 : 1,
@@ -171,7 +171,7 @@ export default function EscalationCard({ escalationId, width, height, theme = 'l
       {isDecided && (
         <div style={{
           marginTop: 12, padding: '10px 14px', borderRadius: 8,
-          background: 'var(--green)', color: '#fff',
+          background: 'var(--green)', color: 'var(--ink-on-accent)',
           fontSize: 13, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{ fontSize: 16 }}>&#x2713;</span>

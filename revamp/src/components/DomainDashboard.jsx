@@ -2,7 +2,7 @@
 // Renders stats strip, agent summary, decision list, and records table.
 // When pageName is provided AND page data exists, renders page-specific layout.
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { getDomain } from '../data/domains';
 import { getPageData } from '../data/pages';
 import { DECISIONS } from '../data';
@@ -49,6 +49,8 @@ const HIGHLIGHT_STYLES = {
 export default function DomainDashboard({ domainKey, pageName, onRecordClick, onDecisionClick, onClearPage, onAgentClick }) {
   const domain = getDomain(domainKey);
   const pageData = useMemo(() => pageName ? getPageData(pageName) : null, [pageName]);
+  const [hoveredCardId, setHoveredCardId] = useState(null);
+  const [hoveredAgentId, setHoveredAgentId] = useState(null);
 
   const agents = useMemo(() =>
     (domain?.agents || []).map((id) => AGENTS.find((a) => a.id === id)).filter(Boolean),
@@ -122,13 +124,13 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
           <>
             <LabelSmall>Primary agent</LabelSmall>
             <div onClick={() => onAgentClick?.(primaryAgent.id)} style={{
-              background: 'var(--surface)', border: '1px solid var(--line)',
+              background: 'var(--surface)', border: `1px solid ${hoveredCardId === primaryAgent.id ? 'var(--accent)' : 'var(--line)'}`,
               borderRadius: 10, padding: '14px 16px', marginBottom: 22,
               display: 'flex', alignItems: 'center', gap: 12,
               cursor: onAgentClick ? 'pointer' : 'default', transition: 'border-color .15s',
             }}
-              onMouseEnter={onAgentClick ? (e) => { e.currentTarget.style.borderColor = 'var(--accent)'; } : undefined}
-              onMouseLeave={onAgentClick ? (e) => { e.currentTarget.style.borderColor = 'var(--line)'; } : undefined}
+              onMouseEnter={onAgentClick ? () => setHoveredCardId(primaryAgent.id) : undefined}
+              onMouseLeave={onAgentClick ? () => setHoveredCardId(null) : undefined}
             >
               <AgentDot agent={primaryAgent} size={32} />
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -271,9 +273,9 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
           {agents.map((a) => (
             <div key={a.id} onClick={() => onAgentClick?.(a.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: onAgentClick ? 'pointer' : 'default', padding: '2px 6px', borderRadius: 6, transition: 'background .12s' }}
-              onMouseEnter={onAgentClick ? (e) => { e.currentTarget.style.background = 'var(--accent-weak)'; } : undefined}
-              onMouseLeave={onAgentClick ? (e) => { e.currentTarget.style.background = 'transparent'; } : undefined}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: onAgentClick ? 'pointer' : 'default', padding: '2px 6px', borderRadius: 6, transition: 'background .12s', background: hoveredAgentId === a.id ? 'var(--accent-weak)' : 'transparent' }}
+              onMouseEnter={onAgentClick ? () => setHoveredAgentId(a.id) : undefined}
+              onMouseLeave={onAgentClick ? () => setHoveredAgentId(null) : undefined}
             >
               <AgentDot agent={a} size={22} />
               <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink-1)' }}>{a.name}</span>
@@ -305,7 +307,7 @@ function DecisionList({ decisions, onDecisionClick }) {
         {decisions.length > 0 && (
           <span style={{
             padding: '1px 7px', borderRadius: 8,
-            background: 'var(--accent)', color: '#fff',
+            background: 'var(--accent)', color: 'var(--ink-on-accent)',
             fontSize: 10, fontWeight: 700,
           }}>{decisions.length}</span>
         )}

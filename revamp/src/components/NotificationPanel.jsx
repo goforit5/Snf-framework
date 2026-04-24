@@ -2,7 +2,7 @@
 // Shows recent agent actions and decisions requiring attention.
 // Supports type filtering, click-to-navigate, and mark-as-read.
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 const MOCK_NOTIFICATIONS = [
   { id: 'n-1', type: 'agent',    title: 'AP Processing auto-posted 47 invoices',       body: '$187,400 across 6 facilities — zero exceptions.',               ts: '2m ago',  read: false },
@@ -69,6 +69,30 @@ export default function NotificationPanel({ open, onClose, onNavigate, onUnreadC
     }
   }, [onNavigate, onClose]);
 
+  const panelRef = useRef(null);
+
+  // Focus trap + Escape key
+  useEffect(() => {
+    if (!open || !panelRef.current) return;
+    const panel = panelRef.current;
+    const focusable = panel.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (focusable.length) focusable[0].focus();
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') { onClose(); return; }
+      if (e.key !== 'Tab') return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    };
+    panel.addEventListener('keydown', handleKeyDown);
+    return () => panel.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose, filter]);
+
   if (!open) return null;
 
   return (
@@ -80,7 +104,7 @@ export default function NotificationPanel({ open, onClose, onNavigate, onUnreadC
       />
 
       {/* Panel */}
-      <div role="dialog" aria-label="Notifications" className="slide-in-right" style={{
+      <div ref={panelRef} role="dialog" aria-label="Notifications" aria-modal="true" className="slide-in-right" style={{
         position: 'fixed', right: 0, top: 44, width: 360,
         height: 'calc(100vh - 44px)', zIndex: 91,
         background: 'var(--surface)', borderLeft: '1px solid var(--line)',
@@ -97,7 +121,7 @@ export default function NotificationPanel({ open, onClose, onNavigate, onUnreadC
           </span>
           {unreadCount > 0 && (
             <span style={{
-              fontSize: 10.5, fontWeight: 600, color: '#fff',
+              fontSize: 10.5, fontWeight: 600, color: 'var(--ink-on-accent)',
               background: 'var(--red)', borderRadius: 'var(--r-pill)',
               padding: '1px 7px', lineHeight: '16px',
             }}>
@@ -115,13 +139,18 @@ export default function NotificationPanel({ open, onClose, onNavigate, onUnreadC
           )}
         </div>
 
+        {/* Live region for screen readers */}
+        <div aria-live="polite" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}>
+          {unreadCount > 0 ? `${unreadCount} unread notifications` : 'No unread notifications'}
+        </div>
+
         {/* Filter tabs */}
-        <div style={{
+        <div role="tablist" aria-label="Notification filters" style={{
           display: 'flex', gap: 2, padding: '8px 16px',
           borderBottom: '1px solid var(--line)',
         }}>
           {FILTER_TABS.map((tab) => (
-            <button key={tab.key} onClick={() => setFilter(tab.key)} style={{
+            <button key={tab.key} onClick={() => setFilter(tab.key)} role="tab" aria-selected={filter === tab.key} style={{
               all: 'unset', cursor: 'pointer',
               padding: '4px 10px', borderRadius: 6,
               fontSize: 11.5, fontWeight: filter === tab.key ? 600 : 400,
@@ -137,19 +166,33 @@ export default function NotificationPanel({ open, onClose, onNavigate, onUnreadC
         {/* List */}
         <div style={{ flex: 1, overflow: 'auto' }}>
           {filteredItems.length === 0 ? (
-            <div style={{
-              padding: '48px 16px', textAlign: 'center',
-              fontSize: 13, color: 'var(--ink-3)',
-            }}>
-              {filter === 'all' ? 'All caught up.' : `No ${filter} notifications.`}
-            </div>
+            filter === 'all' ? (
+              <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+                <svg aria-hidden="true" width="32" height="32" viewBox="0 0 16 16" fill="none" stroke="var(--ink-4)" strokeWidth="1.2" style={{ marginBottom: 10 }}>
+                  <path d="M4 6a4 4 0 018 0c0 4 2 5 2 5H2s2-1 2-5"/>
+                  <path d="M6 13a2 2 0 004 0"/>
+                </svg>
+                <div style={{ fontSize: 13, color: 'var(--ink-3)', marginBottom: 4 }}>All caught up</div>
+                <div style={{ fontSize: 11.5, color: 'var(--ink-4)' }}>48 agents monitoring 330 facilities</div>
+              </div>
+            ) : (
+              <div style={{
+                padding: '48px 16px', textAlign: 'center',
+                fontSize: 13, color: 'var(--ink-3)',
+              }}>
+                {`No ${filter} notifications.`}
+              </div>
+            )
           ) : (
             filteredItems.map((n) => {
               const isHovered = hoveredId === n.id;
               return (
                 <div
                   key={n.id}
+                  tabIndex={0}
+                  role="button"
                   onClick={() => handleClick(n)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(n); } }}
                   onMouseEnter={() => setHoveredId(n.id)}
                   onMouseLeave={() => setHoveredId(null)}
                   style={{

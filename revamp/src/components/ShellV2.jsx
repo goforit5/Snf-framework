@@ -5,74 +5,19 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { DECISIONS, ROLES, ASSIST_ITEMS } from '../data';
 import { DOMAINS as DOMAIN_DATA } from '../data/domains';
+import { DOMAINS, RAIL_ORDER } from '../data/shell-domains';
 import DomainDashboard from './DomainDashboard';
 import RecordInspector from './RecordInspector';
 import AssistMid from './AssistMid';
 import { AssistItemDetail, AssistEmpty } from './AssistDetail';
 import { useDecisionQueue } from '../hooks/useDecisionQueue';
 import { useAssistQueue } from '../hooks/useAssistQueue';
-import { LabelSmall, PriorityDot, priorityColor } from './shared';
-
-const DOMAINS = [
-  { id: 'home',       name: 'Home',         icon: 'home',   sections: null },
-  { id: 'assist',     name: 'Assist',       icon: 'assist', sections: null },
-  { id: 'clinical',   name: 'Clinical',     icon: 'heart',  sections: [
-    { label: 'Command',       pages: ['Clinical Command', 'Survey Readiness', 'Clinical Compliance', 'Audit Library'] },
-    { label: 'Care',          pages: ['Infection Control', 'Pharmacy Management', 'Therapy & Rehab', 'Dietary & Nutrition', 'Social Services'] },
-    { label: 'Documentation', pages: ['Medical Records', 'Care Transitions', 'Documentation Integrity'] },
-  ]},
-  { id: 'finance',    name: 'Finance',      icon: 'dollar', sections: [
-    { label: 'Revenue',  pages: ['Revenue Cycle Command', 'Billing & Claims', 'AR Management', 'Managed Care Contracts', 'PDPM Optimization'] },
-    { label: 'Payables', pages: ['AP Operations', 'Invoice Exceptions', 'Treasury & Cash Flow'] },
-    { label: 'Close',    pages: ['Monthly Close', 'Budget & Forecast', 'Payroll Command'] },
-  ]},
-  { id: 'workforce',  name: 'Workforce',    icon: 'people', sections: [
-    { label: 'Hire',     pages: ['Workforce Command', 'Recruiting Pipeline', 'Onboarding Center'] },
-    { label: 'Run',      pages: ['Scheduling & Staffing', 'Credentialing', 'Training & Education'] },
-    { label: 'Care for', pages: ['Employee Relations', 'Benefits Admin', "Workers' Comp", 'Retention Analytics'] },
-  ]},
-  { id: 'admissions', name: 'Admissions',   icon: 'door',   sections: [
-    { label: 'Pipeline', pages: ['Census Command', 'Referral Management', 'Pre-admission Screening', 'Admissions Intelligence'] },
-    { label: 'Grow',     pages: ['Payer Mix Optimization', 'Marketing & BD'] },
-  ]},
-  { id: 'quality',    name: 'Quality',      icon: 'shield', sections: [
-    { label: 'Safety',   pages: ['Quality Command', 'Patient Safety', 'Risk Management'] },
-    { label: 'Voice',    pages: ['Grievances & Complaints', 'Outcomes Tracking'] },
-  ]},
-  { id: 'operations', name: 'Operations',   icon: 'tools',  sections: [
-    { label: 'Facility', pages: ['Facility Command', 'Environmental Services', 'Maintenance', 'Life Safety'] },
-    { label: 'Support',  pages: ['Supply Chain', 'Transportation', 'IT Service Desk'] },
-  ]},
-  { id: 'legal',      name: 'Legal',        icon: 'gavel',  sections: [
-    { label: 'Core',     pages: ['Legal Command', 'Contract Lifecycle', 'Corporate Compliance'] },
-    { label: 'Defend',   pages: ['Litigation Tracker', 'Regulatory Response', 'Real Estate & Leases'] },
-  ]},
-  { id: 'strategic',  name: 'Strategic',    icon: 'chart',  sections: [
-    { label: 'Grow',     pages: ['M&A Pipeline', 'Market Intelligence'] },
-    { label: 'Govern',   pages: ['Board Governance', 'Investor Relations', 'Government Affairs'] },
-  ]},
-];
-
-// role-driven rail order (nothing hidden — just ordering)
-const RAIL_ORDER = {
-  CEO:        ['home','assist','strategic','finance','workforce','quality','clinical','operations','admissions','legal'],
-  Admin:      ['home','assist','workforce','clinical','operations','admissions','quality','finance','legal','strategic'],
-  DON:        ['home','assist','clinical','quality','workforce','operations','admissions','legal','finance','strategic'],
-  Billing:    ['home','assist','finance','admissions','legal','workforce','operations','clinical','quality','strategic'],
-  Accounting: ['home','assist','finance','workforce','operations','admissions','clinical','quality','legal','strategic'],
-};
-
-/* ─── Deep-link map: decision domain → best page ─── */
-const DOMAIN_PAGE_MAP = {
-  clinical:   'Clinical Command',
-  finance:    'Billing & Claims',
-  workforce:  'Workforce Command',
-  operations: 'Facility Command',
-  admissions: 'Census Command',
-  quality:    'Quality Command',
-  legal:      'Legal Command',
-  strategic:  'M&A Pipeline',
-};
+import { LabelSmall, PriorityDot, priorityColor, Breadcrumbs } from './shared';
+import Palette from './Palette';
+import DecisionDetail from './DecisionDetail';
+import PatientSafetyPage from './PatientSafetyPage';
+import BillingClaimsPage from './BillingClaimsPage';
+import CredentialingPage from './CredentialingPage';
 
 function RailIcon({ name, size = 16 }) {
   const p = {
@@ -100,11 +45,17 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [selectedRecordDomain, setSelectedRecordDomain] = useState(null);
 
+  // Hooks must be declared before any callbacks that reference them
+  const queue = useDecisionQueue(DECISIONS);
+  const assistQueue = useAssistQueue(ASSIST_ITEMS, role);
+
   // Navigation history stack (back button like Arc/Linear)
   const [history, setHistory] = useState([]);
+  const rightPaneRef = useRef(null);
 
   const pushHistory = useCallback(() => {
-    setHistory((prev) => [...prev.slice(-19), { domain, page, selDecision, selectedRecord, selectedRecordDomain, assistSelected: assistQueue.selected }]);
+    const scrollTop = rightPaneRef.current?.scrollTop || 0;
+    setHistory((prev) => [...prev.slice(-19), { domain, page, selDecision, selectedRecord, selectedRecordDomain, assistSelected: assistQueue.selected, scrollTop }]);
   }, [domain, page, selDecision, selectedRecord, selectedRecordDomain, assistQueue.selected]);
 
   const canGoBack = history.length > 0;
@@ -119,13 +70,13 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
       setSelectedRecord(last.selectedRecord);
       setSelectedRecordDomain(last.selectedRecordDomain);
       if (last.assistSelected !== undefined) assistQueue.setSelected(last.assistSelected);
+      // Restore scroll position after state updates
+      requestAnimationFrame(() => {
+        if (rightPaneRef.current) rightPaneRef.current.scrollTop = last.scrollTop || 0;
+      });
       return prev.slice(0, -1);
     });
   }, [assistQueue]);
-
-  // Ticket 1: decision queue
-  const queue = useDecisionQueue(DECISIONS);
-  const assistQueue = useAssistQueue(ASSIST_ITEMS, role);
 
   const order = RAIL_ORDER[role] || RAIL_ORDER.CEO;
   const rail = order.map((id) => DOMAINS.find((d) => d.id === id)).filter(Boolean);
@@ -227,6 +178,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
         canGoBack={canGoBack} goBack={goBack}
         assistQueue={assistQueue} role={role}
         onExternalNav={onExternalNav}
+        rightPaneRef={rightPaneRef}
       />
       {paletteOpen && (
         <Palette
@@ -251,7 +203,7 @@ function CommandRail({ rail, active, onPick, role, onSearch }) {
     }}>
       <div style={{
         width: 28, height: 28, borderRadius: 14, background: 'var(--accent)',
-        color: '#fff', fontSize: 10.5, fontWeight: 600, letterSpacing: .2,
+        color: 'var(--ink-on-accent)', fontSize: 10.5, fontWeight: 600, letterSpacing: .2,
         display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14,
       }}>{initial}</div>
 
@@ -333,7 +285,7 @@ function WorklistMid({ role, selDecision, onSel, queue }) {
                             fontSize: 9.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: .4,
                             padding: '1px 5px', borderRadius: 4,
                             background: d._status === 'approved' ? 'var(--green)' : d._status === 'escalated' ? 'var(--amber)' : 'var(--ink-3)',
-                            color: '#fff',
+                            color: 'var(--ink-on-accent)',
                           }}>{d._status}</span>
                         )}
                       </div>
@@ -400,13 +352,13 @@ function BackBar({ canGoBack, goBack, label }) {
 }
 
 /* ─── Right pane: decision detail OR page content OR record inspector ─── */
-function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack, assistQueue, role, onExternalNav }) {
+function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack, assistQueue, role, onExternalNav, rightPaneRef }) {
   // Record inspector takes priority
   if (selectedRecord) {
     return (
       <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label="Back to records" />
-        <div className="fade-in" key={`record-${selectedRecord?.id}`} style={{ flex: 1, overflow: 'auto' }}>
+        <div ref={rightPaneRef} className="fade-in" key={`record-${selectedRecord?.id}`} style={{ flex: 1, overflow: 'auto' }}>
           <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />
         </div>
       </div>
@@ -433,7 +385,7 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     return (
       <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} />
-        <div className="fade-in" key={`decision-${decision}`} style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div ref={rightPaneRef} className="fade-in" key={`decision-${decision}`} style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <DecisionDetail d={d} onNavTo={onNavTo} onNavToRecord={onNavToRecord} queue={queue} />
         </div>
       </div>
@@ -453,7 +405,7 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     return (
       <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
-        <div className="fade-in" key={`domain-${domain.id}-PatientSafety`} style={{ flex: 1, overflow: 'auto' }}>
+        <div ref={rightPaneRef} className="fade-in" key={`domain-${domain.id}-PatientSafety`} style={{ flex: 1, overflow: 'auto' }}>
           <PatientSafetyPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
         </div>
       </div>
@@ -464,7 +416,7 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     return (
       <div role="main" aria-label="Content" className="shell-right-pane fade-in" key={`domain-${domain.id}-BillingClaims`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div ref={rightPaneRef} style={{ flex: 1, overflow: 'auto' }}>
           <BillingClaimsPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
         </div>
       </div>
@@ -475,7 +427,7 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     return (
       <div role="main" aria-label="Content" className="shell-right-pane fade-in" key={`domain-${domain.id}-Credentialing`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div ref={rightPaneRef} style={{ flex: 1, overflow: 'auto' }}>
           <CredentialingPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
         </div>
       </div>
@@ -485,677 +437,8 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
   return (
     <div className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
       <BackBar canGoBack={canGoBack} goBack={goBack} label={page ? `Back to ${domain.name}` : null} />
-      <div className="fade-in" key={`domain-${domain.id}-${page}`} style={{ flex: 1, overflow: 'auto' }}>
+      <div ref={rightPaneRef} className="fade-in" key={`domain-${domain.id}-${page}`} style={{ flex: 1, overflow: 'auto' }}>
         <DomainDashboard {...dashProps} pageName={page || undefined} />
-      </div>
-    </div>
-  );
-}
-
-function Breadcrumbs({ items, onNavigate }) {
-  return (
-    <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center' }}>
-      {items.map((s, i) => (
-        <span key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {i > 0 && <span style={{ opacity: .5 }}>&rsaquo;</span>}
-          <span onClick={onNavigate && i < items.length - 1 ? () => onNavigate(i) : undefined}
-            style={{ cursor: i < items.length - 1 && onNavigate ? 'pointer' : 'default', ...(i < items.length - 1 && onNavigate ? { borderBottom: '1px dotted var(--ink-4)' } : {}) }}>{s}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/* ─── Decision Detail with navigate-to-page chip ─── */
-function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
-  const { approve, escalate, defer } = queue;
-  const actionStatus = d._status;
-  const isPending = actionStatus === 'pending';
-
-  // Ticket 4: deep-link ALL decisions
-  const domainId = d.domain || 'home';
-  const deepPage = DOMAIN_PAGE_MAP[domainId] || null;
-  const deepLink = deepPage ? { domain: domainId, page: deepPage } : null;
-
-  const impactPills = [
-    d.impact?.dollars != null && { k: `$${d.impact.dollars.toLocaleString()}`, v: d.impact.unit || '' },
-    d.impact?.citation && { k: d.impact.citation, v: 'citation risk' },
-    d.impact?.time_days && { k: `${d.impact.time_days}d`, v: 'window' },
-    d.impact?.probability && { k: `${Math.round(d.impact.probability * 100)}%`, v: 'probability' },
-  ].filter(Boolean);
-  const pc = priorityColor(d.priority);
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      {/* toolbar */}
-      <div style={{ padding: '10px 24px', borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 10, minHeight: 44 }}>
-        <Breadcrumbs items={['Home', 'Decisions', d.id]} onNavigate={(i) => { if (i === 0) onNavTo('home', null); }} />
-        <span style={{ flex: 1 }} />
-        {deepLink && (
-          <>
-            <button onClick={() => onNavTo(deepLink.domain, deepLink.page)} style={{
-              all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-              padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
-              background: 'var(--surface)', fontSize: 11.5, color: 'var(--accent)', fontWeight: 500,
-            }}>
-              <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
-              {deepLink.page}
-            </button>
-            {(() => {
-              const domData = DOMAIN_DATA.find((dd) => dd.id === domainId);
-              const firstRecord = domData?.records?.[0];
-              if (!firstRecord) return null;
-              return (
-                <button onClick={() => onNavToRecord(domainId, firstRecord)} style={{
-                  all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                  padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
-                  background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
-                }}>
-                  <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
-                  View records
-                </button>
-              );
-            })()}
-          </>
-        )}
-      </div>
-
-      <div style={{ overflow: 'auto', flex: 1, padding: '22px 32px 0' }}>
-        <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginBottom: 6 }}>{d.facility}</div>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: pc, textTransform: 'uppercase', letterSpacing: .4 }}>{d.priority}</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>{d.id}</span>
-          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>&middot; opened {d.since} ago</span>
-        </div>
-        <h1 style={{ margin: 0, fontSize: 24, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)', lineHeight: 1.2 }}>{d.title}</h1>
-        <p style={{ margin: '10px 0 18px', fontSize: 14, lineHeight: 1.55, color: 'var(--ink-2)', maxWidth: 640 }}>{d.one_line}</p>
-
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 22 }}>
-          {impactPills.map((p, i) => (
-            <div key={i} style={{ padding: '8px 12px', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 8, minWidth: 80 }}>
-              <div className="tnum" style={{ fontSize: 15, fontWeight: 600, letterSpacing: -0.2 }}>{p.k}</div>
-              <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .3, fontWeight: 500 }}>{p.v}</div>
-            </div>
-          ))}
-        </div>
-
-        <LabelSmall>Agent recommendation</LabelSmall>
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px', marginBottom: 20 }}>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, fontSize: 12 }}>
-            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--violet)" strokeWidth="1.4"><rect x="2" y="3" width="8" height="7" rx="1.5"/><path d="M6 1v2" strokeLinecap="round"/></svg>
-            <span style={{ fontWeight: 600 }}>{d.agent}</span>
-            <span style={{ color: 'var(--ink-3)' }}>&middot; {Math.round(d.confidence * 100)}% confidence</span>
-          </div>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>{d.rec}</p>
-        </div>
-
-        <LabelSmall>Evidence pulled</LabelSmall>
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, marginBottom: 24, overflow: 'hidden' }}>
-          {d.evidence.map((r, i) => (
-            <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr auto', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
-              <span style={{ fontWeight: 500 }}>{r[0]}</span>
-              <span className="tnum" style={{ color: 'var(--ink-2)' }}>{r[1]}</span>
-              <span style={{ color: 'var(--ink-3)', fontSize: 11 }}>{r[2]}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Ticket 1: action buttons with feedback */}
-      <div style={{ padding: '12px 24px', borderTop: '1px solid var(--line)', display: 'flex', gap: 10 }}>
-        {isPending ? (
-          <>
-            <button onClick={() => approve(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600 }}>Approve recommendation &#x21B5;</button>
-            <button onClick={() => escalate(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Escalate <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4, fontFamily: 'var(--font-mono)' }}>E</span></button>
-            <button onClick={() => defer(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Defer <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4, fontFamily: 'var(--font-mono)' }}>D</span></button>
-          </>
-        ) : (
-          <div aria-live="polite" style={{
-            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8,
-            background: actionStatus === 'approved' ? 'var(--green)' : actionStatus === 'escalated' ? 'var(--amber)' : 'var(--ink-3)',
-            color: '#fff', fontSize: 13, fontWeight: 600,
-          }}>
-            {actionStatus === 'approved' && '\u2713 Approved'}
-            {actionStatus === 'escalated' && '\u26A1 Escalated'}
-            {actionStatus === 'deferred' && '\u23F8 Deferred'}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Level-2 page: Patient Safety (Margaret Chen deep-link) ─── */
-function PatientSafetyPage({ domain, queue, onDecisionClick }) {
-  const falls = [
-    ['IR-2026-089', 'Apr 18 08:14', 'Bathroom', 'Witnessed \u00b7 no injury'],
-    ['IR-2026-067', 'Mar 31 22:40', 'Bedside',  'Bruise \u00b7 no fracture'],
-    ['IR-2026-042', 'Mar 10 13:02', 'Hallway',  'Laceration \u00b7 sutures'],
-  ];
-  return (
-    <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
-      <Breadcrumbs items={[domain.name, 'Patient Safety', 'Margaret Chen']} onNavigate={(i) => { if (i === 0 && onDecisionClick) onDecisionClick(null); }} />
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '8px 0 4px' }}>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Margaret Chen</h1>
-        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>R-214 &middot; Heritage Oaks &middot; Rm 228A</span>
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 20 }}>
-        82 yo &middot; admitted 2024-11-02 &middot; primary: CHF, mild dementia (BIMS 8) &middot; fall-risk tier: High
-      </div>
-
-      {/* top stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
-        {[
-          ['Falls (30d)', '3', 'var(--red)'],
-          ['F-689 risk', '61%', 'var(--red)'],
-          ['BIMS', '8 \u00b7 moderate', 'var(--amber)'],
-          ['Fall-risk meds', '3 active', 'var(--amber)'],
-        ].map(([l, v, c]) => (
-          <div key={l} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4, fontWeight: 600 }}>{l}</div>
-            <div className="tnum" style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.3, color: c }}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* agent's open decision on this resident */}
-      <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red)22', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: .4 }}>Critical</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>D-4822</span>
-          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>&middot; Clinical Monitor &middot; 88%</span>
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>3rd fall in 30 days &mdash; care conference today, POA notification</div>
-        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
-          Agent recommends scheduling a care conference for 2pm, notifying Jennifer Chen (POA), and physician review of 3 fall-risk meds (Lorazepam &middot; Zolpidem &middot; Oxybutynin).
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {(() => {
-            const dec = queue?.items.find((x) => x.id === 'D-4822');
-            const isPending = dec && dec._status === 'pending';
-            if (!isPending) return <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--green)' }}>✓ {dec?._status || 'Resolved'}</span>;
-            return (
-              <>
-                <button onClick={() => queue?.approve('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>Approve recommendation</button>
-                <button onClick={() => queue?.escalate('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate</button>
-                <button onClick={() => onDecisionClick?.('D-4822')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
-              </>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* incident log */}
-      <LabelSmall>Incident log &middot; 30 days</LabelSmall>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
-        {falls.map((f, i) => (
-          <div key={f[0]} style={{ display: 'grid', gridTemplateColumns: '110px 130px 100px 1fr', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
-            <span className="mono" style={{ color: 'var(--ink-2)' }}>{f[0]}</span>
-            <span className="tnum" style={{ color: 'var(--ink-2)' }}>{f[1]}</span>
-            <span style={{ color: 'var(--ink-2)' }}>{f[2]}</span>
-            <span style={{ color: 'var(--ink-1)' }}>{f[3]}</span>
-          </div>
-        ))}
-      </div>
-
-      <LabelSmall>Fall-risk meds</LabelSmall>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-        {['Lorazepam 0.5mg', 'Zolpidem 5mg', 'Oxybutynin 5mg'].map((m) => (
-          <div key={m} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{m}</div>
-            <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>Flagged by Pharmacy Monitor &middot; GDR review due</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Level-2 page: Billing & Claims (denied claim appeal deep-link) ─── */
-function BillingClaimsPage({ domain, queue, onDecisionClick }) {
-  const claims = [
-    ['CLM-2026-4471', 'Medicare A', '$14,280', 'Denied — medical necessity', 'Apr 15'],
-    ['CLM-2026-4392', 'Medicare A', '$8,940', 'Approved', 'Apr 12'],
-    ['CLM-2026-4318', 'Managed Care', '$22,100', 'Pending prior auth', 'Apr 10'],
-  ];
-  return (
-    <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
-      {/* Breadcrumb */}
-      <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
-        <span>{domain.name}</span>
-        <span style={{ opacity: .5 }}>&rsaquo;</span>
-        <span>Billing & Claims</span>
-        <span style={{ opacity: .5 }}>&rsaquo;</span>
-        <span>CLM-2026-4471</span>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '0 0 4px' }}>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Medicare A Denial — Heritage Oaks</h1>
-        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>CLM-2026-4471 · $14,280</span>
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 20 }}>
-        Resident: James Patterson (R-301) · Rm 114B · Admitted 2025-09-15 · Primary: COPD exacerbation, pneumonia
-      </div>
-
-      {/* Denial summary stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
-        {[
-          ['Claim Amount', '$14,280', 'var(--ink-1)'],
-          ['Denial Reason', 'Medical necessity', 'var(--red)'],
-          ['Appeal Deadline', '12 days', 'var(--amber)'],
-          ['Win Probability', '78%', 'var(--green)'],
-        ].map(([l, v, c]) => (
-          <div key={l} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4, fontWeight: 600 }}>{l}</div>
-            <div className="tnum" style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.3, color: c }}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Agent recommendation */}
-      <div style={{ background: 'var(--amber-bg)', border: '1px solid var(--amber)', borderRadius: 10, padding: '14px 16px', marginBottom: 20, borderLeftWidth: 3 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: .4 }}>High</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>D-4827</span>
-          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>· Billing Specialist · 91%</span>
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>File Level 1 redetermination with clinical documentation package</div>
-        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
-          Agent compiled physician progress notes, therapy minutes log (847 minutes over 14 days), and MDS Section GG showing functional improvement from 02→05 on self-care score. Medicare contractor's denial cites "insufficient skilled need" — but documented therapy intensity and functional gains exceed the MAC threshold. Historical win rate for similar appeals at Heritage Oaks: 82%.
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => queue?.approve('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>File appeal</button>
-          <button onClick={() => queue?.escalate('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate to legal</button>
-          <button onClick={() => onDecisionClick?.('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
-        </div>
-      </div>
-
-      {/* Appeal timeline */}
-      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Appeal Timeline</div>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
-        {[
-          ['Apr 15', 'Claim denied by Palmetto GBA', 'Reason: insufficient skilled need documentation', 'var(--red)'],
-          ['Apr 16', 'Agent auto-retrieved clinical documentation', '847 therapy minutes, MDS Section GG, physician notes compiled', 'var(--accent)'],
-          ['Apr 17', 'Appeal package drafted', 'Level 1 redetermination ready for review — 12 days remain', 'var(--amber)'],
-          ['Apr 29', 'Appeal deadline', 'Must file within 120 days of initial determination', 'var(--ink-3)'],
-        ].map((step, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '90px 1fr auto', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5, alignItems: 'start' }}>
-            <span className="tnum" style={{ color: 'var(--ink-2)', fontWeight: 500 }}>{step[0]}</span>
-            <div>
-              <div style={{ fontWeight: 600, marginBottom: 2 }}>{step[1]}</div>
-              <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{step[2]}</div>
-            </div>
-            <span style={{ width: 8, height: 8, borderRadius: 4, background: step[3], marginTop: 4 }} />
-          </div>
-        ))}
-      </div>
-
-      {/* Recent claims */}
-      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Recent claims · Heritage Oaks</div>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden' }}>
-        {claims.map((c, i) => (
-          <div key={c[0]} style={{ display: 'grid', gridTemplateColumns: '120px 100px 90px 1fr 80px', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
-            <span className="mono" style={{ color: 'var(--ink-2)' }}>{c[0]}</span>
-            <span style={{ color: 'var(--ink-2)' }}>{c[1]}</span>
-            <span className="tnum" style={{ fontWeight: 600 }}>{c[2]}</span>
-            <span style={{ color: c[3] === 'Approved' ? 'var(--green)' : c[3].includes('Denied') ? 'var(--red)' : 'var(--amber)' }}>{c[3]}</span>
-            <span className="tnum" style={{ color: 'var(--ink-3)' }}>{c[4]}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Level-2 page: Credentialing (expiring credential deep-link) ─── */
-function CredentialingPage({ domain, queue, onDecisionClick }) {
-  return (
-    <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
-      <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
-        <span>{domain.name}</span>
-        <span style={{ opacity: .5 }}>&rsaquo;</span>
-        <span>Credentialing</span>
-        <span style={{ opacity: .5 }}>&rsaquo;</span>
-        <span>Sarah Mitchell, RN</span>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '0 0 4px' }}>
-        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Sarah Mitchell, RN</h1>
-        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>EMP-3187 · Bayview · Night Shift Lead</span>
-      </div>
-      <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 20 }}>
-        Hired 2022-03-15 · 4.2 years tenure · Night shift lead CNA-to-RN bridge · Covers 12 weekly shifts
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
-        {[
-          ['RN License', 'Expires Apr 24', 'var(--red)'],
-          ['Shifts at Risk', '12/week', 'var(--red)'],
-          ['Backup Coverage', 'Drafted', 'var(--amber)'],
-          ['Renewal Status', 'Board processing', 'var(--amber)'],
-        ].map(([l, v, c]) => (
-          <div key={l} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4, fontWeight: 600 }}>{l}</div>
-            <div className="tnum" style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.3, color: c }}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red)22', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: .4 }}>Critical</span>
-          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>D-4825</span>
-          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>· Credentialing Monitor · 94%</span>
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>RN license expires in 3 days — 12 shifts need backup coverage</div>
-        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
-          Sarah filed renewal application Mar 28 but State Board processing is backlogged (avg 6-week turnaround). Agent has drafted a 2-week backup schedule using Maria Santos (PRN RN, Bayview) for 8 shifts and Jennifer Park (float pool) for 4 shifts. Combined agency cost: $4,200/week vs Sarah's regular cost of $2,100/week. Board expedite fee is $75.
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {(() => {
-            const dec = queue?.items.find((x) => x.id === 'D-4825');
-            const isPending = dec && dec._status === 'pending';
-            if (!isPending) return <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--green)' }}>✓ {dec?._status || 'Resolved'}</span>;
-            return (
-              <>
-                <button onClick={() => queue?.approve('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>Approve backup + expedite</button>
-                <button onClick={() => queue?.escalate('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate</button>
-                <button onClick={() => onDecisionClick?.('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
-              </>
-            );
-          })()}
-        </div>
-      </div>
-
-      {/* Shift impact table */}
-      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Shift coverage plan</div>
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
-        {[
-          ['Mon/Wed/Fri nights', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
-          ['Tue/Thu nights', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
-          ['Sat nights', 'Jennifer Park (float)', '$185/shift', 'Pending'],
-          ['Sun nights', 'Jennifer Park (float)', '$185/shift', 'Pending'],
-          ['Weekend days (2)', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
-          ['Per-diem fill (2)', 'Agency TBD', '$210/shift', 'Searching'],
-        ].map((row, i) => (
-          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr .6fr .6fr', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
-            <span style={{ fontWeight: 500 }}>{row[0]}</span>
-            <span style={{ color: 'var(--ink-2)' }}>{row[1]}</span>
-            <span className="tnum" style={{ color: 'var(--ink-2)' }}>{row[2]}</span>
-            <span style={{ color: row[3] === 'Confirmed' ? 'var(--green)' : row[3] === 'Pending' ? 'var(--amber)' : 'var(--red)' }}>{row[3]}</span>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Credential history</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-        {[
-          ['RN License', 'CA BRN #847291', 'Expires Apr 24 — renewal filed Mar 28'],
-          ['BLS Certification', 'AHA #BLS-20240315', 'Valid through Mar 2027'],
-          ['ACLS Certification', 'AHA #ACLS-20240901', 'Valid through Sep 2026'],
-        ].map((cred) => (
-          <div key={cred[1]} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{cred[0]}</div>
-            <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 4 }}>{cred[1]}</div>
-            <div style={{ fontSize: 11.5, color: cred[2].includes('Expires') ? 'var(--red)' : 'var(--ink-3)' }}>{cred[2]}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/* ─── Command+K Palette (Apple Spotlight / Superhuman style) ─── */
-
-const KIND_STYLE = {
-  Page:     { color: 'var(--accent)', bg: 'var(--accent-weak)', icon: <><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 6h6M5 9h4"/></> },
-  Decision: { color: 'var(--amber)', bg: 'var(--amber-bg)', icon: <><path d="M8 2l1.5 3h3.5l-2.5 2.5 1 3.5L8 9l-3.5 2 1-3.5L3 5h3.5z"/></> },
-  Record:   { color: 'var(--violet)', bg: 'var(--violet-bg)', icon: <><circle cx="8" cy="6" r="3"/><path d="M3 14c0-3 2.2-5 5-5s5 2 5 5"/></> },
-  Facility: { color: 'var(--green)', bg: 'var(--green-bg)', icon: <><path d="M2 14V5l6-3 6 3v9"/><path d="M6 14v-4h4v4"/></> },
-  Action:   { color: 'var(--ink-2)', bg: 'var(--surface-2)', icon: <><path d="M4 8h8M8 4v8"/></> },
-};
-
-function KindPill({ kind }) {
-  const s = KIND_STYLE[kind] || KIND_STYLE.Page;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      padding: '2px 7px 2px 5px', borderRadius: 4,
-      background: s.bg, color: s.color,
-      fontSize: 10, fontWeight: 600, letterSpacing: .3,
-      textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0,
-    }}>
-      <svg aria-hidden="true" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
-      {kind}
-    </span>
-  );
-}
-
-function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
-  const [q, setQ] = useState('');
-  const [activeIdx, setActiveIdx] = useState(0);
-  const listRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const allItems = useMemo(() => {
-    const pages = [];
-    const decisions = [];
-    const records = [];
-    const facilities = [];
-
-    DOMAINS.forEach((d) => (d.sections || []).forEach((s) => s.pages.forEach((p) =>
-      pages.push({ kind: 'Page', label: p, sub: `${d.name} \u00b7 ${s.label}`, domain: d.id, page: p })
-    )));
-    DECISIONS.forEach((x) =>
-      decisions.push({ kind: 'Decision', label: x.title, sub: `${x.id} \u00b7 ${x.facility}`, domain: 'home', decisionId: x.id, priority: x.priority })
-    );
-    ['Heritage Oaks', 'Bayview', 'Meadowbrook', 'Pacific Gardens', 'Sunrise Senior', 'Valley View', 'Cedar Ridge', 'Lakeside Manor'].forEach((f) =>
-      facilities.push({ kind: 'Facility', label: f, sub: 'Navigate to facility scope' })
-    );
-    DOMAIN_DATA.forEach((dom) => {
-      (dom.records || []).slice(0, 3).forEach((rec) =>
-        records.push({ kind: 'Record', label: rec.name, sub: `${rec.id} \u00b7 ${dom.name} \u00b7 ${rec.facility}`, domainKey: dom.id, record: rec, status: rec.status })
-      );
-    });
-    return { pages, decisions, records, facilities };
-  }, []);
-
-  // Group results by kind with section headers
-  const grouped = useMemo(() => {
-    const ql = q.toLowerCase();
-    const match = (item) => !ql || (item.label + item.sub).toLowerCase().includes(ql);
-    const sections = [];
-    const flatItems = [];
-
-    const addSection = (label, items, max) => {
-      const filtered = items.filter(match).slice(0, max);
-      if (filtered.length > 0) {
-        sections.push({ type: 'header', label, count: items.filter(match).length });
-        filtered.forEach((item) => {
-          sections.push({ type: 'item', ...item });
-          flatItems.push(item);
-        });
-      }
-    };
-
-    if (!ql) {
-      // Default view: show recent/suggested mix
-      addSection('Pages', allItems.pages, 4);
-      addSection('Decisions', allItems.decisions, 3);
-      addSection('Records', allItems.records, 2);
-      addSection('Facilities', allItems.facilities, 2);
-    } else {
-      addSection('Pages', allItems.pages, 5);
-      addSection('Decisions', allItems.decisions, 4);
-      addSection('Records', allItems.records, 4);
-      addSection('Facilities', allItems.facilities, 3);
-    }
-    return { sections, flatItems };
-  }, [q, allItems]);
-
-  const { sections, flatItems } = grouped;
-
-  useEffect(() => { setActiveIdx(0); }, [q]);
-
-  useEffect(() => {
-    const trap = (e) => {
-      if (e.key !== 'Tab') return;
-      const focusable = document.querySelectorAll('[role="dialog"] input, [role="dialog"] [role="option"]');
-      if (focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
-    window.addEventListener('keydown', trap);
-    return () => window.removeEventListener('keydown', trap);
-  }, []);
-
-  useEffect(() => {
-    if (listRef.current) {
-      // Find the DOM element for the active item (skip headers)
-      let itemIdx = 0;
-      for (const child of listRef.current.children) {
-        if (child.dataset.itemIdx === String(activeIdx)) {
-          child.scrollIntoView({ block: 'nearest' });
-          break;
-        }
-      }
-    }
-  }, [activeIdx]);
-
-  const activateResult = useCallback((r) => {
-    if (r.kind === 'Page' && r.page) onNav(r.domain, r.page);
-    else if (r.kind === 'Decision' && r.decisionId) onSelectDecision(r.decisionId);
-    else if (r.kind === 'Facility') onNav('home', null);
-    else if (r.kind === 'Record' && r.record) onNavToRecord(r.domainKey, r.record);
-  }, [onNav, onSelectDecision, onNavToRecord]);
-
-  const handleKeyDown = useCallback((e) => {
-    if (e.key === 'ArrowDown') { e.preventDefault(); setActiveIdx((p) => Math.min(p + 1, flatItems.length - 1)); }
-    else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx((p) => Math.max(p - 1, 0)); }
-    else if (e.key === 'Enter' && flatItems[activeIdx]) { e.preventDefault(); activateResult(flatItems[activeIdx]); }
-    else if (e.key === 'Escape') onClose();
-  }, [flatItems, activeIdx, activateResult, onClose]);
-
-  const boldMatch = (text) => {
-    if (!q) return text;
-    const ql = q.toLowerCase();
-    const idx = text.toLowerCase().indexOf(ql);
-    if (idx === -1) return text;
-    return <>{text.slice(0, idx)}<strong style={{ fontWeight: 700, color: 'var(--ink-1)' }}>{text.slice(idx, idx + q.length)}</strong>{text.slice(idx + q.length)}</>;
-  };
-
-  let itemCounter = 0;
-
-  return (
-    <div role="dialog" aria-modal="true" aria-label="Search" onClick={onClose} style={{
-      position: 'absolute', inset: 0, background: 'rgba(10,12,16,.35)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-      display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 72, zIndex: 20,
-    }}>
-      <div onClick={(e) => e.stopPropagation()} style={{
-        width: 580, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16,
-        boxShadow: 'var(--sh-pop)', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-        maxHeight: 'min(520px, calc(100vh - 160px))',
-      }}>
-        {/* Search input */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid var(--line)' }}>
-          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" strokeWidth="1.6" strokeLinecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
-          <input ref={inputRef} role="combobox" autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={handleKeyDown}
-            placeholder="Search pages, decisions, records..."
-            style={{ all: 'unset', flex: 1, fontSize: 15, color: 'var(--ink-1)', fontWeight: 400 }} />
-          <kbd style={{
-            fontSize: 10, color: 'var(--ink-4)', padding: '2px 6px', borderRadius: 4,
-            background: 'var(--bg-sunk)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)',
-          }}>esc</kbd>
-        </div>
-
-        {/* Results */}
-        <div ref={listRef} role="listbox" style={{ flex: 1, overflow: 'auto', padding: '4px 0' }}>
-          {sections.length === 0 && (
-            <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
-              No results for &ldquo;{q}&rdquo;
-            </div>
-          )}
-          {sections.map((entry, si) => {
-            if (entry.type === 'header') {
-              return (
-                <div key={`h-${si}`} style={{
-                  padding: '10px 18px 4px', fontSize: 10.5, fontWeight: 600,
-                  color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5,
-                  ...(si > 0 ? { borderTop: '1px solid var(--line-soft)', marginTop: 4, paddingTop: 12 } : {}),
-                }}>{entry.label}</div>
-              );
-            }
-
-            const idx = itemCounter++;
-            const isActive = idx === activeIdx;
-
-            return (
-              <div key={`i-${si}`} role="option" aria-selected={isActive} data-item-idx={idx} onClick={() => activateResult(entry)}
-                onMouseEnter={() => setActiveIdx(idx)}
-                style={{
-                  padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-                  background: isActive ? 'var(--accent-weak)' : 'transparent',
-                  borderRadius: 0,
-                  transition: 'background .08s',
-                }}>
-                <KindPill kind={entry.kind} />
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--ink-1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {boldMatch(entry.label)}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--ink-3)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.sub}</div>
-                </div>
-                {/* Priority dot for decisions */}
-                {entry.kind === 'Decision' && entry.priority && (
-                  <span style={{
-                    width: 7, height: 7, borderRadius: 4, flexShrink: 0,
-                    background: entry.priority === 'critical' ? 'var(--red)' : entry.priority === 'high' ? 'var(--amber)' : 'var(--ink-4)',
-                  }} />
-                )}
-                {/* Status for records */}
-                {entry.kind === 'Record' && entry.status && (
-                  <span style={{
-                    fontSize: 9.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
-                    padding: '1px 6px', borderRadius: 3, flexShrink: 0,
-                    background: entry.status === 'critical' ? 'var(--red-bg)' : entry.status === 'watch' ? 'var(--amber-bg)' : 'var(--green-bg)',
-                    color: entry.status === 'critical' ? 'var(--red)' : entry.status === 'watch' ? 'var(--amber)' : 'var(--green)',
-                  }}>{entry.status}</span>
-                )}
-                {isActive && (
-                  <kbd style={{
-                    fontSize: 10, color: 'var(--ink-4)', padding: '1px 5px', borderRadius: 3,
-                    background: 'var(--bg-sunk)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)',
-                  }}>&crarr;</kbd>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Footer with keyboard hints (Superhuman style) */}
-        <div style={{
-          padding: '8px 18px', borderTop: '1px solid var(--line)',
-          display: 'flex', alignItems: 'center', gap: 16, background: 'var(--bg-sunk)',
-          fontSize: 10.5, color: 'var(--ink-4)',
-        }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <kbd style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: 'var(--surface)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)' }}>&uarr;</kbd>
-            <kbd style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: 'var(--surface)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)' }}>&darr;</kbd>
-            <span style={{ marginLeft: 2 }}>navigate</span>
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <kbd style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: 'var(--surface)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)' }}>&crarr;</kbd>
-            <span style={{ marginLeft: 2 }}>open</span>
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <kbd style={{ fontSize: 9, padding: '1px 4px', borderRadius: 3, background: 'var(--surface)', border: '1px solid var(--line)', fontFamily: 'var(--font-mono)' }}>esc</kbd>
-            <span style={{ marginLeft: 2 }}>close</span>
-          </span>
-          <span style={{ flex: 1 }} />
-          <span>{flatItems.length} result{flatItems.length !== 1 ? 's' : ''}</span>
-        </div>
       </div>
     </div>
   );

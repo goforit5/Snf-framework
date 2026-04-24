@@ -14,7 +14,7 @@ const TODAY = new Date().toLocaleDateString('en-US', {
 function Section({ title, children, style }) {
   return (
     <div style={{ marginBottom: 32, ...style }}>
-      <LabelSmall>{title}</LabelSmall>
+      <LabelSmall as="h2">{title}</LabelSmall>
       {children}
     </div>
   );
@@ -142,16 +142,23 @@ export default function BriefingView() {
       {/* Executive Summary — editorial voice */}
       <Section title="Executive Summary">
         <Card>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: 'var(--ink-1)' }}>
-            <strong>{priorityFacility?.name || 'Heritage Oaks'} is the priority this morning.</strong>{' '}
-            Three issues are converging — the DON vacancy is now {donDecision?.evidence?.[0]?.[1]?.includes('Feb') ? '41' : '41'} days old
-            with ${donDecision?.impact?.dollars ? (donDecision.impact.dollars / 1000).toFixed(0) + 'K' : '148K'} exposure,
-            {' '}{fallDecision?.title?.split('—')[0]?.trim() || "Margaret Chen's"} third fall triggered an F-689 review,
-            and the health score dropped to {priorityFacility?.healthScore || 68}.
-            Left unaddressed for 6 more weeks, {priorityFacility?.name || 'Heritage Oaks'} risks
-            a 3-star downgrade with ${downgradeDecision?.impact?.dollars ? (downgradeDecision.impact.dollars / 1000).toFixed(0) + 'K' : '340K'} annual revenue impact.
-            Maria Delgado is your best candidate for DON — the agent recommends approving her offer today.
-          </p>
+          {priorityFacility ? (
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: 'var(--ink-1)' }}>
+              <strong>{priorityFacility.name} is the priority this morning.</strong>{' '}
+              Three issues are converging — the DON vacancy is now {donDecision?.evidence?.[0]?.[1]?.includes('Feb') ? '41' : '41'} days old
+              with ${donDecision?.impact?.dollars ? (donDecision.impact.dollars / 1000).toFixed(0) + 'K' : '148K'} exposure,
+              {' '}{fallDecision?.title?.split('—')[0]?.trim() || "Margaret Chen's"} third fall triggered an F-689 review,
+              and the health score dropped to {priorityFacility.healthScore}.
+              Left unaddressed for 6 more weeks, {priorityFacility.name} risks
+              a 3-star downgrade with ${downgradeDecision?.impact?.dollars ? (downgradeDecision.impact.dollars / 1000).toFixed(0) + 'K' : '340K'} annual revenue impact.
+              Maria Delgado is your best candidate for DON — the agent recommends approving her offer today.
+            </p>
+          ) : (
+            <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: 'var(--ink-1)' }}>
+              <strong>All facilities above health score threshold this morning.</strong>{' '}
+              No facility requires priority intervention. Focus on the {priorityCounts.critical + priorityCounts.high} pending decisions below.
+            </p>
+          )}
           <p style={{ margin: '12px 0 0', fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink-3)' }}>
             Across the portfolio, {AGENTS.length} agents ran {totalActions.toLocaleString()} actions overnight.
             {' '}<strong>{priorityCounts.critical + priorityCounts.high} decisions</strong> need your attention before standup,
@@ -160,8 +167,8 @@ export default function BriefingView() {
         </Card>
       </Section>
 
-      {/* Priority Facility Callout */}
-      {priorityFacility && (
+      {/* Priority Facility Callout — only shown when a facility is below threshold */}
+      {priorityFacility && alertFacilities.length > 0 && (
         <Section title="Priority Facility">
           <Card style={{
             borderLeft: '3px solid var(--red)',

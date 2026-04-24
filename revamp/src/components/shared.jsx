@@ -30,7 +30,7 @@ export function StatusPill({ status }) {
   const m = STATUS_STYLES[status] || STATUS_STYLES.pending;
   return (
     <span style={{
-      padding: '2px 8px', borderRadius: 4,
+      padding: '2px 8px', borderRadius: 'var(--r-sm, 4px)',
       background: m.bg, color: m.c,
       fontSize: 10, fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: .4,
@@ -60,7 +60,7 @@ export function AgentDot({ id, agent, name, color, size = 22 }) {
   return (
     <div title={displayName} style={{
       width: size, height: size, borderRadius: size / 2,
-      background: displayColor, color: '#fff',
+      background: displayColor, color: 'var(--ink-on-accent)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       fontSize: size * 0.42, fontWeight: 600,
       letterSpacing: .2, flexShrink: 0,
@@ -87,14 +87,14 @@ export function priorityColor(priority) {
 }
 
 /* ─── LabelSmall ─── */
-export function LabelSmall({ children, style }) {
+export function LabelSmall({ children, style, as: Tag = 'div' }) {
   return (
-    <div style={{
+    <Tag style={{
       fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600,
       textTransform: 'uppercase', letterSpacing: .5,
-      marginBottom: 8,
+      marginBottom: 8, margin: 0,
       ...style,
-    }}>{children}</div>
+    }}>{children}</Tag>
   );
 }
 
@@ -191,7 +191,7 @@ export function Kbd({ children }) {
   return (
     <kbd style={{
       fontSize: 10, color: 'var(--ink-4)',
-      padding: '1px 5px', borderRadius: 3,
+      padding: '1px 5px', borderRadius: 'var(--r-xs, 3px)',
       background: 'var(--bg-sunk)',
       border: '1px solid var(--line)',
       fontFamily: 'var(--font-mono)',

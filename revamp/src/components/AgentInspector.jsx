@@ -44,6 +44,8 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
         <LabelSmall>Select Agent</LabelSmall>
         <button
           onClick={() => setDropdownOpen(!dropdownOpen)}
+          aria-expanded={dropdownOpen}
+          aria-haspopup="listbox"
           style={{
             all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
             width: '100%', padding: '8px 12px', borderRadius: 8,
@@ -56,7 +58,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
           <span style={{ fontSize: 10, color: 'var(--ink-3)' }}>{dropdownOpen ? '\u25B2' : '\u25BC'}</span>
         </button>
         {dropdownOpen && (
-          <div style={{
+          <div role="listbox" style={{
             position: 'absolute', top: '100%', left: 28, right: 28, zIndex: 20,
             background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10,
             maxHeight: 320, overflow: 'auto', marginTop: 4,
@@ -65,6 +67,8 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
             {AGENTS.map((ag) => (
               <button
                 key={ag.id}
+                role="option"
+                aria-selected={ag.id === a.id}
                 onClick={() => { setSelectedId(ag.id); setDropdownOpen(false); }}
                 style={{
                   all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8,
@@ -78,7 +82,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
                 <span style={{ flex: 1 }}>{ag.name}</span>
                 <span style={{
                   fontSize: 10, padding: '1px 6px', borderRadius: 4,
-                  background: DOMAIN_COLORS[ag.domain] || 'var(--ink-3)', color: '#fff',
+                  background: DOMAIN_COLORS[ag.domain] || 'var(--ink-3)', color: 'var(--ink-on-accent)',
                   fontWeight: 600, letterSpacing: .3,
                 }}>{ag.domain}</span>
               </button>
@@ -97,7 +101,7 @@ export default function AgentInspector({ agentId = 'clin-mon', width, height, th
               <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: -0.3, fontFamily: 'var(--font-display)' }}>{a.name}</h1>
               <span style={{
                 fontSize: 10, padding: '2px 8px', borderRadius: 4,
-                background: domainColor, color: '#fff',
+                background: domainColor, color: 'var(--ink-on-accent)',
                 fontWeight: 600, letterSpacing: .3, textTransform: 'uppercase',
               }}>{a.domain}</span>
             </div>
