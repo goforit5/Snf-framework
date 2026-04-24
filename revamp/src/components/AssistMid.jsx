@@ -2,7 +2,7 @@
 // Matches WorklistMid pattern: header → filter → grouped scrollable list.
 
 import { useMemo } from 'react';
-import { StatusPill } from './shared';
+import { StatusPill, timeAgo } from './shared';
 
 const CATEGORY_STYLE = {
   'Bug':             { c: 'var(--red)',    bg: 'var(--red-bg)' },
@@ -30,16 +30,6 @@ function isEmployeeService(item) {
 
 function isCorporateMessage(item) {
   return item.direction === 'outbound';
-}
-
-function timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 function Badge({ style: s, label }) {
@@ -96,7 +86,7 @@ export default function AssistMid({ assistQueue }) {
       </div>
 
       {/* Grouped message list — matches WorklistMid Critical/High/Medium sections */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div role="listbox" aria-label="Assist queue" style={{ flex: 1, overflow: 'auto' }}>
         {grouped.map(([label, list]) => (
           <div key={label}>
             <div style={{ padding: '10px 16px 4px', fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600 }}>{label}</div>
@@ -107,7 +97,7 @@ export default function AssistMid({ assistQueue }) {
               const isDone = ['resolved', 'auto-resolved', 'acted'].includes(item.status);
 
               return (
-                <div key={item.id} onClick={() => handleSelect(item.id)} style={{
+                <div key={item.id} role="option" aria-selected={isActive} tabIndex={0} onClick={() => handleSelect(item.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSelect(item.id); } }} style={{
                   padding: '10px 16px 11px', borderBottom: '1px solid var(--line-soft)',
                   borderLeft: `3px solid ${isActive ? 'var(--accent)' : isUnread ? 'var(--violet)' : 'transparent'}`,
                   background: isActive ? 'var(--accent-weak)' : 'transparent',

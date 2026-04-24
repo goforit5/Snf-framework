@@ -2,6 +2,7 @@
 // Modeled after useDecisionQueue.js — encapsulates all assist lifecycle.
 
 import { useState, useMemo, useCallback, useRef } from 'react';
+import { ROLES } from '../data';
 
 const SIMULATED_REPLIES = [
   'Thanks for the detail — I\'m routing this to the right team and will follow up with a status update shortly.',
@@ -9,7 +10,7 @@ const SIMULATED_REPLIES = [
   'Understood. I\'ve logged this and will notify you when there\'s progress.',
 ];
 
-export function useAssistQueue(initialItems) {
+export function useAssistQueue(initialItems, role) {
   const [items, setItems] = useState(initialItems);
   const [selected, setSelected] = useState(null);
   const [filter, setFilter] = useState('All');
@@ -43,10 +44,11 @@ export function useAssistQueue(initialItems) {
     if (!text.trim()) return;
     const now = new Date().toISOString();
     const id = `AS-${String(++nextIdRef.current).padStart(3, '0')}`;
+    const currentRole = ROLES.find(r => r.id === role) || ROLES[0];
     const newItem = {
       id, direction: 'inbound', message: text,
       submittedAt: now,
-      submittedBy: { name: 'Barry Port', role: role || 'CEO', facility: 'Portfolio' },
+      submittedBy: { name: currentRole.name, role: currentRole.id, facility: currentRole.scope || 'Portfolio' },
       status: 'submitted',
       category: null, priority: null, triageConfidence: null,
       agentSummary: null, duplicateOf: null, resolution: null, resolvedAt: null,

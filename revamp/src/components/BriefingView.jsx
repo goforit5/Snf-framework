@@ -33,6 +33,25 @@ function Card({ children, style }) {
   );
 }
 
+/* ─── Priority Badge ─── */
+function PriorityBadge({ priority }) {
+  const colors = {
+    critical: { bg: 'var(--red-bg)', color: 'var(--red)' },
+    high: { bg: 'var(--amber-bg)', color: 'var(--amber)' },
+  };
+  const c = colors[priority] || colors.high;
+  return (
+    <span style={{
+      fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5,
+      padding: '2px 7px', borderRadius: 4,
+      background: c.bg, color: c.color,
+      flexShrink: 0,
+    }}>
+      {priority}
+    </span>
+  );
+}
+
 export default function BriefingView() {
   // Compute priority counts
   const priorityCounts = useMemo(() => {
@@ -47,6 +66,15 @@ export default function BriefingView() {
     [],
   );
 
+  // Priority facility — lowest health score
+  const priorityFacility = useMemo(() => alertFacilities[0] || null, [alertFacilities]);
+
+  // Decisions related to the priority facility
+  const priorityFacilityDecisions = useMemo(() => {
+    if (!priorityFacility) return [];
+    return DECISIONS.filter((d) => d.facility.includes(priorityFacility.name));
+  }, [priorityFacility]);
+
   // Total hours saved
   const totalHoursSaved = useMemo(
     () => HANDLED.reduce((sum, h) => {
@@ -56,15 +84,38 @@ export default function BriefingView() {
     [],
   );
 
-  // Recommended actions derived from decisions
+  // Total actions processed
+  const totalActions = useMemo(
+    () => HANDLED.reduce((sum, h) => sum + h.count, 0),
+    [],
+  );
+
+  // Domain count for decisions
+  const domainCount = useMemo(
+    () => new Set(DECISIONS.map((d) => d.domain)).size,
+    [],
+  );
+
+  // Recommended actions — critical first, then high, with full sentences
   const actions = useMemo(() => {
     const critical = DECISIONS.filter((d) => d.priority === 'critical');
     const high = DECISIONS.filter((d) => d.priority === 'high');
     const items = [];
-    critical.slice(0, 3).forEach((d) => items.push(d.rec.split('.')[0] + '.'));
-    high.slice(0, 3).forEach((d) => items.push(d.rec.split('.')[0] + '.'));
+    critical.slice(0, 4).forEach((d) => {
+      const sentence = d.rec.split('.').filter(Boolean)[0].trim() + '.';
+      items.push({ priority: 'critical', text: sentence, facility: d.facility, id: d.id });
+    });
+    high.slice(0, 4).forEach((d) => {
+      const sentence = d.rec.split('.').filter(Boolean)[0].trim() + '.';
+      items.push({ priority: 'high', text: sentence, facility: d.facility, id: d.id });
+    });
     return items.slice(0, 6);
   }, []);
+
+  // Find key decision data for narrative
+  const donDecision = DECISIONS.find((d) => d.id === 'D-4821');
+  const fallDecision = DECISIONS.find((d) => d.id === 'D-4822');
+  const downgradeDecision = DECISIONS.find((d) => d.id === 'D-4843');
 
   return (
     <div style={{
@@ -88,37 +139,81 @@ export default function BriefingView() {
         <span>Portfolio &middot; 330 facilities</span>
       </div>
 
-      {/* Executive Summary */}
+      {/* Executive Summary — editorial voice */}
       <Section title="Executive Summary">
         <Card>
-          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.65, color: 'var(--ink-1)' }}>
-            Overnight, <strong>{AGENTS.length} agents</strong> processed work across all domains,
-            saving an estimated <strong>{totalHoursSaved} hours</strong> of manual effort.
-            {' '}{HANDLED[0].count} invoices were auto-posted ({HANDLED[0].value}),
-            {' '}{HANDLED[2].count} residents were monitored with {HANDLED[2].value} generated,
-            and {HANDLED[6].count} referrals were triaged ({HANDLED[6].value}).
-            There are <strong>{priorityCounts.critical} critical</strong> and <strong>{priorityCounts.high} high-priority</strong> decisions
-            awaiting human action. Heritage Oaks requires immediate attention on multiple fronts.
+          <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.7, color: 'var(--ink-1)' }}>
+            <strong>{priorityFacility?.name || 'Heritage Oaks'} is the priority this morning.</strong>{' '}
+            Three issues are converging — the DON vacancy is now {donDecision?.evidence?.[0]?.[1]?.includes('Feb') ? '41' : '41'} days old
+            with ${donDecision?.impact?.dollars ? (donDecision.impact.dollars / 1000).toFixed(0) + 'K' : '148K'} exposure,
+            {' '}{fallDecision?.title?.split('—')[0]?.trim() || "Margaret Chen's"} third fall triggered an F-689 review,
+            and the health score dropped to {priorityFacility?.healthScore || 68}.
+            Left unaddressed for 6 more weeks, {priorityFacility?.name || 'Heritage Oaks'} risks
+            a 3-star downgrade with ${downgradeDecision?.impact?.dollars ? (downgradeDecision.impact.dollars / 1000).toFixed(0) + 'K' : '340K'} annual revenue impact.
+            Maria Delgado is your best candidate for DON — the agent recommends approving her offer today.
+          </p>
+          <p style={{ margin: '12px 0 0', fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink-3)' }}>
+            Across the portfolio, {AGENTS.length} agents ran {totalActions.toLocaleString()} actions overnight.
+            {' '}<strong>{priorityCounts.critical + priorityCounts.high} decisions</strong> need your attention before standup,
+            {' '}{priorityCounts.critical} are critical.
           </p>
         </Card>
       </Section>
+
+      {/* Priority Facility Callout */}
+      {priorityFacility && (
+        <Section title="Priority Facility">
+          <Card style={{
+            borderLeft: '3px solid var(--red)',
+            background: 'var(--red-bg)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 8 }}>
+              <span style={{ fontSize: 15, fontWeight: 600, color: 'var(--ink-1)' }}>
+                {priorityFacility.name}
+              </span>
+              <span style={{
+                fontSize: 22, fontWeight: 700, color: 'var(--red)',
+                fontVariantNumeric: 'tabular-nums',
+              }}>
+                {priorityFacility.healthScore}
+              </span>
+              <span style={{ fontSize: 12, color: 'var(--ink-3)' }}>health score</span>
+              <TrendArrow trend="down" />
+            </div>
+            <p style={{ margin: 0, fontSize: 12.5, lineHeight: 1.65, color: 'var(--ink-1)' }}>
+              {priorityFacilityDecisions.length} open decisions are tied to this facility.
+              The DON position has been vacant since Feb 28 — acting DON overtime alone has cost $24K.
+              A third resident fall this month puts {priorityFacility.name} on the F-689 watch list,
+              and CMS star rating data refreshes in 6 weeks.
+              {' '}<strong>Filling the DON role is the single highest-leverage action today.</strong>
+            </p>
+          </Card>
+        </Section>
+      )}
 
       {/* What Changed Overnight */}
       <Section title="What Changed Overnight">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
           {WHAT_CHANGED.map((item, i) => (
-            <Card key={i} style={{ padding: '12px 16px' }}>
+            <Card key={i} style={{ padding: '14px 16px' }}>
               <div style={{
-                fontSize: 12.5, fontWeight: 600, color: 'var(--ink-1)',
-                display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4,
+                fontSize: 13, fontWeight: 600, color: 'var(--ink-1)',
+                marginBottom: 6,
               }}>
-                <TrendArrow trend={item.dir} />
                 {item.a}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink-1)', marginBottom: 2 }}>
-                {item.b}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6,
+              }}>
+                <span style={{
+                  fontSize: 17, fontWeight: 700, color: 'var(--ink-1)',
+                  fontVariantNumeric: 'tabular-nums',
+                }}>
+                  {item.b}
+                </span>
+                <TrendArrow trend={item.dir} />
               </div>
-              <div style={{ fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.4 }}>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-3)', lineHeight: 1.5 }}>
                 {item.d}
               </div>
             </Card>
@@ -176,7 +271,7 @@ export default function BriefingView() {
             ))}
           </div>
           <div style={{ fontSize: 12, color: 'var(--ink-3)', marginTop: 10 }}>
-            {DECISIONS.length} total decisions pending across {new Set(DECISIONS.map((d) => d.domain)).size} domains
+            {DECISIONS.length} total decisions pending across {domainCount} domains
           </div>
         </Card>
       </Section>
@@ -206,7 +301,7 @@ export default function BriefingView() {
               <span style={{
                 fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.4,
                 padding: '2px 8px', borderRadius: 4,
-                background: f.healthScore < 70 ? 'var(--red-bg, rgba(229,62,62,0.1))' : 'var(--amber-bg, rgba(221,107,32,0.1))',
+                background: f.healthScore < 70 ? 'var(--red-bg)' : 'var(--amber-bg)',
                 color: f.healthScore < 70 ? 'var(--red)' : 'var(--amber)',
               }}>
                 {f.healthScore < 70 ? 'Critical' : 'Watch'}
@@ -216,19 +311,28 @@ export default function BriefingView() {
         </Card>
       </Section>
 
-      {/* Today's Actions */}
+      {/* Today's Recommended Actions */}
       <Section title="Today's Recommended Actions">
-        <Card>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
+        <Card style={{ padding: '12px 20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {actions.map((a, i) => (
-              <li key={i} style={{
-                fontSize: 12.5, color: 'var(--ink-1)', lineHeight: 1.7,
-                paddingLeft: 4,
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                paddingBottom: i < actions.length - 1 ? 10 : 0,
+                borderBottom: i < actions.length - 1 ? '1px solid var(--line-soft, var(--line))' : 'none',
               }}>
-                {a}
-              </li>
+                <PriorityBadge priority={a.priority} />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontSize: 12.5, color: 'var(--ink-1)', lineHeight: 1.5 }}>
+                    {a.text}
+                  </span>
+                  <span style={{ fontSize: 11.5, color: 'var(--ink-3)', marginLeft: 8 }}>
+                    {a.facility}
+                  </span>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </Card>
       </Section>
     </div>

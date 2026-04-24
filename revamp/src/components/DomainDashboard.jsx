@@ -109,7 +109,7 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
         }}>{pageData.description}</p>
 
         {/* ─── 3. Page stats strip ─── */}
-        <div style={{
+        <div role="group" aria-label="Key metrics" style={{
           display: 'flex', gap: 10, marginBottom: 22, flexWrap: 'wrap',
         }}>
           {pageData.stats.map((s) => (
@@ -254,7 +254,7 @@ export default function DomainDashboard({ domainKey, pageName, onRecordClick, on
       </div>
 
       {/* ─── 2. Stats strip ─── */}
-      <div style={{
+      <div role="group" aria-label="Key metrics" style={{
         display: 'flex', gap: 10, marginBottom: 22, flexWrap: 'wrap',
       }}>
         {domain.stats.map((s) => (
@@ -316,7 +316,8 @@ function DecisionList({ decisions, onDecisionClick }) {
           borderRadius: 10, overflow: 'hidden', marginBottom: 22,
         }}>
           {decisions.map((d, i) => (
-            <div key={d.id} onClick={() => onDecisionClick?.(d.id)}
+            <div key={d.id} role="option" tabIndex={0} onClick={() => onDecisionClick?.(d.id)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onDecisionClick?.(d.id); } }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
                 padding: '10px 14px',
@@ -339,7 +340,7 @@ function DecisionList({ decisions, onDecisionClick }) {
               <span className="tnum" style={{
                 fontSize: 11.5, fontWeight: 600, color: 'var(--ink-2)',
               }}>{Math.round(d.confidence * 100)}%</span>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeLinecap="round"><path d="M3.5 2l4 3-4 3"/></svg>
+              <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="var(--ink-3)" strokeWidth="1.5" strokeLinecap="round"><path d="M3.5 2l4 3-4 3"/></svg>
             </div>
           ))}
         </div>
@@ -378,7 +379,10 @@ function RecordsTable({ records, columns, onRecordClick }) {
       {records.length > 0 ? records.map((r, i) => (
         <div
           key={r.id}
+          role="row"
+          tabIndex={0}
           onClick={() => onRecordClick?.(r)}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRecordClick?.(r); } }}
           style={{
             display: 'grid',
             gridTemplateColumns: '90px 1.2fr 1fr 1.8fr 80px',

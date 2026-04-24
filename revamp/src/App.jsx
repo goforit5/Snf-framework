@@ -29,13 +29,13 @@ function AppInner() {
   const [dark, setDark] = useState(false);
   const location = useLocation();
 
-  // Derive active view from URL
+  // Derive active view from URL — only ControlBar tabs (agents, briefing, audit, settings)
+  // Shell-internal views (home, domain/*) intentionally don't highlight any tab
   const activeView = location.pathname.startsWith('/agents') ? 'agents'
     : location.pathname.startsWith('/audit') ? 'audit'
     : location.pathname.startsWith('/briefing') ? 'briefing'
-    : location.pathname.startsWith('/domain/assist') ? 'assist'
     : location.pathname.startsWith('/settings') ? 'settings'
-    : 'home';
+    : null;
 
   // Apply theme to document
   useEffect(() => {

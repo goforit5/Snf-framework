@@ -2,7 +2,7 @@
 // Shows recent agent actions and decisions requiring attention.
 // Supports type filtering, click-to-navigate, and mark-as-read.
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 const MOCK_NOTIFICATIONS = [
   { id: 'n-1', type: 'agent',    title: 'AP Processing auto-posted 47 invoices',       body: '$187,400 across 6 facilities — zero exceptions.',               ts: '2m ago',  read: false },
@@ -37,12 +37,16 @@ const FILTER_TABS = [
   { key: 'info',       label: 'Info' },
 ];
 
-export default function NotificationPanel({ open, onClose, onNavigate }) {
+export default function NotificationPanel({ open, onClose, onNavigate, onUnreadChange }) {
   const [items, setItems] = useState(MOCK_NOTIFICATIONS);
   const [filter, setFilter] = useState('all');
   const [hoveredId, setHoveredId] = useState(null);
 
   const unreadCount = items.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    if (onUnreadChange) onUnreadChange(unreadCount);
+  }, [unreadCount, onUnreadChange]);
 
   const filteredItems = filter === 'all'
     ? items
@@ -76,7 +80,7 @@ export default function NotificationPanel({ open, onClose, onNavigate }) {
       />
 
       {/* Panel */}
-      <div style={{
+      <div role="dialog" aria-label="Notifications" className="slide-in-right" style={{
         position: 'fixed', right: 0, top: 44, width: 360,
         height: 'calc(100vh - 44px)', zIndex: 91,
         background: 'var(--surface)', borderLeft: '1px solid var(--line)',

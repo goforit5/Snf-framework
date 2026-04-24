@@ -3,7 +3,7 @@
 
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { ASSIST_SUMMARY, ASSIST_PRESETS } from '../data';
-import { StatusPill, AgentDot, LabelSmall, StatCard, priorityColor } from './shared';
+import { StatusPill, AgentDot, LabelSmall, StatCard, priorityColor, timeAgo, Breadcrumbs } from './shared';
 
 const CATEGORY_STYLE = {
   'Bug':             { c: 'var(--red)',    bg: 'var(--red-bg)' },
@@ -17,29 +17,6 @@ const THREAD_TYPE_LABELS = {
   resolution: 'Resolved', workaround: 'Workaround', ack: 'Noted',
   task: 'Task', education: 'Learn', tip: 'Tip',
 };
-
-function timeAgo(iso) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function Breadcrumbs({ items }) {
-  return (
-    <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center' }}>
-      {items.map((s, i) => (
-        <span key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {i > 0 && <span style={{ opacity: .5 }}>&rsaquo;</span>}
-          <span>{s}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
 
 /* ─── Detail view (item selected) ─── */
 export function AssistItemDetail({ item, assistQueue, role }) {
@@ -128,7 +105,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
           <div style={{
             padding: '10px 14px', marginBottom: 18,
             background: 'var(--green-bg)', borderRadius: 8,
-            border: '1px solid var(--green)33', fontSize: 12.5,
+            border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', fontSize: 12.5,
           }}>
             <div style={{ fontWeight: 600, color: 'var(--green)', marginBottom: 4 }}>&#x2713; Resolved</div>
             {item.resolution}
@@ -140,7 +117,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
           <div style={{
             padding: '10px 14px', marginBottom: 18,
             background: 'var(--accent-weak)', borderRadius: 8,
-            border: '1px solid var(--accent)33',
+            border: '1px solid color-mix(in oklch, var(--accent) 20%, transparent)',
             fontSize: 12.5, display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <span style={{ fontWeight: 600, color: 'var(--accent)' }}>&#x25B6;</span>
@@ -200,7 +177,7 @@ export function AssistItemDetail({ item, assistQueue, role }) {
                     {typeLabel && (
                       <span style={{
                         fontSize: 9, fontWeight: 600, textTransform: 'uppercase', letterSpacing: .3,
-                        padding: '1px 5px', borderRadius: 3, border: '1px solid var(--violet)33', color: 'var(--violet)',
+                        padding: '1px 5px', borderRadius: 3, border: '1px solid color-mix(in oklch, var(--violet) 20%, transparent)', color: 'var(--violet)',
                       }}>{typeLabel}</span>
                     )}
                     <span style={{ fontSize: 10, color: 'var(--ink-4)' }}>{timeAgo(msg.t)}</span>

@@ -105,10 +105,9 @@ function getAgentActivity(record, domainKey) {
 /* ─── Main component ─── */
 
 export default function RecordInspector({ record, domainKey, onClose }) {
-  if (!record) return null;
-
-  const relatedDecisions = useMemo(() =>
-    DECISIONS.filter((d) =>
+  const relatedDecisions = useMemo(() => {
+    if (!record) return [];
+    return DECISIONS.filter((d) =>
       d.evidence.some((e) =>
         e.some((field) =>
           typeof field === 'string' && (
@@ -118,9 +117,10 @@ export default function RecordInspector({ record, domainKey, onClose }) {
           )
         )
       )
-    ),
-    [record]
-  );
+    );
+  }, [record]);
+
+  if (!record) return null;
 
   const keyFields = getKeyFields(record, getDomainRecordType(domainKey));
   const activity = getAgentActivity(record, domainKey);

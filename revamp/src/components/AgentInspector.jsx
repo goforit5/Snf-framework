@@ -3,14 +3,14 @@ import { AGENTS, AGENT_MESSAGES, ORCHESTRATOR } from '../agents-data';
 import { AgentDot, StatusPill, LabelSmall } from './shared';
 
 const DOMAIN_COLORS = {
-  Clinical: 'var(--violet)',
-  Finance: 'var(--green)',
-  Workforce: 'var(--accent)',
-  Admissions: 'var(--amber)',
-  Quality: 'var(--red)',
-  Operations: 'oklch(.62 .10 215)',
-  Legal: 'oklch(.60 .12 310)',
-  Strategic: 'oklch(.60 .10 340)',
+  Clinical: 'var(--domain-clinical)',
+  Finance: 'var(--domain-finance)',
+  Workforce: 'var(--domain-workforce)',
+  Admissions: 'var(--domain-admissions)',
+  Quality: 'var(--domain-quality)',
+  Operations: 'var(--domain-operations)',
+  Legal: 'var(--domain-legal)',
+  Strategic: 'var(--domain-strategic)',
 };
 
 const DOMAIN_DESCRIPTIONS = {

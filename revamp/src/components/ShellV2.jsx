@@ -87,11 +87,11 @@ function RailIcon({ name, size = 16 }) {
     chart:  <><path d="M2 13h12M4 11V7M7 11V4M10 11V8M13 11V6"/></>,
     assist: <><path d="M3 4h10a1 1 0 011 1v5a1 1 0 01-1 1H8l-3 2.5V11H3a1 1 0 01-1-1V5a1 1 0 011-1z"/><path d="M5.5 7h5" strokeLinecap="round"/></>,
   }[name] || <circle cx="8" cy="8" r="3"/>;
-  return <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{p}</svg>;
+  return <svg aria-hidden="true" width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">{p}</svg>;
 }
 
 /* ─────────── Shell v2 ─────────── */
-function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain = 'home', initialPage = null, initialDecision = null, showPalette = false }) {
+function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain = 'home', initialPage = null, initialDecision = null, showPalette = false, onExternalNav = (path) => { window.location.hash = path; } }) {
   const [domain, setDomain] = useState(initialDomain);
   const [page, setPage] = useState(initialPage);
   const [selDecision, setSelDecision] = useState(initialDecision);
@@ -125,7 +125,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
 
   // Ticket 1: decision queue
   const queue = useDecisionQueue(DECISIONS);
-  const assistQueue = useAssistQueue(ASSIST_ITEMS);
+  const assistQueue = useAssistQueue(ASSIST_ITEMS, role);
 
   const order = RAIL_ORDER[role] || RAIL_ORDER.CEO;
   const rail = order.map((id) => DOMAINS.find((d) => d.id === id)).filter(Boolean);
@@ -190,10 +190,25 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
           if (e.key === 'd' || e.key === 'D') { queue.defer(selDecision); }
         }
       }
+      // J/K and arrow navigation for decision list (home domain, no palette)
+      if (!paletteOpen && domain === 'home') {
+        if (e.key === 'j' || e.key === 'J' || (e.key === 'ArrowDown' && !e.metaKey)) {
+          const pending = queue.items;
+          const idx = pending.findIndex((x) => x.id === selDecision);
+          if (idx < pending.length - 1) { e.preventDefault(); setSelDecision(pending[idx + 1].id); }
+        }
+        if (e.key === 'k' || e.key === 'K' || (e.key === 'ArrowUp' && !e.metaKey)) {
+          const pending = queue.items;
+          const idx = pending.findIndex((x) => x.id === selDecision);
+          if (idx > 0) { e.preventDefault(); setSelDecision(pending[idx - 1].id); }
+        }
+      }
+      // Back navigation
+      if ((e.metaKey || e.ctrlKey) && e.key === '[') { e.preventDefault(); if (canGoBack) goBack(); }
     };
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
-  });
+  }, [paletteOpen, domain, selDecision, queue, canGoBack, goBack]);
 
   return (
     <div data-theme={theme} className="shell-grid" style={{
@@ -211,6 +226,7 @@ function ShellV2({ role = 'CEO', width, height, theme = 'light', initialDomain =
         onDecisionClick={handleDecisionClick}
         canGoBack={canGoBack} goBack={goBack}
         assistQueue={assistQueue} role={role}
+        onExternalNav={onExternalNav}
       />
       {paletteOpen && (
         <Palette
@@ -229,7 +245,7 @@ function CommandRail({ rail, active, onPick, role, onSearch }) {
   const user = ROLES.find((r) => r.id === role) || ROLES[0];
   const initial = user.name.split(' ').map((s) => s[0]).slice(0, 2).join('');
   return (
-    <div style={{
+    <div role="navigation" aria-label="Domain navigation" style={{
       borderRight: '1px solid var(--line)', background: 'var(--bg-sunk)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 0',
     }}>
@@ -241,7 +257,7 @@ function CommandRail({ rail, active, onPick, role, onSearch }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 2, flex: 1 }}>
         {rail.map((d) => (
-          <button key={d.id} onClick={() => onPick(d.id)} title={d.name}
+          <button key={d.id} onClick={() => onPick(d.id)} aria-label={d.name} aria-current={active === d.id ? 'true' : undefined}
             style={{
               all: 'unset', cursor: 'pointer', width: 36, height: 36, borderRadius: 9,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -255,11 +271,11 @@ function CommandRail({ rail, active, onPick, role, onSearch }) {
         ))}
       </div>
 
-      <button onClick={onSearch} title="\u2318K \u2014 Search"
+      <button onClick={onSearch} aria-label="Search (\u2318K)"
         style={{ all: 'unset', cursor: 'pointer', width: 36, height: 36, borderRadius: 9,
           display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ink-3)',
         }}>
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
       </button>
     </div>
   );
@@ -285,7 +301,7 @@ function WorklistMid({ role, selDecision, onSel, queue }) {
   const med  = items.filter((d) => d.priority === 'medium');
 
   return (
-    <div style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="shell-mid-column" style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--line)' }}>
         <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 3 }}>Home</div>
         <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: -0.2 }}>Decisions</div>
@@ -293,14 +309,14 @@ function WorklistMid({ role, selDecision, onSel, queue }) {
           {stats.pending} pending &middot; {stats.approved} approved &middot; {stats.escalated} escalated
         </div>
       </div>
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div role="listbox" aria-label="Decision queue" style={{ flex: 1, overflow: 'auto' }}>
         {[['Critical', crit], ['High', high], ['Medium', med]].map(([lab, list]) => list.length > 0 && (
           <div key={lab}>
             <div style={{ padding: '10px 16px 4px', fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600 }}>{lab}</div>
             {list.map((d) => {
               const isDone = d._status !== 'pending';
               return (
-                <div key={d.id} onClick={() => onSel(d.id)} style={{
+                <div key={d.id} role="option" aria-selected={selDecision === d.id} tabIndex={0} onClick={() => onSel(d.id)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSel(d.id); } }} style={{
                   padding: '10px 16px 11px', borderBottom: '1px solid var(--line-soft)',
                   borderLeft: `3px solid ${selDecision === d.id ? 'var(--accent)' : 'transparent'}`,
                   background: selDecision === d.id ? 'var(--accent-weak)' : 'transparent',
@@ -336,20 +352,20 @@ function WorklistMid({ role, selDecision, onSel, queue }) {
 
 function DomainIndex({ domain, page, onPick, scope }) {
   return (
-    <div style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div className="shell-mid-column" style={{ borderRight: '1px solid var(--line)', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       <div style={{ padding: '14px 16px 10px', borderBottom: '1px solid var(--line)' }}>
         <div style={{ fontSize: 10.5, color: 'var(--ink-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .5, marginBottom: 3 }}>Domain</div>
         <div style={{ fontSize: 16, fontWeight: 600, letterSpacing: -0.2 }}>{domain.name}</div>
         <div style={{ fontSize: 11.5, color: 'var(--ink-3)', marginTop: 3 }}>{scope}</div>
       </div>
-      <div style={{ flex: 1, overflow: 'auto', padding: '6px 0' }}>
+      <div role="navigation" aria-label={`${domain.name} pages`} style={{ flex: 1, overflow: 'auto', padding: '6px 0' }}>
         {domain.sections.map((s) => (
           <div key={s.label} style={{ marginBottom: 6 }}>
             <div style={{ padding: '8px 16px 3px', fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600 }}>{s.label}</div>
             {s.pages.map((p) => {
               const active = page === p;
               return (
-                <button key={p} onClick={() => onPick(p)} style={{
+                <button key={p} onClick={() => onPick(p)} aria-current={active ? 'page' : undefined} style={{
                   all: 'unset', cursor: 'pointer', display: 'block',
                   padding: '7px 16px', fontSize: 12.5,
                   color: active ? 'var(--accent)' : 'var(--ink-1)',
@@ -377,20 +393,20 @@ function BackBar({ canGoBack, goBack, label }) {
       borderBottom: '1px solid var(--line)', width: '100%',
       background: 'var(--bg-sunk)',
     }}>
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7.5 2L3.5 6l4 4"/></svg>
+      <svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7.5 2L3.5 6l4 4"/></svg>
       {label || 'Back'}
     </button>
   );
 }
 
 /* ─── Right pane: decision detail OR page content OR record inspector ─── */
-function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack, assistQueue, role }) {
+function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, selectedRecord, selectedRecordDomain, onRecordClick, onCloseRecord, onDecisionClick, canGoBack, goBack, assistQueue, role, onExternalNav }) {
   // Record inspector takes priority
   if (selectedRecord) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+      <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label="Back to records" />
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div className="fade-in" key={`record-${selectedRecord?.id}`} style={{ flex: 1, overflow: 'auto' }}>
           <RecordInspector record={selectedRecord} domainKey={selectedRecordDomain || domain.id} onClose={onCloseRecord} />
         </div>
       </div>
@@ -400,12 +416,14 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
   if (domain.id === 'assist') {
     const item = assistQueue.filtered.find((x) => x.id === assistQueue.selected);
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+      <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} />
-        {item
-          ? <AssistItemDetail item={item} assistQueue={assistQueue} role={role} />
-          : <AssistEmpty assistQueue={assistQueue} role={role} />
-        }
+        <div className="fade-in" key={`assist-${assistQueue.selected}`} style={{ display: 'contents' }}>
+          {item
+            ? <AssistItemDetail item={item} assistQueue={assistQueue} role={role} />
+            : <AssistEmpty assistQueue={assistQueue} role={role} />
+          }
+        </div>
       </div>
     );
   }
@@ -413,9 +431,9 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
   if (domain.id === 'home') {
     const d = queue.items.find((x) => x.id === decision) || queue.items[0];
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+      <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} />
-        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="fade-in" key={`decision-${decision}`} style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <DecisionDetail d={d} onNavTo={onNavTo} onNavToRecord={onNavToRecord} queue={queue} />
         </div>
       </div>
@@ -428,24 +446,46 @@ function RightPane({ domain, page, decision, onNavTo, onNavToRecord, queue, sele
     onRecordClick: (r) => onRecordClick(r, domain.id),
     onDecisionClick,
     onClearPage: () => goBack(),
-    onAgentClick: (agentId) => { window.location.hash = `/agents/inspect/${agentId}`; },
+    onAgentClick: (agentId) => { if (onExternalNav) onExternalNav(`/agents/inspect/${agentId}`); },
   };
 
   if (page === 'Patient Safety') {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+      <div role="main" aria-label="Content" className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
         <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div className="fade-in" key={`domain-${domain.id}-PatientSafety`} style={{ flex: 1, overflow: 'auto' }}>
           <PatientSafetyPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
         </div>
       </div>
     );
   }
 
+  if (page === 'Billing & Claims') {
+    return (
+      <div role="main" aria-label="Content" className="shell-right-pane fade-in" key={`domain-${domain.id}-BillingClaims`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <BillingClaimsPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
+        </div>
+      </div>
+    );
+  }
+
+  if (page === 'Credentialing') {
+    return (
+      <div role="main" aria-label="Content" className="shell-right-pane fade-in" key={`domain-${domain.id}-Credentialing`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+        <BackBar canGoBack={canGoBack} goBack={goBack} label={`Back to ${domain.name}`} />
+        <div style={{ flex: 1, overflow: 'auto' }}>
+          <CredentialingPage domain={domain} queue={queue} onDecisionClick={onDecisionClick} />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+    <div className="shell-right-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
       <BackBar canGoBack={canGoBack} goBack={goBack} label={page ? `Back to ${domain.name}` : null} />
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      <div className="fade-in" key={`domain-${domain.id}-${page}`} style={{ flex: 1, overflow: 'auto' }}>
         <DomainDashboard {...dashProps} pageName={page || undefined} />
       </div>
     </div>
@@ -498,7 +538,7 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
               padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
               background: 'var(--surface)', fontSize: 11.5, color: 'var(--accent)', fontWeight: 500,
             }}>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
+              <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 2h5v5M8 2L3 7"/></svg>
               {deepLink.page}
             </button>
             {(() => {
@@ -511,7 +551,7 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
                   padding: '5px 10px', borderRadius: 6, border: '1px solid var(--line)',
                   background: 'var(--surface)', fontSize: 11.5, color: 'var(--ink-2)', fontWeight: 500,
                 }}>
-                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
+                  <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="5" cy="5" r="3"/></svg>
                   View records
                 </button>
               );
@@ -542,7 +582,7 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
         <LabelSmall>Agent recommendation</LabelSmall>
         <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px', marginBottom: 20 }}>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 6, fontSize: 12 }}>
-            <svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--violet)" strokeWidth="1.4"><rect x="2" y="3" width="8" height="7" rx="1.5"/><path d="M6 1v2" strokeLinecap="round"/></svg>
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="var(--violet)" strokeWidth="1.4"><rect x="2" y="3" width="8" height="7" rx="1.5"/><path d="M6 1v2" strokeLinecap="round"/></svg>
             <span style={{ fontWeight: 600 }}>{d.agent}</span>
             <span style={{ color: 'var(--ink-3)' }}>&middot; {Math.round(d.confidence * 100)}% confidence</span>
           </div>
@@ -566,11 +606,11 @@ function DecisionDetail({ d, onNavTo, onNavToRecord, queue }) {
         {isPending ? (
           <>
             <button onClick={() => approve(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 14px', borderRadius: 8, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600 }}>Approve recommendation &#x21B5;</button>
-            <button onClick={() => escalate(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Escalate E</button>
-            <button onClick={() => defer(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Defer D</button>
+            <button onClick={() => escalate(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Escalate <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4, fontFamily: 'var(--font-mono)' }}>E</span></button>
+            <button onClick={() => defer(d.id)} style={{ all: 'unset', cursor: 'pointer', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 13, fontWeight: 500 }}>Defer <span style={{ fontSize: 10, opacity: 0.7, marginLeft: 4, fontFamily: 'var(--font-mono)' }}>D</span></button>
           </>
         ) : (
-          <div style={{
+          <div aria-live="polite" style={{
             display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 8,
             background: actionStatus === 'approved' ? 'var(--green)' : actionStatus === 'escalated' ? 'var(--amber)' : 'var(--ink-3)',
             color: '#fff', fontSize: 13, fontWeight: 600,
@@ -671,6 +711,200 @@ function PatientSafetyPage({ domain, queue, onDecisionClick }) {
   );
 }
 
+/* ─── Level-2 page: Billing & Claims (denied claim appeal deep-link) ─── */
+function BillingClaimsPage({ domain, queue, onDecisionClick }) {
+  const claims = [
+    ['CLM-2026-4471', 'Medicare A', '$14,280', 'Denied — medical necessity', 'Apr 15'],
+    ['CLM-2026-4392', 'Medicare A', '$8,940', 'Approved', 'Apr 12'],
+    ['CLM-2026-4318', 'Managed Care', '$22,100', 'Pending prior auth', 'Apr 10'],
+  ];
+  return (
+    <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
+      {/* Breadcrumb */}
+      <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+        <span>{domain.name}</span>
+        <span style={{ opacity: .5 }}>&rsaquo;</span>
+        <span>Billing & Claims</span>
+        <span style={{ opacity: .5 }}>&rsaquo;</span>
+        <span>CLM-2026-4471</span>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '0 0 4px' }}>
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Medicare A Denial — Heritage Oaks</h1>
+        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>CLM-2026-4471 · $14,280</span>
+      </div>
+      <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 20 }}>
+        Resident: James Patterson (R-301) · Rm 114B · Admitted 2025-09-15 · Primary: COPD exacerbation, pneumonia
+      </div>
+
+      {/* Denial summary stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
+        {[
+          ['Claim Amount', '$14,280', 'var(--ink-1)'],
+          ['Denial Reason', 'Medical necessity', 'var(--red)'],
+          ['Appeal Deadline', '12 days', 'var(--amber)'],
+          ['Win Probability', '78%', 'var(--green)'],
+        ].map(([l, v, c]) => (
+          <div key={l} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4, fontWeight: 600 }}>{l}</div>
+            <div className="tnum" style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.3, color: c }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Agent recommendation */}
+      <div style={{ background: 'var(--amber-bg)', border: '1px solid var(--amber)', borderRadius: 10, padding: '14px 16px', marginBottom: 20, borderLeftWidth: 3 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--amber)', textTransform: 'uppercase', letterSpacing: .4 }}>High</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>D-4827</span>
+          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>· Billing Specialist · 91%</span>
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>File Level 1 redetermination with clinical documentation package</div>
+        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
+          Agent compiled physician progress notes, therapy minutes log (847 minutes over 14 days), and MDS Section GG showing functional improvement from 02→05 on self-care score. Medicare contractor's denial cites "insufficient skilled need" — but documented therapy intensity and functional gains exceed the MAC threshold. Historical win rate for similar appeals at Heritage Oaks: 82%.
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={() => queue?.approve('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>File appeal</button>
+          <button onClick={() => queue?.escalate('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate to legal</button>
+          <button onClick={() => onDecisionClick?.('D-4827')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
+        </div>
+      </div>
+
+      {/* Appeal timeline */}
+      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Appeal Timeline</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
+        {[
+          ['Apr 15', 'Claim denied by Palmetto GBA', 'Reason: insufficient skilled need documentation', 'var(--red)'],
+          ['Apr 16', 'Agent auto-retrieved clinical documentation', '847 therapy minutes, MDS Section GG, physician notes compiled', 'var(--accent)'],
+          ['Apr 17', 'Appeal package drafted', 'Level 1 redetermination ready for review — 12 days remain', 'var(--amber)'],
+          ['Apr 29', 'Appeal deadline', 'Must file within 120 days of initial determination', 'var(--ink-3)'],
+        ].map((step, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '90px 1fr auto', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5, alignItems: 'start' }}>
+            <span className="tnum" style={{ color: 'var(--ink-2)', fontWeight: 500 }}>{step[0]}</span>
+            <div>
+              <div style={{ fontWeight: 600, marginBottom: 2 }}>{step[1]}</div>
+              <div style={{ fontSize: 11.5, color: 'var(--ink-3)' }}>{step[2]}</div>
+            </div>
+            <span style={{ width: 8, height: 8, borderRadius: 4, background: step[3], marginTop: 4 }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Recent claims */}
+      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Recent claims · Heritage Oaks</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden' }}>
+        {claims.map((c, i) => (
+          <div key={c[0]} style={{ display: 'grid', gridTemplateColumns: '120px 100px 90px 1fr 80px', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
+            <span className="mono" style={{ color: 'var(--ink-2)' }}>{c[0]}</span>
+            <span style={{ color: 'var(--ink-2)' }}>{c[1]}</span>
+            <span className="tnum" style={{ fontWeight: 600 }}>{c[2]}</span>
+            <span style={{ color: c[3] === 'Approved' ? 'var(--green)' : c[3].includes('Denied') ? 'var(--red)' : 'var(--amber)' }}>{c[3]}</span>
+            <span className="tnum" style={{ color: 'var(--ink-3)' }}>{c[4]}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Level-2 page: Credentialing (expiring credential deep-link) ─── */
+function CredentialingPage({ domain, queue, onDecisionClick }) {
+  return (
+    <div style={{ overflow: 'auto', padding: '20px 32px 40px' }}>
+      <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+        <span>{domain.name}</span>
+        <span style={{ opacity: .5 }}>&rsaquo;</span>
+        <span>Credentialing</span>
+        <span style={{ opacity: .5 }}>&rsaquo;</span>
+        <span>Sarah Mitchell, RN</span>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, margin: '0 0 4px' }}>
+        <h1 style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: -0.5, fontFamily: 'var(--font-display)' }}>Sarah Mitchell, RN</h1>
+        <span className="mono" style={{ fontSize: 12, color: 'var(--ink-3)' }}>EMP-3187 · Bayview · Night Shift Lead</span>
+      </div>
+      <div style={{ fontSize: 13, color: 'var(--ink-2)', marginBottom: 20 }}>
+        Hired 2022-03-15 · 4.2 years tenure · Night shift lead CNA-to-RN bridge · Covers 12 weekly shifts
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, marginBottom: 20 }}>
+        {[
+          ['RN License', 'Expires Apr 24', 'var(--red)'],
+          ['Shifts at Risk', '12/week', 'var(--red)'],
+          ['Backup Coverage', 'Drafted', 'var(--amber)'],
+          ['Renewal Status', 'Board processing', 'var(--amber)'],
+        ].map(([l, v, c]) => (
+          <div key={l} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .4, fontWeight: 600 }}>{l}</div>
+            <div className="tnum" style={{ fontSize: 17, fontWeight: 600, letterSpacing: -0.3, color: c }}>{v}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: 'var(--red-bg)', border: '1px solid var(--red)22', borderRadius: 10, padding: '14px 16px', marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--red)', textTransform: 'uppercase', letterSpacing: .4 }}>Critical</span>
+          <span className="mono" style={{ fontSize: 11, color: 'var(--ink-3)' }}>D-4825</span>
+          <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>· Credentialing Monitor · 94%</span>
+        </div>
+        <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>RN license expires in 3 days — 12 shifts need backup coverage</div>
+        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', marginBottom: 10, lineHeight: 1.5 }}>
+          Sarah filed renewal application Mar 28 but State Board processing is backlogged (avg 6-week turnaround). Agent has drafted a 2-week backup schedule using Maria Santos (PRN RN, Bayview) for 8 shifts and Jennifer Park (float pool) for 4 shifts. Combined agency cost: $4,200/week vs Sarah's regular cost of $2,100/week. Board expedite fee is $75.
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {(() => {
+            const dec = queue?.items.find((x) => x.id === 'D-4825');
+            const isPending = dec && dec._status === 'pending';
+            if (!isPending) return <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--green)' }}>✓ {dec?._status || 'Resolved'}</span>;
+            return (
+              <>
+                <button onClick={() => queue?.approve('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, background: 'var(--accent)', color: '#fff', fontSize: 12.5, fontWeight: 600 }}>Approve backup + expedite</button>
+                <button onClick={() => queue?.escalate('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500 }}>Escalate</button>
+                <button onClick={() => onDecisionClick?.('D-4825')} style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 7, border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 12.5, fontWeight: 500, color: 'var(--accent)' }}>View full decision</button>
+              </>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* Shift impact table */}
+      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Shift coverage plan</div>
+      <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, overflow: 'hidden', marginBottom: 20 }}>
+        {[
+          ['Mon/Wed/Fri nights', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
+          ['Tue/Thu nights', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
+          ['Sat nights', 'Jennifer Park (float)', '$185/shift', 'Pending'],
+          ['Sun nights', 'Jennifer Park (float)', '$185/shift', 'Pending'],
+          ['Weekend days (2)', 'Maria Santos (PRN)', '$140/shift', 'Confirmed'],
+          ['Per-diem fill (2)', 'Agency TBD', '$210/shift', 'Searching'],
+        ].map((row, i) => (
+          <div key={i} style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr .6fr .6fr', padding: '10px 14px', gap: 12, borderTop: i ? '1px solid var(--line-soft)' : 'none', fontSize: 12.5 }}>
+            <span style={{ fontWeight: 500 }}>{row[0]}</span>
+            <span style={{ color: 'var(--ink-2)' }}>{row[1]}</span>
+            <span className="tnum" style={{ color: 'var(--ink-2)' }}>{row[2]}</span>
+            <span style={{ color: row[3] === 'Confirmed' ? 'var(--green)' : row[3] === 'Pending' ? 'var(--amber)' : 'var(--red)' }}>{row[3]}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 10.5, color: 'var(--ink-3)', textTransform: 'uppercase', letterSpacing: .5, fontWeight: 600, marginBottom: 8 }}>Credential history</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+        {[
+          ['RN License', 'CA BRN #847291', 'Expires Apr 24 — renewal filed Mar 28'],
+          ['BLS Certification', 'AHA #BLS-20240315', 'Valid through Mar 2027'],
+          ['ACLS Certification', 'AHA #ACLS-20240901', 'Valid through Sep 2026'],
+        ].map((cred) => (
+          <div key={cred[1]} style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 10, padding: '12px 14px' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 3 }}>{cred[0]}</div>
+            <div className="mono" style={{ fontSize: 11, color: 'var(--ink-3)', marginBottom: 4 }}>{cred[1]}</div>
+            <div style={{ fontSize: 11.5, color: cred[2].includes('Expires') ? 'var(--red)' : 'var(--ink-3)' }}>{cred[2]}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Command+K Palette (Apple Spotlight / Superhuman style) ─── */
 
 const KIND_STYLE = {
@@ -691,7 +925,7 @@ function KindPill({ kind }) {
       fontSize: 10, fontWeight: 600, letterSpacing: .3,
       textTransform: 'uppercase', whiteSpace: 'nowrap', flexShrink: 0,
     }}>
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
+      <svg aria-hidden="true" width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{s.icon}</svg>
       {kind}
     </span>
   );
@@ -764,6 +998,20 @@ function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
   useEffect(() => { setActiveIdx(0); }, [q]);
 
   useEffect(() => {
+    const trap = (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = document.querySelectorAll('[role="dialog"] input, [role="dialog"] [role="option"]');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    window.addEventListener('keydown', trap);
+    return () => window.removeEventListener('keydown', trap);
+  }, []);
+
+  useEffect(() => {
     if (listRef.current) {
       // Find the DOM element for the active item (skip headers)
       let itemIdx = 0;
@@ -801,7 +1049,7 @@ function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
   let itemCounter = 0;
 
   return (
-    <div onClick={onClose} style={{
+    <div role="dialog" aria-modal="true" aria-label="Search" onClick={onClose} style={{
       position: 'absolute', inset: 0, background: 'rgba(10,12,16,.35)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
       display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 72, zIndex: 20,
     }}>
@@ -812,8 +1060,8 @@ function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
       }}>
         {/* Search input */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 18px', borderBottom: '1px solid var(--line)' }}>
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" strokeWidth="1.6" strokeLinecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
-          <input ref={inputRef} autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={handleKeyDown}
+          <svg aria-hidden="true" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="var(--ink-3)" strokeWidth="1.6" strokeLinecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>
+          <input ref={inputRef} role="combobox" autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Search pages, decisions, records..."
             style={{ all: 'unset', flex: 1, fontSize: 15, color: 'var(--ink-1)', fontWeight: 400 }} />
           <kbd style={{
@@ -823,7 +1071,7 @@ function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
         </div>
 
         {/* Results */}
-        <div ref={listRef} style={{ flex: 1, overflow: 'auto', padding: '4px 0' }}>
+        <div ref={listRef} role="listbox" style={{ flex: 1, overflow: 'auto', padding: '4px 0' }}>
           {sections.length === 0 && (
             <div style={{ padding: '32px 18px', textAlign: 'center', color: 'var(--ink-3)', fontSize: 13 }}>
               No results for &ldquo;{q}&rdquo;
@@ -844,7 +1092,7 @@ function Palette({ onClose, onNav, onSelectDecision, onNavToRecord }) {
             const isActive = idx === activeIdx;
 
             return (
-              <div key={`i-${si}`} data-item-idx={idx} onClick={() => activateResult(entry)}
+              <div key={`i-${si}`} role="option" aria-selected={isActive} data-item-idx={idx} onClick={() => activateResult(entry)}
                 onMouseEnter={() => setActiveIdx(idx)}
                 style={{
                   padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',

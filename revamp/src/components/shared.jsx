@@ -136,3 +136,83 @@ export function StatCard({ label, value, change, trend }) {
     </div>
   );
 }
+
+/* ─── Shared utilities ─── */
+
+export function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+/* ─── Card — universal content container ─── */
+export function Card({ children, style, className }) {
+  return (
+    <div className={className} style={{
+      background: 'var(--surface)',
+      border: '1px solid var(--line)',
+      borderRadius: 'var(--r-2, 10px)',
+      padding: '16px 20px',
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Breadcrumbs ─── */
+export function Breadcrumbs({ items, onNavigate }) {
+  return (
+    <div style={{ fontSize: 11.5, color: 'var(--ink-3)', display: 'flex', gap: 6, alignItems: 'center' }}>
+      {items.map((s, i) => (
+        <span key={i} style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {i > 0 && <span style={{ opacity: .5 }}>&rsaquo;</span>}
+          <span
+            onClick={onNavigate && i < items.length - 1 ? () => onNavigate(i) : undefined}
+            style={{
+              cursor: i < items.length - 1 && onNavigate ? 'pointer' : 'default',
+              ...(i < items.length - 1 && onNavigate ? { borderBottom: '1px dotted var(--ink-4)' } : {}),
+            }}
+          >
+            {s}
+          </span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Kbd — keyboard shortcut hint ─── */
+export function Kbd({ children }) {
+  return (
+    <kbd style={{
+      fontSize: 10, color: 'var(--ink-4)',
+      padding: '1px 5px', borderRadius: 3,
+      background: 'var(--bg-sunk)',
+      border: '1px solid var(--line)',
+      fontFamily: 'var(--font-mono)',
+    }}>
+      {children}
+    </kbd>
+  );
+}
+
+/* ─── NavChip — tab/filter chip button ─── */
+export function NavChip({ active, label, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      all: 'unset', cursor: 'pointer',
+      padding: '5px 12px', borderRadius: 6,
+      fontSize: 12, fontWeight: active ? 600 : 400,
+      color: active ? 'var(--accent)' : 'var(--ink-3)',
+      background: active ? 'var(--accent-weak)' : 'transparent',
+      transition: 'background var(--transition-micro, 120ms), color var(--transition-micro, 120ms)',
+    }}>
+      {label}
+    </button>
+  );
+}

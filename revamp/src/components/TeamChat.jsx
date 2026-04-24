@@ -18,7 +18,7 @@ function MessageBubble({ m }) {
           ? <div style={{ width: 20, height: 20, borderRadius: 10, background: 'var(--ink-1)', color: 'var(--bg)', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>EO</div>
           : <AgentDot id={m.from} size={20} />}
         <span style={{ fontSize: 12, fontWeight: 600 }}>{name}</span>
-        <span style={{ fontSize: 10.5, fontWeight: 600, color: typeColor, letterSpacing: .4, padding: '2px 6px', borderRadius: 4, border: `1px solid ${typeColor}33` }}>{m.type}</span>
+        <span style={{ fontSize: 10.5, fontWeight: 600, color: typeColor, letterSpacing: .4, padding: '2px 6px', borderRadius: 4, border: `1px solid color-mix(in oklch, ${typeColor} 20%, transparent)` }}>{m.type}</span>
         <span style={{ fontSize: 11, color: 'var(--ink-3)' }} className="tnum">{m.t}</span>
       </div>
       <div style={{ marginLeft: 28, padding: '10px 12px', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 8 }}>
@@ -90,12 +90,12 @@ export default function TeamChat({ width, height, theme = 'light' }) {
         <div style={{ flex: 1, overflow: 'auto', padding: '18px 24px 30px' }}>
           {cur.messages.map((m, i) => <MessageBubble key={i} m={m} />)}
           {cur.status === 'resolved' && (
-            <div style={{ marginTop: 10, padding: '10px 14px', background: 'var(--green-bg)', color: 'var(--green)', border: '1px solid var(--green)33', borderRadius: 8, fontSize: 12, fontWeight: 500 }}>
+            <div style={{ marginTop: 10, padding: '10px 14px', background: 'var(--green-bg)', color: 'var(--green)', border: '1px solid color-mix(in oklch, var(--green) 20%, transparent)', borderRadius: 8, fontSize: 12, fontWeight: 500 }}>
               ✓ Resolved in {cur.duration}. No human intervention needed.
             </div>
           )}
           {cur.status === 'escalated' && (
-            <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--red-bg)', color: 'var(--red)', border: '1px solid var(--red)33', borderRadius: 8, fontSize: 12.5 }}>
+            <div style={{ marginTop: 10, padding: '12px 14px', background: 'var(--red-bg)', color: 'var(--red)', border: '1px solid color-mix(in oklch, var(--red) 20%, transparent)', borderRadius: 8, fontSize: 12.5 }}>
               <div style={{ fontWeight: 600, marginBottom: 2 }}>⚠ Escalated to {(cur.humans || []).join(' + ')}</div>
               Both agents hold positions. Decision card D-4830 created — appears in humans' Worklist.
             </div>

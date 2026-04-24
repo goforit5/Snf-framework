@@ -5,11 +5,19 @@ import NotificationPanel from './NotificationPanel';
 
 const BAR_H = 44;
 
+const VIEW_TABS = [
+  { key: 'agents', label: 'Agents', path: '/agents' },
+  { key: 'briefing', label: 'Briefing', path: '/briefing' },
+  { key: 'audit', label: 'Audit', path: '/audit' },
+  { key: 'settings', label: 'Settings', path: '/settings' },
+];
+
 export default function ControlBar({ role, setRole, dark, setDark, activeView }) {
   const navigate = useNavigate();
   const currentRole = ROLES.find((r) => r.id === role);
   const scopeLabel = currentRole?.scope || '';
   const [notifOpen, setNotifOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   return (
     <div style={{
@@ -18,10 +26,10 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
       background: 'var(--bg-sunk)', borderBottom: '1px solid var(--line)',
       fontFamily: 'var(--font-text)', fontSize: 12,
     }}>
-      {/* Title */}
-      <span style={{
+      {/* Title — clickable, navigates to home */}
+      <span onClick={() => navigate('/')} style={{
         fontWeight: 700, fontSize: 13, color: 'var(--ink-1)',
-        letterSpacing: -0.2, whiteSpace: 'nowrap',
+        letterSpacing: -0.2, whiteSpace: 'nowrap', cursor: 'pointer',
       }}>
         SNF Command
       </span>
@@ -58,14 +66,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
 
       {/* View section */}
       <div style={{ display: 'flex', gap: 2 }}>
-        {[
-          { key: 'home', label: 'Home', path: '/' },
-          { key: 'agents', label: 'Agents', path: '/agents' },
-          { key: 'briefing', label: 'Briefing', path: '/briefing' },
-          { key: 'audit', label: 'Audit', path: '/audit' },
-          { key: 'assist', label: 'Assist', path: '/domain/assist' },
-          { key: 'settings', label: 'Settings', path: '/settings' },
-        ].map(({ key, label, path }) => (
+        {VIEW_TABS.map(({ key, label, path }) => (
           <button key={key} onClick={() => navigate(path)} style={{
             all: 'unset', cursor: 'pointer',
             padding: '4px 12px', borderRadius: 6,
@@ -94,16 +95,18 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           <path d="M4 6a4 4 0 018 0c0 4 2 5 2 5H2s2-1 2-5"/>
           <path d="M6 13a2 2 0 004 0"/>
         </svg>
-        {/* Unread badge — count from NotificationPanel */}
-        <span style={{
-          position: 'absolute', top: 0, right: 2,
-          minWidth: 14, height: 14, borderRadius: 7,
-          background: 'var(--red, #e53e3e)', color: '#fff',
-          fontSize: 9, fontWeight: 700, lineHeight: '14px',
-          textAlign: 'center', padding: '0 3px',
-        }}>
-          4
-        </span>
+        {/* Unread badge — dynamic count from NotificationPanel */}
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute', top: 0, right: 2,
+            minWidth: 14, height: 14, borderRadius: 7,
+            background: 'var(--red, #e53e3e)', color: '#fff',
+            fontSize: 9, fontWeight: 700, lineHeight: '14px',
+            textAlign: 'center', padding: '0 3px',
+          }}>
+            {unreadCount}
+          </span>
+        )}
       </button>
 
       <div style={{ width: 1, height: 18, background: 'var(--line)' }} />
@@ -126,6 +129,7 @@ export default function ControlBar({ role, setRole, dark, setDark, activeView })
           navigate('/');
           setNotifOpen(false);
         }}
+        onUnreadChange={setUnreadCount}
       />
     </div>
   );

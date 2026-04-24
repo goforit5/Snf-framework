@@ -32,7 +32,7 @@ function AgentSubNav() {
   const activeKey = getActiveKey();
 
   return (
-    <div style={{
+    <div role="tablist" style={{
       display: 'flex', gap: 2, padding: '8px 16px',
       borderBottom: '1px solid var(--line)', background: 'var(--bg)',
       flexShrink: 0,
@@ -40,7 +40,7 @@ function AgentSubNav() {
       {AGENT_TABS.map((tab) => {
         const active = activeKey === tab.key;
         return (
-          <button key={tab.key} onClick={() => navigate(tab.path)} style={{
+          <button key={tab.key} role="tab" aria-selected={active} onClick={() => navigate(tab.path)} style={{
             all: 'unset', cursor: 'pointer',
             padding: '5px 12px', borderRadius: 6,
             fontSize: 12, fontWeight: active ? 600 : 400,

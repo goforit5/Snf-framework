@@ -70,8 +70,8 @@ function Toggle({ on, onToggle, label }) {
 /* ─── Integration status pill ─── */
 function IntegrationRow({ name, status, last }) {
   const styles = {
-    connected:      { bg: 'var(--green-bg, rgba(56,161,105,0.1))', color: 'var(--green)', label: 'Connected' },
-    pending:        { bg: 'var(--amber-bg, rgba(221,107,32,0.1))', color: 'var(--amber)', label: 'Pending' },
+    connected:      { bg: 'var(--green-bg)', color: 'var(--green)', label: 'Connected' },
+    pending:        { bg: 'var(--amber-bg)', color: 'var(--amber)', label: 'Pending' },
     'not configured': { bg: 'var(--surface-2, var(--surface))', color: 'var(--ink-3)', label: 'Not Configured' },
   };
   const s = styles[status] || styles['not configured'];
@@ -195,13 +195,35 @@ export default function SettingsView({ role }) {
         ))}
       </SettingsSection>
 
+      {/* Integration CTA */}
+      <div style={{
+        marginTop: -16, marginBottom: 32, padding: '16px 20px',
+        background: 'var(--accent-weak)',
+        border: '1px solid var(--accent)',
+        borderRadius: 'var(--r-2, 10px)',
+      }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)', marginBottom: 4 }}>
+          Ready to connect your systems?
+        </div>
+        <div style={{ fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.5, marginBottom: 12 }}>
+          With Ensign's PCC and Workday credentials, every decision card in this platform routes real actions — offer letters, DPH filings, care plan updates — without opening another application.
+        </div>
+        <button style={{
+          all: 'unset', cursor: 'pointer',
+          padding: '8px 16px', borderRadius: 8,
+          background: 'var(--accent)', color: '#fff',
+          fontSize: 13, fontWeight: 600,
+        }}>
+          Schedule credential onboarding
+        </button>
+      </div>
+
       {/* About */}
       <SettingsSection title="About">
-        <Row label="Version" value="2.0.0-revamp" />
+        <Row label="Version" value="2.0.0" />
         <Row label="Build date" value="2026-04-21" />
         <Row label="Active agents" value={String(AGENTS.length)} />
-        <Row label="Facilities" value={String(FACILITIES.length) + ' (demo) / 330 (production)'} />
-        <Row label="Framework" value="React + Vite" last />
+        <Row label="Facilities" value={String(FACILITIES.length) + ' (demo) / 330 facilities'} last />
       </SettingsSection>
     </div>
   );

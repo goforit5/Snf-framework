@@ -51,23 +51,53 @@ export default function AuditTrail({ actionLog, theme }) {
     return allEntries.filter((e) => e.action === actionKey);
   }, [filter, allEntries]);
 
+  const handleExport = () => {
+    const header = 'Timestamp,Action,Title,Facility,Role\n';
+    const rows = filtered.map(e =>
+      `"${e.ts}","${e.action}","${e.title.replace(/"/g, '""')}","${e.facility}","${e.role}"`
+    ).join('\n');
+    const blob = new Blob([header + rows], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audit-trail-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div data-theme={theme} style={{
       fontFamily: 'var(--font-text)', color: 'var(--ink-1)',
       padding: '24px 32px', overflow: 'auto', height: '100%',
     }}>
       {/* Header */}
-      <h1 style={{
-        margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: -0.3,
-        fontFamily: 'var(--font-display)',
-      }}>
-        Audit Trail
-      </h1>
-      <div style={{
-        fontSize: 13, color: 'var(--ink-3)', marginTop: 4, marginBottom: 20,
-      }}>
-        Complete record of human decisions and agent actions
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h1 style={{
+            margin: 0, fontSize: 22, fontWeight: 600, letterSpacing: -0.3,
+            fontFamily: 'var(--font-display)',
+          }}>
+            Audit Trail
+          </h1>
+          <div style={{
+            fontSize: 13, color: 'var(--ink-3)', marginTop: 4,
+          }}>
+            Complete record of human decisions and agent actions
+          </div>
+        </div>
+        <button onClick={handleExport} style={{
+          all: 'unset', cursor: 'pointer',
+          padding: '5px 12px', borderRadius: 6,
+          border: '1px solid var(--line)',
+          background: 'var(--surface)',
+          fontSize: 12, fontWeight: 500, color: 'var(--ink-2)',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 10v3h10v-3"/><path d="M8 2v8M5 7l3 3 3-3"/></svg>
+          Export CSV
+        </button>
       </div>
+      <div style={{ marginBottom: 20 }} />
 
       {/* Filter bar */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
