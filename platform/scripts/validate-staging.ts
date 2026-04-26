@@ -325,7 +325,7 @@ async function checkWebSocketConnectivity(): Promise<CheckResult> {
         'Connection': 'Upgrade',
         'Upgrade': 'websocket',
         'Sec-WebSocket-Version': '13',
-        'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
+        'Sec-WebSocket-Key': btoa(`ws-nonce-${Date.now()}`),
       },
       signal: AbortSignal.timeout(10_000),
     });

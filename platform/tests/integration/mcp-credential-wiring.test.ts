@@ -72,16 +72,16 @@ const MOCK_VAULTS_CONFIG = {
 // ---------------------------------------------------------------------------
 
 const MOCK_CREDENTIALS = {
-  PCC_CLIENT_ID: 'pcc-test-client-id-abc123',
-  PCC_CLIENT_SECRET: 'pcc-test-secret-xyz789',
-  WORKDAY_CLIENT_ID: 'wd-test-client-id-def456',
-  WORKDAY_CLIENT_SECRET: 'wd-test-secret-uvw321',
-  M365_CLIENT_ID: 'm365-test-client-id-ghi789',
-  M365_CLIENT_SECRET: 'm365-test-secret-rst654',
+  PCC_CLIENT_ID: 'test-pcc-client-id-not-real',
+  PCC_CLIENT_SECRET: 'test-pcc-client-secret-not-real',
+  WORKDAY_CLIENT_ID: 'test-wd-client-id-not-real',
+  WORKDAY_CLIENT_SECRET: 'test-wd-client-secret-not-real',
+  M365_CLIENT_ID: 'test-m365-client-id-not-real',
+  M365_CLIENT_SECRET: 'test-m365-client-secret-not-real',
   REGULATORY_API_TOKEN: JSON.stringify({
-    cms_api_key: 'cms-test-key-jkl012',
-    oig_api_key: 'oig-test-key-mno345',
-    sam_api_key: 'sam-test-key-pqr678',
+    cms_api_key: 'test-cms-key-not-real',
+    oig_api_key: 'test-oig-key-not-real',
+    sam_api_key: 'test-sam-key-not-real',
   }),
 };
 
@@ -92,9 +92,9 @@ const ALL_SECRET_VALUES = [
   MOCK_CREDENTIALS.WORKDAY_CLIENT_SECRET,
   MOCK_CREDENTIALS.M365_CLIENT_ID,
   MOCK_CREDENTIALS.M365_CLIENT_SECRET,
-  'cms-test-key-jkl012',
-  'oig-test-key-mno345',
-  'sam-test-key-pqr678',
+  'test-cms-key-not-real',
+  'test-oig-key-not-real',
+  'test-sam-key-not-real',
 ];
 
 // ---------------------------------------------------------------------------
@@ -386,9 +386,9 @@ describe('MCP Connector Credential Wiring', () => {
       expect(token).not.toBeNull();
 
       const parsed = JSON.parse(token!);
-      expect(parsed.cms_api_key).toBe('cms-test-key-jkl012');
-      expect(parsed.oig_api_key).toBe('oig-test-key-mno345');
-      expect(parsed.sam_api_key).toBe('sam-test-key-pqr678');
+      expect(parsed.cms_api_key).toBe('test-cms-key-not-real');
+      expect(parsed.oig_api_key).toBe('test-oig-key-not-real');
+      expect(parsed.sam_api_key).toBe('test-sam-key-not-real');
     });
 
     it('returns null when regulatory env var is missing', () => {

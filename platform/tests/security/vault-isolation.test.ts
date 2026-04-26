@@ -291,22 +291,29 @@ describe('SNF-160: Vault Isolation', () => {
 
   it('credential patterns are redacted from agent output', () => {
     // Simulate an agent response that accidentally includes credential fragments
+    // Test values are obviously-fake placeholders for sanitization validation
+    const FAKE_CLIENT_SECRET = 'test-client-secret-not-real';
+    const FAKE_JWT = 'test.jwt.token-not-real';
+    const FAKE_API_KEY = 'test-api-key-not-real';
+    const FAKE_PASSWORD_1 = 'test-password-not-real';
+    const FAKE_PASSWORD_2 = 'test-password-not-real-2';
+
     const unsanitizedOutputs = [
-      'Authenticated with client_secret="sk-prod-abc123def456"',
-      'Using Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U',
-      'Connected with api_key=xoxb-1234567890-abcdefghij',
-      'Retrieved token: secret="my-super-secret-password"',
-      'Config: password=MySuperSecretP@ss123',
+      `Authenticated with client_secret="${FAKE_CLIENT_SECRET}"`,
+      `Using Bearer ${FAKE_JWT}`,
+      `Connected with api_key=${FAKE_API_KEY}`,
+      `Retrieved token: secret="${FAKE_PASSWORD_1}"`,
+      `Config: password=${FAKE_PASSWORD_2}`,
     ];
 
     for (const raw of unsanitizedOutputs) {
       const sanitized = sanitizeAgentResponse(raw);
       expect(sanitized).toContain('REDACTED');
-      expect(sanitized).not.toContain('sk-prod-abc123def456');
-      expect(sanitized).not.toContain('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9');
-      expect(sanitized).not.toContain('xoxb-1234567890-abcdefghij');
-      expect(sanitized).not.toContain('my-super-secret-password');
-      expect(sanitized).not.toContain('MySuperSecretP@ss123');
+      expect(sanitized).not.toContain(FAKE_CLIENT_SECRET);
+      expect(sanitized).not.toContain(FAKE_JWT);
+      expect(sanitized).not.toContain(FAKE_API_KEY);
+      expect(sanitized).not.toContain(FAKE_PASSWORD_1);
+      expect(sanitized).not.toContain(FAKE_PASSWORD_2);
     }
   });
 
