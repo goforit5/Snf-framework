@@ -18,11 +18,13 @@ The platform is a full agentic command center where AI agents monitor, analyze, 
 ## Active Development — revamp/ Only
 
 All active development is in the `revamp/` directory. The root `src/` directory is the legacy codebase. The revamp uses a completely different design system:
-- **Styling:** Inline styles with CSS custom properties from `revamp/src/tokens.css` — NO Tailwind
-- **Navigation:** `ControlBar.jsx` chip nav (not `Layout.jsx` sidebar)
-- **Components:** `shared.jsx` primitives (StatusPill, AgentDot, StatCard, LabelSmall)
-- **Layout:** 3-column ShellV2 for domain views; standalone full-page views (`*View.jsx`) for platform pages
-- **Routing:** HashRouter, lazy-loaded routes in `App.jsx`
+- **Styling:** Inline styles with CSS custom properties from `revamp/src/tokens.css` — NO Tailwind, oklch color space
+- **Navigation:** `ControlBar.jsx` chip nav with ARIA tablist pattern (not `Layout.jsx` sidebar)
+- **Components:** `shared.jsx` primitives (StatusPill, AgentDot, StatCard, LabelSmall, Card, Breadcrumbs, NavChip, Kbd)
+- **Layout:** 3-column ShellV2 (447 lines) for domain views; standalone full-page views (`*View.jsx`) for platform pages
+- **Routing:** HashRouter, lazy-loaded routes in `App.jsx` with ErrorBoundary + 404 catch-all
+- **Feedback:** ToastProvider context with `useToast()` hook for action confirmations
+- **Accessibility:** WCAG AA — ARIA landmarks, focus traps, keyboard navigation, semantic headings, skip-nav
 
 ## The Ensign Group
 
@@ -41,25 +43,60 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 - **Security architecture**: AWS Bedrock for in-VPC processing (BAA-covered, SOC 2, HITRUST). PHI never leaves Ensign's cloud. No new attack surface.
 - **Technical audience**: The CTO/tech team presentation focuses on architecture, API integration patterns, agent framework design, and security posture rather than business strategy.
 
-## Current State (as of 2026-04-14) — Production Ready, Security Hardened
+## Current State — Production Ready, Security Hardened
 
-**Platform status: COMPLETE.** All development work is finished. Security hardening complete. JWKS authentication implemented. Vault architecture complete. SDK adapter layer aligned to Anthropic Managed Agents API. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
+**Platform status: COMPLETE.** Security hardening complete. JWKS authentication implemented. Vault architecture complete. SDK adapter layer aligned to Anthropic Managed Agents API. The only remaining step is receiving Ensign system credentials from Barry to connect live APIs.
 
-### What is done
+### Platform Features
 
-- **69 pages across 8 nav sections** — clinical, finance, workforce, admissions, quality, legal, operations, strategic
-- **65 pages with functional DecisionQueue** via `useDecisionQueue` hook. The 4 pages without DecisionQueue are intentional: AgentWorkLedger, AuditTrail (monitoring views), ComingSoon (deployment timeline), Settings (config)
-- **Every DecisionCard is a self-contained analyst briefing** — agents pre-pull all data from PCC, Workday, CMS, GL systems. Humans never open another application
-- **Decision actions dispatch to NotificationCenter** — approve/override/escalate/defer all persist to the notification panel (bell icon) with appropriate severity levels, plus immediate toast feedback
-- **Agent action detail modals** — clicking any action row in Agent Operations opens a rich modal with agent name, domain badges, trigger, action taken, outcome, analysis, confidence %, time saved, cost impact, and policies verified
-- **330 facilities** with full detail (administrator, DON, phone, star ratings, survey dates) across Ensign's 15 operating states. Shared data layer powers both the portfolio heatmap and the facility operations page. Apple-level search/filter/sort with Spotlight-style search bar, region and status filter chips, and sort controls. Heatmap click-through deep-links to individual facility detail views via `?id=` query param
-- **Dark mode** with system preference detection and manual toggle (top bar). All 69 pages and all modals support light/dark
-- **Tablet responsive** — sidebar overlay on iPad portrait (768-1024px), 44px min touch targets on all DecisionCard buttons, responsive StatGrid columns, flex-wrap button containers
-- **Code splitting** — React.lazy on all pages, vendor chunks split (react 48 kB, recharts 429 kB, lucide 35 kB). Main bundle 455 kB (under Vite's 500 kB warning threshold)
-- **Zero lint errors, zero build warnings, zero dead imports**
-- **3 oversized pages decomposed** into sub-components: MorningStandup (5 sub-components), AgentWorkLedger (5 sub-components), AuditTrail (3 sub-components)
+- **48 AI agents across 8 domains** — Clinical (6), Finance (6), Workforce (6), Admissions (6), Quality (6), Operations (6), Legal (6), Strategic (6), plus Enterprise Orchestrator for inter-agent conflict resolution
+- **24 active decisions** — each a self-contained analyst briefing with quantified impact (dollars, days, probability, citations), agent recommendation with confidence score, evidence table with source citations, and forward-looking "If approved" action plan (3 steps per decision)
+- **62 page configurations** across 8 nav sections (clinical, finance, workforce, admissions, quality, legal, operations, strategic) with domain-specific stats, KPIs, highlights, and filtered record views
+- **5 user roles** (CEO, Admin, DON, Billing, Accounting) with role-driven navigation ordering — each role sees domains prioritized for their function
+- **Decision engine** — approve (Enter), escalate (E), defer (D) with post-approval enrichment showing timestamp, actor, and next execution step. All completable in under 10 seconds
+- **Command palette** (Cmd+K) — Spotlight-style search across pages, decisions, records, and facilities with kind-based grouping and keyboard navigation
+- **Assist channel** — bidirectional agent-human communication. Inbound: humans submit questions/requests, agents auto-triage with confidence scoring. Outbound: agents proactively surface insights. Thread-based conversation model with typing indicators
+- **Agent escalation resolution** — when agents disagree, platform presents both positions side-by-side with evidence, cost analysis, and citations. Human picks from pre-analyzed options
+- **Morning briefing** — AI-generated executive summary identifying priority facility, overnight changes, and recommended actions
+- **Agent inspector** — per-agent performance dashboard with 6 metrics (actions, confidence, override rate, cost/action, SLA compliance, daily cost) and 24h activity sparkline
+- **Notification system** — slide-over panel with type filtering (Critical, Escalations, Agent, Info), dynamic unread badge, click-to-navigate for decision-linked notifications, mark-all-read
+- **Toast confirmations** — `ToastProvider` context with `useToast()` hook. Success/info/warning types, 4s auto-dismiss, max 3 stacked, `aria-live="polite"`
+- **3 deep-dive pages** — Patient Safety (resident fall history + care conference), Billing & Claims (Medicare denial appeal timeline), Credentialing (license expiry + shift coverage plan)
+- **Audit trail** — searchable, filterable action log with semantic HTML table and CSV export
+- **ErrorBoundary** — catches runtime errors with retry UI instead of white-screen crashes. 404 catch-all route
+- **15 facilities** in demo (Heritage Oaks, Bayview, Meadowbrook, Pacific Gardens, etc.) with full detail — scales to 330+ when connected to production
+- **Dark mode** with manual toggle (top bar). All components support light/dark via CSS custom properties
+- **Tablet responsive** — mid-column overlay on mobile (<768px), hidden controls on tablet (<1024px), 44px min touch targets
+- **Code splitting** — React.lazy on all views, shimmer skeleton loading state, 79 modules, 642ms build, zero warnings
 - **Native companion apps**: macOS and iOS apps in `SNF_macOS/` and `SNF_iOS/` with shared `SNFKit` package
 - **Production backend** (separate `platform/` directory): Anthropic Managed Agents, YAML task definitions, MCP connectors (PCC, Workday, M365, CMS/OIG/SAM), PostgreSQL + graph DB, immutable audit engine, event cascade system, decision replay, agent health monitoring
+
+### Accessibility (WCAG 2.1 Level AA)
+
+- **ARIA patterns**: tablist/tab/aria-selected on all tab groups, listbox/option on decision queue, dialog/aria-modal on overlays, combobox on palette search, switch/aria-checked on toggles, navigation/aria-label on nav landmarks, aria-expanded on dropdowns
+- **Focus management**: skip-navigation link, focus traps in Palette and NotificationPanel (Tab/Shift+Tab cycle), focus-visible ring (2px accent outline) on all interactive elements including inputs/textareas/tabs/switches
+- **Keyboard navigation**: Cmd+K (palette), Cmd+[ (back), J/K (decisions), Enter/E/D (approve/escalate/defer), Escape (close overlays), Arrow keys (palette results), Space/Enter (list items, toggles)
+- **Screen reader support**: aria-live="polite" regions for decision actions, notification count, and toast messages. Dynamic aria-label on notification bell with unread count. aria-hidden="true" on decorative SVGs
+- **Semantic HTML**: heading hierarchy (h1 page titles, h2 section labels via LabelSmall `as` prop), semantic table in AuditTrail (table/thead/tbody/th with scope), visually-hidden form labels on all textareas
+- **Color contrast**: --ink-4 passes AA (4.5:1 on white). All semantic colors pass AA on their background variants. Dark mode maintains same ratios
+- **Motion preferences**: `prefers-reduced-motion: reduce` sets all animations/transitions to 0.01ms via universal selector
+
+### Design System (tokens.css)
+
+| Category | Tokens | Range |
+|----------|--------|-------|
+| Neutrals | bg, bg-sunk, surface, surface-2, line, line-soft, ink-1→ink-4, ink-on-accent | oklch cool gray scale |
+| Accent | accent, accent-weak | Apple blue (oklch 258 hue) |
+| Semantic | red, amber, green, violet + -bg variants | oklch with dark mode overrides |
+| Domain | 8 domain colors (clinical→strategic) | oklch with dark mode overrides |
+| Typography | text-2xs→text-xl + text-stat (17px) | 9px→26px |
+| Weights | weight-regular→weight-bold | 400→700 |
+| Spacing | space-1→space-10 | 4px→40px |
+| Radii | r-xs, r-sm, r-1, r-2, r-3, r-pill | 3px→999px |
+| Shadows | sh-1, sh-2, sh-pop | subtle→modal elevation |
+| Transitions | transition-micro, transition-base, transition-slow | 120ms→350ms |
+| Z-index | z-bar, z-backdrop, z-panel, z-modal | 50→100 |
+| Animations | fadeSlideIn, slideInRight, shimmer | + prefers-reduced-motion |
 
 ### Security hardening (completed 2026-04-14)
 
@@ -108,51 +145,72 @@ Andrew is pitching Ensign's executive and technical leadership — **Barry Port 
 
 ```
 Snf_Framework/
-├── public/
-│   ├── presentation.html       # Original pitch deck (self-contained HTML)
-│   ├── presentation-barry.html # CTO/tech team version (14 slides)
-│   └── agentic-platform-guide.html # Companion platform guide
-├── SNF_iOS/                     # Native iOS companion app (Swift Package)
-├── SNF_macOS/                   # Native macOS companion app (Swift Package)
-├── SNFKit/                      # Shared Swift package for native apps
-├── src/
-│   ├── App.jsx                  # Router — all 69 pages (lazy-loaded)
-│   ├── components/
-│   │   ├── Layout.jsx           # Sidebar navigation + shell (tablet-responsive overlay)
-│   │   ├── Widgets.jsx          # Shared UI: Card, PageHeader, Modal, badges
-│   │   ├── DecisionComponents.jsx # DecisionQueue, DecisionCard, GovernanceBadge (44px touch targets)
-│   │   ├── AgentComponents.jsx  # AgentSummaryBar, AgentActivityFeed, AgentCard
-│   │   ├── DataComponents.jsx   # StatGrid (responsive cols), DataTable, HealthScoreCard, AIAnalysisCard
-│   │   ├── standup/             # MorningStandup sub-components (CEO/CFO/DON/Admin/Regional)
-│   │   ├── agent-ledger/        # AgentWorkLedger sub-components (5 tab panels + action detail modal)
-│   │   └── audit/               # AuditTrail sub-components (filters, export, timeline)
-│   ├── hooks/
-│   │   └── useDecisionQueue.js  # HITL state: approve/override/escalate/defer + notification dispatch
-│   ├── data/                    # Domain-scoped mock data files
-│   └── pages/                   # 69 page files across 8 nav sections
-│       ├── CommandCenter.jsx    # Gold standard exemplar page
-│       ├── admissions/          # Census, referrals, payer mix, pre-admission, marketing
-│       ├── clinical/            # Infection control, pharmacy, therapy, dietary, records
-│       ├── legal/               # Contracts, compliance, litigation, regulatory, real estate
-│       ├── operations/          # Environmental, transportation, IT, supply chain, life safety
-│       ├── quality/             # Outcomes, patient safety, risk, grievances
-│       ├── revenue/             # Billing, AR, treasury, budgets, contracts, PDPM
-│       ├── strategic/           # M&A, market intel, investor relations, board, govt affairs
-│       └── workforce/           # Recruiting, scheduling, credentialing, benefits, training
-├── dist/                        # Built output (deployed to gh-pages)
-├── .github/                     # GitHub Actions for gh-pages deployment
-├── vite.config.js               # Vendor chunk splitting (react, recharts, lucide)
-└── package.json
+├── revamp/                       # ← ALL ACTIVE DEVELOPMENT
+│   └── src/
+│       ├── App.jsx               # Router, ErrorBoundary, ToastProvider, skip-nav, shimmer skeleton
+│       ├── components/
+│       │   ├── ShellV2.jsx       # 3-column shell (447 lines): CommandRail + MidColumn + RightPane
+│       │   ├── ControlBar.jsx    # 44px top bar: role tabs, view tabs, notifications, dark mode
+│       │   ├── shared.jsx        # Primitives: StatusPill, AgentDot, StatCard, LabelSmall, Card, Breadcrumbs, NavChip, Kbd
+│       │   ├── Palette.jsx       # Cmd+K command palette (search, arrow nav, kind grouping)
+│       │   ├── DecisionDetail.jsx # Decision pane: impact pills, recommendation, evidence, nextSteps, post-approval
+│       │   ├── PatientSafetyPage.jsx  # Deep-dive: Margaret Chen falls + care conference
+│       │   ├── BillingClaimsPage.jsx  # Deep-dive: Medicare A denial appeal timeline
+│       │   ├── CredentialingPage.jsx  # Deep-dive: RN license expiry + shift coverage
+│       │   ├── DomainDashboard.jsx    # Universal domain view: stats, agents, decisions, records
+│       │   ├── NotificationPanel.jsx  # Slide-over: type filters, focus trap, keyboard activation
+│       │   ├── Toast.jsx         # ToastProvider context + useToast() hook (success/info/warning)
+│       │   ├── ErrorBoundary.jsx # React error boundary with retry UI
+│       │   ├── AgentView.jsx     # Multi-tab agent interface (Directory, Inspector, Flows, Escalations, Policies)
+│       │   ├── AgentInspector.jsx # Agent detail: metrics, activity sparkline, message history
+│       │   ├── AgentDirectory.jsx # Agent roster with domain grouping
+│       │   ├── EscalationCard.jsx # Agent-vs-agent conflict resolution UI
+│       │   ├── PolicyConsole.jsx  # Governance policy viewer
+│       │   ├── TeamChat.jsx       # Agent-to-agent message UI
+│       │   ├── AssistMid.jsx      # Assist queue list (inbound/outbound)
+│       │   ├── AssistDetail.jsx   # Assist thread detail with reply/compose
+│       │   ├── AuditTrail.jsx     # Semantic table audit log with filters + CSV export
+│       │   ├── BriefingView.jsx   # AI morning briefing with priority facility
+│       │   ├── RecordInspector.jsx # Generic record detail panel
+│       │   ├── SettingsView.jsx   # Preferences: profile, notifications, governance, integrations
+│       │   └── ShellView.jsx      # Route wrapper for ShellV2
+│       ├── hooks/
+│       │   ├── useDecisionQueue.js  # Decision state: approve/escalate/defer + actionLog + stats
+│       │   └── useAssistQueue.js    # Assist state: submit/reply/action + auto-triage simulation
+│       ├── data/
+│       │   ├── index.js           # Central re-exports
+│       │   ├── shell-domains.js   # DOMAINS config + RAIL_ORDER (shared by ShellV2 + Palette)
+│       │   ├── decisions.js       # 24 decisions with evidence + nextSteps
+│       │   ├── domains.js         # 8 domains with agents, records, stats
+│       │   ├── pages.js           # 62 page configs with stats, KPIs, highlights
+│       │   ├── facilities.js      # 15 facilities with detail
+│       │   ├── roles.js           # 5 roles (CEO, Admin, DON, Billing, Accounting)
+│       │   ├── assist.js          # 30+ assist items (inbound/outbound)
+│       │   └── handled.js         # Recent agent action samples
+│       ├── agents-data.js         # 48 agents + messages + policies + orchestrator
+│       └── tokens.css             # Design tokens: colors, type, spacing, radii, shadows, z-index, animations
+├── src/                           # Legacy codebase (69 pages, Tailwind — not active)
+├── public/                        # Pitch decks + platform guide (self-contained HTML)
+├── SNF_iOS/                       # Native iOS companion app (Swift Package)
+├── SNF_macOS/                     # Native macOS companion app (Swift Package)
+├── SNFKit/                        # Shared Swift package for native apps
+├── platform/                      # Production backend: Managed Agents, MCP connectors, infra
+├── docs/
+│   ├── planning/                  # PRD, Design System, Technical Architecture, Agent Framework, Playbook
+│   ├── Platform_Capabilities.md   # Marketing/investor capability statement
+│   ├── Design_System_Reference.md # Developer design system + component API reference
+│   └── Accessibility_Reference.md # WCAG compliance, ARIA patterns, keyboard reference
+├── dist/                          # Built output (deployed to gh-pages)
+└── .github/                       # GitHub Actions for gh-pages deployment
 ```
 
 ## Tech Stack
 
-- **React 19** + **Vite 7** — fast dev server, optimized builds with code splitting
-- **Tailwind CSS 4** — utility-first styling
-- **Recharts** — data visualization (charts, sparklines)
-- **Lucide React** — icon library
-- **React Router** — hash-based routing (for GitHub Pages compatibility)
-- **GitHub Pages** — hosted on gh-pages branch
+- **React 19** + **Vite 7** — 79 modules, 642ms build, zero warnings
+- **CSS Custom Properties** — oklch color space, inline styles, no CSS frameworks
+- **React Router** — HashRouter with lazy-loaded routes, ErrorBoundary, 404 catch-all
+- **GitHub Pages** — automatic deployment via GitHub Actions
+- **25 components**, **2 hooks**, **8 data modules**, **48 agents**, **62 page configs**
 
 ## Running Locally
 
@@ -187,33 +245,36 @@ All presentations: Apple HIG design, dark mode, scroll-snap navigation, keyboard
 
 | Document | Path | Purpose |
 |---|---|---|
+| **Platform Capabilities** | `docs/Platform_Capabilities.md` | Marketing/investor capability statement — 48 agents, decision engine, governance, integrations |
+| **Design System Reference** | `docs/Design_System_Reference.md` | Developer reference — tokens, shared primitives, component API, hooks, data layer |
+| **Accessibility Reference** | `docs/Accessibility_Reference.md` | WCAG AA compliance — ARIA patterns, keyboard shortcuts, focus management, screen reader support |
 | **PRD** | `docs/planning/PRD_Agentic_Enterprise_Platform.md` | Full product spec — 55 pages, 26 agents, RBAC, governance levels, phased rollout |
-| **Design System** | `docs/planning/Design_System_Specification.md` | Apple HIG design rules, color system, component library, page templates, <10s decision flow, typography |
-| **Technical Architecture** | `docs/planning/Technical_Architecture.md` | DRY component composition, context providers, hooks, lazy loading, file structure, refactoring strategy |
-| **Agent Framework** | `docs/planning/Agent_Framework_Design.md` | Universal agent loop, 6 governance levels, immutable audit schema, event cascades, decision replay |
+| **Design System Spec** | `docs/planning/Design_System_Specification.md` | Apple HIG design rules, color system, component library, page templates |
+| **Technical Architecture** | `docs/planning/Technical_Architecture.md` | DRY component composition, context providers, hooks, lazy loading, file structure |
+| **Agent Framework** | `docs/planning/Agent_Framework_Design.md` | Universal agent loop, 6 governance levels, immutable audit schema, event cascades |
 | **Implementation Playbook** | `docs/planning/Implementation_Playbook.md` | Build sequence (4 waves), agent deployment prompts, per-page quality checklist |
 
 ### Key Architecture Decisions
-- **69 pages implemented**: organized into 8 nav sections (clinical, finance, workforce, admissions, quality, legal, operations, strategic)
-- **65 pages with functional DecisionQueue**: all wired via `useDecisionQueue` hook with notification dispatch
-- **Code splitting**: All pages lazy-loaded via React.lazy + Suspense; vendor chunks separated
-- **DRY components**: Pages target 150-250 lines using shared component library
-- **No new dependencies**: Built entirely with existing React + Tailwind + Recharts + Lucide
-- **Modular data**: `src/data/` organized by domain with cross-referenced entity IDs
-- **RBAC + Scoping**: Context providers for role-based nav filtering and facility/region/enterprise scope
-- **Tablet responsive**: Sidebar overlay, 44px touch targets, responsive grid columns
+- **3-column shell** (ShellV2, 447 lines): CommandRail (52px) → MidColumn (260px worklist or domain index) → RightPane (1fr content). Decomposed from monolith into 6 focused files
+- **Component composition**: ShellV2 imports Palette, DecisionDetail, PatientSafetyPage, BillingClaimsPage, CredentialingPage. Each under 260 lines
+- **Shared data config**: `shell-domains.js` exports DOMAINS + RAIL_ORDER, shared by ShellV2 and Palette (single source of truth)
+- **Code splitting**: All views lazy-loaded via React.lazy + Suspense with shimmer skeleton fallback. ErrorBoundary catches runtime errors. 404 catch-all route
+- **Toast context**: `ToastProvider` wraps app, `useToast()` hook available everywhere for action feedback
+- **Scroll restoration**: history stack stores scrollTop per navigation state, restored via `requestAnimationFrame` on goBack
+- **Role-driven ordering**: RAIL_ORDER maps role → domain priority order (CEO sees Strategic first, DON sees Clinical first)
+- **Decision enrichment**: each decision has `nextSteps[]` for forward-looking narrative and `actionLog{}` for post-approval timestamps
 
 ## Conventions
 
-- Mock data in frontend — real integrations via MCP connectors in `platform/` directory. When Ensign credentials are provided, swap mock data imports for live API calls.
-- All monetary values displayed in dollars (demo), stored in cents in production.
-- Apple HIG design language — clean typography, minimal chrome.
-- Each page is a self-contained module demonstrating one agentic capability.
-- **DRY**: Never duplicate UI patterns — use shared components from `src/components/`.
-- **Standard Command Page template**: Every page has PageHeader, AgentSummaryBar, StatGrid, DecisionQueue (see Design System doc §4.1).
-- **Semantic colors only**: Red = critical, Amber = high, Green = agent-handled, Blue = informational, Violet = processing.
-- **<10 second rule**: Every human action (approve, reject, escalate) must be completable in under 10 seconds.
-- **First-principles decisions**: Every DecisionCard must be self-contained — agent pre-pulls ALL data from source systems. No "see PCC record" references. The human never opens another application.
+- **Styling**: Inline styles with CSS custom properties from `tokens.css`. Never Tailwind. Never hardcoded colors — use `var(--token)`. Use `var(--ink-on-accent)` for text on colored backgrounds
+- **Semantic colors**: Red = critical, Amber = high, Green = agent-handled, Blue = informational, Violet = processing
+- **Heading hierarchy**: Use `<LabelSmall as="h2">` for section headings, `<h1>` for page titles
+- **ARIA patterns**: `role="tablist"` on tab groups, `role="tab"` + `aria-selected` on tabs, `role="listbox"` + `role="option"` on selectable lists, `role="dialog"` + `aria-modal` on overlays, `role="switch"` + `aria-checked` on toggles
+- **Keyboard**: All interactive elements reachable via Tab. Focus traps in modals/panels. Escape closes overlays. `aria-label` on icon-only buttons
+- **Data**: Mock data in `revamp/src/data/` — real integrations via MCP connectors in `platform/`. Swap imports when Ensign credentials are provided
+- **Components**: Import shared primitives from `./shared`. Max ~250 lines per component file
+- **<10 second rule**: Every human action (approve, reject, escalate) completable in under 10 seconds
+- **Self-contained decisions**: Every DecisionCard has ALL data. No "see PCC record" references. The human never opens another application
 
 ## Connecting to Ensign Production Systems
 
