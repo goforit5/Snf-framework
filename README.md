@@ -1,3 +1,23 @@
+# ⚠️ ARCHIVED — Project Renamed to Aedis
+
+This repository was the original "SNF Framework" — Andrew Sellars' healthcare AI platform initially focused on skilled nursing facilities.
+
+**The project has been rebranded to Aedis** and continues at:
+
+- **New repository**: https://github.com/goforit5/Aedis
+- **Live site**: https://goforit5.github.io/Aedis/
+- **Brand**: Aedis (AY-diss) — Latin for "sacred dwelling + kindled fire"
+- **Category**: The Agentic Operating System for Healthcare
+- **Canonical domain (coming soon)**: aedis.health
+
+This Snf_Framework repository is preserved as historical archive. **No active development happens here.**
+
+For current work, see the Aedis repo. For the rebrand decision rationale, see the brain wiki under project slug `aedis` (or legacy `snf-framework`).
+
+---
+
+(Original README content below)
+
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
